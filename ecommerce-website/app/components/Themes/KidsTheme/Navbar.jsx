@@ -13,6 +13,7 @@ import AuthDrawer from "../../Shared/AuthDrawer";
 import { SOCIAL_CONFIG } from "./Footer";
 import { useRouter } from "next/navigation";
 import { useAuthUIStore } from "@/app/store/useAuthUIStore";
+import BaseDrawer from "../../BaseComponents/BaseDrawer";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -64,22 +65,6 @@ const Navbar = () => {
       document.body.style.overflow = "auto";
     };
   }, [isMenuOpen]);
-
-  useEffect(() => {
-    if (cartDrawerOpen) {
-      window.history.pushState({ cart: true }, "");
-    }
-  }, [cartDrawerOpen]);
-
-  useEffect(() => {
-    const handlePopState = () => {
-      if (cartDrawerOpen) {
-        closeCartDrawer();
-      }
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, [cartDrawerOpen]);
 
   return (
     <>
@@ -196,17 +181,15 @@ const Navbar = () => {
           </section>
 
           {/* Mobile Search Dropdown */}
-          {searchOpen && (
-            <div
-              ref={searchRef}
-              className="absolute left-0 top-full w-full bg-white border-t border-gray-200 px-4 py-3 shadow-md sm:hidden z-50"
-            >
-              <SearchInput
-                className="w-full"
-                placeholder="Search products..."
-              />
-            </div>
-          )}
+          <BaseDrawer
+            open={searchOpen}
+            onClose={closeSearch}
+            title="Search"
+            side="right"
+            width="w-[350px]"
+          >
+            <SearchInput className="w-full" placeholder="Search products..." />
+          </BaseDrawer>
         </div>
 
         {/* <AuthDrawer open={authDrawerOpen} setOpen={setAuthDrawerOpen} /> */}

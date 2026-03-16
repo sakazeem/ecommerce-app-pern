@@ -23,16 +23,16 @@ const PrimaryButton = ({
 	const router = useRouter();
 
 	return (
-		<>
-			<button
-				type="submit"
-				onClick={() => {
-					if (link) router.push(link);
-					else onClick();
-				}}
-				style={style}
-				disabled={disabled}
-				className={`
+    <>
+      <button
+        type="submit"
+        onClick={() => {
+          if (link) router.push(link);
+          else onClick();
+        }}
+        style={style}
+        disabled={disabled}
+        className={`
 				group
 				relative
 				overflow-hidden
@@ -45,11 +45,13 @@ const PrimaryButton = ({
 				${textColor}
 				${isSmall ? "px-3 py-1 text-xs" : "px-5 py-2 text-sm"}
 				${className}
+				disabled:border-gray-400 disabled:text-gray-400
 				max-md:hidden
-			`}>
-				{/* 🔥 Hover sliding background */}
-				<span
-					className={`
+			`}
+      >
+        {/* 🔥 Hover sliding background */}
+        <span
+          className={`
 					absolute
 					inset-0
 					-translate-x-full
@@ -59,12 +61,12 @@ const PrimaryButton = ({
 					ease-out
 					group-hover:translate-x-0
 				`}
-				/>
+        />
 
-				{/* Content */}
-				<span
-					style={style}
-					className={`
+        {/* Content */}
+        <span
+          style={style}
+          className={`
 					relative
 					z-10
 					flex
@@ -75,19 +77,20 @@ const PrimaryButton = ({
 					group-hover:text-light
 					/group-hover:${hoverTextColor}
 					flex ${justifyContent} items-center gap-2 w-full
-				`}>
-					{children}
-				</span>
-			</button>
-			<button
-				type="submit"
-				onClick={() => {
-					if (link) router.push(link);
-					else onClick();
-				}}
-				style={style}
-				disabled={disabled}
-				className={`
+				`}
+        >
+          {children}
+        </span>
+      </button>
+      <button
+        type="submit"
+        onClick={() => {
+          if (link) router.push(link);
+          else onClick();
+        }}
+        style={style}
+        disabled={disabled}
+        className={`
 				group
 				relative
 				overflow-hidden
@@ -104,11 +107,12 @@ const PrimaryButton = ({
 				max-md:bg-primary
 
 				md:hidden
-			`}>
-				{/* Content */}
-				<span
-					style={style}
-					className={`
+			`}
+      >
+        {/* Content */}
+        <span
+          style={style}
+          className={`
 					relative
 					z-10
 					flex
@@ -119,12 +123,13 @@ const PrimaryButton = ({
 					group-hover:text-light
 					/group-hover:${hoverTextColor}
 					flex ${justifyContent} items-center gap-2 w-full
-				`}>
-					{children}
-				</span>
-			</button>
-		</>
-	);
+				`}
+        >
+          {children}
+        </span>
+      </button>
+    </>
+  );
 };
 
 export default PrimaryButton;
