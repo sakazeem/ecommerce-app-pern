@@ -110,6 +110,8 @@ const ProductVariantForm = ({
 	const [generatedVariants, setGeneratedVariants] = useState([]);
 	const isInitialEditLoad = useRef(true);
 
+	console.log(generatedVariants, "chkking generatedVariants");
+
 	useEffect(() => {
 		AttributeServices.getActiveAttributes().then((v) =>
 			setAttribtes(v.records),
@@ -126,6 +128,8 @@ const ProductVariantForm = ({
 
 	useEffect(() => {
 		const tempArr = finalVariants?.map((v) => {
+			console.log(v, "chkking vvv");
+
 			return {
 				sku: v.sku,
 				image: v.imageId,
@@ -166,6 +170,8 @@ const ProductVariantForm = ({
 		});
 	};
 	useEffect(() => {
+		console.log("chkking prev111 call222");
+
 		const { variantDetails, defaultValues, attributes } =
 			transformProductForEdit(productVariants);
 		setDefaultVariants(attributes);
@@ -184,6 +190,8 @@ const ProductVariantForm = ({
 		isInitialEditLoad.current = true;
 	}, [productVariants]);
 
+	console.log(selectedVariants, "chkking selected variants");
+
 	// useEffect(() => {
 	// 	if (selectedVariants.length > 0) {
 	// 		setGeneratedVariants(generateVariants(selectedVariants, sku));
@@ -199,11 +207,18 @@ const ProductVariantForm = ({
 		}
 
 		const newGenerated = generateVariants(selectedVariants, sku);
+		console.log(selectedVariants, "chkking selected variants");
+
 		setGeneratedVariants((prev) => {
 			return newGenerated.map((newVariant) => {
 				// const existing = prev.find((v) => v.name === newVariant.name);
 				const existing = prev.find((v) => sameCombo(v, newVariant));
 				// const existing = prev.find((v) => sameCombo(v, newVariant));
+				console.log(
+					{ selectedVariants, existing, prev, newVariant },
+					"chkking prev111",
+				);
+
 				// Preserve existing values
 				if (existing) {
 					return {
@@ -223,6 +238,11 @@ const ProductVariantForm = ({
 		setDefaultVariants([]);
 		setGeneratedVariants([]);
 	}, [resetKey]);
+
+	console.log(
+		{ selectedVariants, generatedVariants },
+		"chkkin generatedVariants",
+	);
 
 	return (
 		<section className="flex flex-col gap-8">

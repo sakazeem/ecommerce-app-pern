@@ -11,11 +11,11 @@ const OrderDetailsDrawer = ({ id, data }) => {
 	const [loading, setLoading] = useState(true);
 	const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 	const [showStatusDropdown, setShowStatusDropdown] = useState(false);
-	const [courierTrackingId, setCourierTrackingId] = useState("");
-	const [isEditingTracking, setIsEditingTracking] = useState(false);
-	const [isSavingTracking, setIsSavingTracking] = useState(false);
-
 	const orderStatuses = ["pending", "in_progress", "cancelled", "delivered"];
+	const [showShippingFields, setShowShippingFields] = useState(false);
+	const [shippingCity, setShippingCity] = useState("");
+	const [shippingService, setShippingService] = useState("");
+	const [shippingWeight, setShippingWeight] = useState("");
 
 	const getOrderDetails = async () => {
 		if (!id) return;
@@ -24,7 +24,6 @@ const OrderDetailsDrawer = ({ id, data }) => {
 			const res = await OrderServices.getOrderById(id);
 			if (res) {
 				setOrderDetails(res);
-				setCourierTrackingId(res.courier_tracking_id || "");
 			}
 		} catch (err) {
 			notifyError(err ? err.response?.data?.message : err.message);
@@ -38,14 +37,18 @@ const OrderDetailsDrawer = ({ id, data }) => {
 	}, [id]);
 
 	const handleStatusUpdate = async (newStatus) => {
+		if (newStatus === "in_progress") {
+			setShowStatusDropdown(false);
+			setShowShippingFields(true);
+			return;
+		}
+
 		try {
 			setIsUpdatingStatus(true);
 			setShowStatusDropdown(false);
 
-			// Call your API to update the status
 			await OrderServices.updateOrderStatus(id, { status: newStatus });
 
-			// Update local state
 			setOrderDetails((prev) => ({ ...prev, status: newStatus }));
 
 			notifySuccess(`Order status updated to ${newStatus}`);
@@ -55,34 +58,35 @@ const OrderDetailsDrawer = ({ id, data }) => {
 			setIsUpdatingStatus(false);
 		}
 	};
+	const submitShippingDetails = async () => {
+		if (!shippingCity || !shippingService || !shippingWeight) {
+			notifyError("Please fill all shipping details");
+			return;
+		}
 
-	const handleSaveCourierTracking = async () => {
 		try {
-			setIsSavingTracking(true);
+			setIsUpdatingStatus(true);
 
-			// Call your API to update the courier tracking ID
-			await OrderServices.updateOrder(id, {
-				courier_tracking_id: courierTrackingId,
+			await OrderServices.updateOrderStatus(id, {
+				status: "in_progress",
+				city: shippingCity,
+				shipping_service: shippingService,
+				weight: shippingWeight,
 			});
 
-			// Update local state
 			setOrderDetails((prev) => ({
 				...prev,
-				courier_tracking_id: courierTrackingId,
+				status: "in_progress",
 			}));
-			setIsEditingTracking(false);
 
-			notifySuccess("Courier tracking ID updated successfully");
+			setShowShippingFields(false);
+
+			notifySuccess("Order moved to In Progress");
 		} catch (err) {
 			notifyError(err ? err.response?.data?.message : err.message);
 		} finally {
-			setIsSavingTracking(false);
+			setIsUpdatingStatus(false);
 		}
-	};
-
-	const handleCancelTrackingEdit = () => {
-		setCourierTrackingId(orderDetails.courier_tracking_id || "");
-		setIsEditingTracking(false);
 	};
 
 	const getStatusBadge = (status) => {
@@ -275,149 +279,60 @@ const OrderDetailsDrawer = ({ id, data }) => {
 							/>
 						)}
 					</div>
+					{false && showShippingFields && (
+						<div className="bg-white dark:bg-customGray-800 border border-gray-200 dark:border-customGray-600 rounded-xl p-4 mt-4">
+							<h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-4">
+								Add Shipping Details
+							</h3>
 
-					{/* Courier Tracking ID Section */}
-					<div className="bg-white dark:bg-customGray-800 rounded-xl p-5 border border-gray-200 dark:border-customGray-600 shadow-sm">
-						<div className="flex items-center justify-between mb-3">
-							<div className="flex items-center">
-								<div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mr-3">
-									<svg
-										className="w-5 h-5 text-orange-600 dark:text-orange-400"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24">
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											strokeWidth={2}
-											d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-										/>
-									</svg>
-								</div>
-								<h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-									Courier Tracking
-								</h3>
+							<div className="grid grid-cols-3 gap-3">
+								{/* City */}
+								<select
+									value={shippingCity}
+									onChange={(e) => setShippingCity(e.target.value)}
+									className="border rounded-lg p-2 text-sm dark:bg-customGray-700">
+									<option value="">Select City</option>
+									<option value="karachi">Karachi</option>
+									<option value="lahore">Lahore</option>
+									<option value="islamabad">Islamabad</option>
+								</select>
+
+								{/* Shipping Service */}
+								<select
+									value={shippingService}
+									onChange={(e) => setShippingService(e.target.value)}
+									className="border rounded-lg p-2 text-sm dark:bg-customGray-700">
+									<option value="">Shipping Service</option>
+									<option value="tcs">TCS</option>
+									<option value="leopard">Leopard</option>
+									<option value="callcourier">Call Courier</option>
+								</select>
+
+								{/* Weight */}
+								<input
+									type="number"
+									placeholder="Weight (kg)"
+									value={shippingWeight}
+									onChange={(e) => setShippingWeight(e.target.value)}
+									className="border rounded-lg p-2 text-sm dark:bg-customGray-700"
+								/>
 							</div>
 
-							{!isEditingTracking && (
+							<div className="flex justify-end gap-2 mt-4">
 								<button
-									onClick={() => setIsEditingTracking(true)}
-									className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors flex items-center gap-1">
-									<svg
-										className="w-4 h-4"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24">
-										<path
-											strokeLinecap="round"
-											strokeLinejoin="round"
-											strokeWidth={2}
-											d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-										/>
-									</svg>
-									{courierTrackingId ? "Edit" : "Add"}
+									onClick={() => setShowShippingFields(false)}
+									className="px-3 py-1.5 text-sm border rounded-lg">
+									Cancel
 								</button>
-							)}
-						</div>
 
-						<div className="pl-13">
-							{!isEditingTracking ? (
-								<div>
-									{courierTrackingId ? (
-										<div className="flex items-center gap-2">
-											<span className="text-sm font-mono font-semibold text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-customGray-700 px-3 py-2 rounded-lg border border-gray-200 dark:border-customGray-600">
-												{courierTrackingId}
-											</span>
-											<button
-												onClick={() => {
-													navigator.clipboard.writeText(courierTrackingId);
-													notifySuccess("Tracking ID copied to clipboard");
-												}}
-												className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-												title="Copy to clipboard">
-												<svg
-													className="w-4 h-4"
-													fill="none"
-													stroke="currentColor"
-													viewBox="0 0 24 24">
-													<path
-														strokeLinecap="round"
-														strokeLinejoin="round"
-														strokeWidth={2}
-														d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-													/>
-												</svg>
-											</button>
-										</div>
-									) : (
-										<p className="text-sm text-gray-500 dark:text-gray-400 italic">
-											No tracking ID added yet
-										</p>
-									)}
-								</div>
-							) : (
-								<div className="space-y-3">
-									<input
-										type="text"
-										value={courierTrackingId}
-										onChange={(e) => setCourierTrackingId(e.target.value)}
-										placeholder="Enter courier tracking ID"
-										className="w-full px-4 py-2.5 text-sm border border-gray-300 dark:border-customGray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-customGray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
-									/>
-									<div className="flex gap-2">
-										<button
-											onClick={handleSaveCourierTracking}
-											disabled={isSavingTracking || !courierTrackingId.trim()}
-											className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2">
-											{isSavingTracking ? (
-												<>
-													<svg
-														className="animate-spin h-4 w-4"
-														fill="none"
-														viewBox="0 0 24 24">
-														<circle
-															className="opacity-25"
-															cx="12"
-															cy="12"
-															r="10"
-															stroke="currentColor"
-															strokeWidth="4"></circle>
-														<path
-															className="opacity-75"
-															fill="currentColor"
-															d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-													</svg>
-													Saving...
-												</>
-											) : (
-												<>
-													<svg
-														className="w-4 h-4"
-														fill="none"
-														stroke="currentColor"
-														viewBox="0 0 24 24">
-														<path
-															strokeLinecap="round"
-															strokeLinejoin="round"
-															strokeWidth={2}
-															d="M5 13l4 4L19 7"
-														/>
-													</svg>
-													Save
-												</>
-											)}
-										</button>
-										<button
-											onClick={handleCancelTrackingEdit}
-											disabled={isSavingTracking}
-											className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-customGray-700 dark:hover:bg-customGray-600 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors">
-											Cancel
-										</button>
-									</div>
-								</div>
-							)}
+								<button
+									onClick={submitShippingDetails}
+									className="px-3 py-1.5 text-sm bg-primary text-white rounded-lg">
+									Confirm
+								</button>
+							</div>
 						</div>
-					</div>
+					)}
 
 					{/* Customer Information */}
 					<div className="bg-white dark:bg-customGray-800 rounded-xl p-5 border border-gray-200 dark:border-customGray-600 shadow-sm">
