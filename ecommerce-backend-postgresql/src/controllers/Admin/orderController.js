@@ -19,9 +19,14 @@ const updateOrderId = catchAsync(async (req, res) => {
 	res.send(order);
 });
 
+const exportOrders = catchAsync(async (req, res) => {
+	await adminOrderService.exportOrders(req, res);
+});
+
 module.exports = {
 	getOrderById,
 	getOrders,
 	updateOrderStatus,
 	updateOrderId,
+	exportOrders,
 };

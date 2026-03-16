@@ -4,7 +4,7 @@ const db = require('../../db/models');
 const ApiError = require('../../utils/ApiError');
 const { getOffset } = require('../../utils/query');
 const { Op, where } = require('sequelize');
-const { default: axios } = require('axios');
+const ExcelJS = require('exceljs');
 
 async function getOrderById(req) {
 	const { orderId } = req.params;
@@ -290,9 +290,117 @@ async function createCCLBooking(data) {
 	});
 }
 
+async function exportOrders(req, res) {
+	const { status, startDate, endDate, search, paymentMethod } = req.query;
+
+	const whereCondition = {};
+	if (status) whereCondition.status = status;
+	if (paymentMethod) whereCondition.payment_method = paymentMethod;
+
+	const start = startDate ? new Date(startDate) : null;
+	const end = endDate
+		? new Date(new Date(endDate).setHours(23, 59, 59, 999))
+		: null;
+
+	if (start && end) {
+		whereCondition.created_at = { [Op.between]: [start, end] };
+	} else if (start) {
+		whereCondition.created_at = { [Op.gte]: start };
+	} else if (end) {
+		whereCondition.created_at = { [Op.lte]: end };
+	}
+	if (search) {
+		whereCondition[Op.or] = [
+			{ tracking_id: { [Op.iLike]: `%${search}%` } },
+			{ guest_first_name: { [Op.iLike]: `%${search}%` } },
+			{ '$user.name$': { [Op.iLike]: `%${search}%` } },
+		];
+	}
+
+	const orders = await db.order.findAll({
+		where: whereCondition,
+		include: [{ model: db.app_user, as: 'user', required: false }],
+		order: [['id', 'DESC']],
+	});
+
+	const workbook = new ExcelJS.Workbook();
+	const sheet = workbook.addWorksheet('Orders');
+
+	sheet.columns = [
+		{ header: 'ID', key: 'id', width: 10 },
+		{ header: 'Tracking ID', key: 'tracking_id', width: 30 },
+		{ header: 'Date', key: 'created_at', width: 20 },
+		{ header: 'Customer Name', key: 'customer_name', width: 25 },
+		{ header: 'Email', key: 'email', width: 30 },
+		{ header: 'Phone', key: 'phone', width: 20 },
+		{ header: 'Shipping Address', key: 'shipping_address', width: 40 },
+		{ header: 'City', key: 'shipping_city', width: 15 },
+		{ header: 'Payment Method', key: 'payment_method', width: 18 },
+		{ header: 'Order Amount', key: 'order_amount', width: 15 },
+		{ header: 'Shipping', key: 'shipping', width: 12 },
+		{ header: 'Total', key: 'total', width: 15 },
+		{ header: 'Status', key: 'status', width: 18 },
+		{
+			header: 'Courier Tracking ID',
+			key: 'courier_tracking_id',
+			width: 25,
+		},
+	];
+
+	// Style header row
+	sheet.getRow(1).eachCell((cell) => {
+		cell.font = { bold: true };
+		cell.fill = {
+			type: 'pattern',
+			pattern: 'solid',
+			fgColor: { argb: 'FFE0E0E0' },
+		};
+		cell.border = {
+			top: { style: 'thin' },
+			left: { style: 'thin' },
+			bottom: { style: 'thin' },
+			right: { style: 'thin' },
+		};
+	});
+
+	orders.forEach((order) => {
+		const o = order.get({ plain: true });
+		sheet.addRow({
+			id: o.id,
+			tracking_id: o.tracking_id,
+			created_at: new Date(o.created_at).toLocaleDateString(),
+			customer_name:
+				o.user?.name ||
+				`${o.guest_first_name || ''} ${o.guest_last_name || ''}`.trim(),
+			email: o.user?.email || o.guest_email || '',
+			phone: o.user?.phone || o.guest_phone || '',
+			shipping_address: o.shipping_address,
+			shipping_city: o.shipping_city,
+			payment_method: o.payment_method,
+			order_amount: o.order_amount,
+			shipping: o.shipping,
+			total: o.total,
+			status: o.status,
+			courier_tracking_id: o.courier_tracking_id || '',
+		});
+	});
+
+	const buffer = await workbook.xlsx.writeBuffer();
+	res.setHeader(
+		'Content-Type',
+		'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+	);
+	res.setHeader(
+		'Content-Disposition',
+		`attachment; filename="orders_export_${Date.now()}.xlsx"`
+	);
+	return res.send(buffer);
+}
+
 module.exports = {
 	getOrderById,
 	getAllOrders,
+	exportOrders,
 	updateOrderStatus,
 	updateOrderId,
 };
