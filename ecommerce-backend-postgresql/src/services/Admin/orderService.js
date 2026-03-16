@@ -4,6 +4,7 @@ const db = require('../../db/models');
 const ApiError = require('../../utils/ApiError');
 const { getOffset } = require('../../utils/query');
 const { Op, where } = require('sequelize');
+const { default: axios } = require('axios');
 
 async function getOrderById(req) {
 	const { orderId } = req.params;
@@ -187,6 +188,7 @@ async function updateOrderStatus(req) {
 
 			for (const item of orderItems) {
 				if (!item.product_variant_id) {
+					// continue;
 					throw new ApiError(
 						httpStatus.BAD_REQUEST,
 						`Variant missing for order item ${item.id}`
@@ -246,6 +248,46 @@ async function updateOrderStatus(req) {
 			error.message || 'Failed to update order status'
 		);
 	}
+}
+
+// run this function only when status change from pending to inprocess
+// third-party api to create booking
+async function createCCLBooking(data) {
+	const {
+		name,
+		email,
+		phone,
+		city,
+		address,
+		instructions,
+		productDetails,
+		quantity,
+		total,
+		tracking_id,
+		cityId,
+		weight,
+		shipmentService,
+	} = data;
+
+	const booking = await axios.post('https://oyeah.pk/bookingapi', {
+		clients: 905, //Client ID to be Provided by Admin - MANDATORY
+		token: 'PXQ13WQ962T77NOO6BQCQ2I7AGW0GLB2JMZNHDT7WFWWW24WFAXMHP2D91IEPXTEY87AZM4PXJ0NOKI7LI9CP32T59BXY4TMWU31', //Token To be Provided by Admin - MANDATORY
+		name, //Customer Name - MANDATORY
+		email, //Customer Email if any
+		mobile: phone, //Customer Mobile Number - MANDATORY
+		city: cityId, //City ID - MANDATORY -- API
+		address, //Customer Address - MANDATORY
+		instructions, //Order Instructions if Any
+		details: productDetails, //Product Details
+		qty: quantity, //Product Quantity eg. 1 or 2 or 3 - MANDATORY
+		weight, //Shipment Weight eg. 0.5 or 1 or 2 - MANDATORY
+		total, //COD Amount - MANDATORY
+		open_allow: '1', //Open Allowed Valuies 1 & 0 - Optional
+		shipment_services: shipmentService, //1 for TCS, 21 for TRAX, 3 for LEO, 17 for POSTEX, RIDER, CALL
+		client_order_id: tracking_id, //Your Internal Order ID,
+		shopify_order_id: '', //Shopify Order ID: [gid://shopify/Order/1234567890]
+		client_store_id: 1049, //Client Store ID: [Eg: 12345| Find in Stores Section in Portal] - Optional
+	});
 }
 
 module.exports = {

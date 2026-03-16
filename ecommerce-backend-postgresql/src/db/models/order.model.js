@@ -62,6 +62,12 @@ module.exports = (sequelize, DataTypes) => {
 				// unique: true,
 			},
 
+			// // ccl courier details
+			// courier_details: {
+			// 	type: DataTypes.JSONB,
+			// 	allowNull: true,
+			// },
+
 			status: {
 				type: DataTypes.ENUM(
 					'pending',
