@@ -5,6 +5,7 @@ import Scrollbars from "react-custom-scrollbars-2";
 import OrderServices from "@/services/OrderServices";
 import { notifyError, notifySuccess } from "@/utils/toast";
 import DrawerHeader from "../newComponents/DrawerHeader";
+import CCLDetailsFeilds from "./CCLDetailsFeilds";
 
 const OrderDetailsDrawer = ({ id, data }) => {
 	const [orderDetails, setOrderDetails] = useState({});
@@ -280,58 +281,15 @@ const OrderDetailsDrawer = ({ id, data }) => {
 						)}
 					</div>
 					{false && showShippingFields && (
-						<div className="bg-white dark:bg-customGray-800 border border-gray-200 dark:border-customGray-600 rounded-xl p-4 mt-4">
-							<h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200 mb-4">
-								Add Shipping Details
-							</h3>
-
-							<div className="grid grid-cols-3 gap-3">
-								{/* City */}
-								<select
-									value={shippingCity}
-									onChange={(e) => setShippingCity(e.target.value)}
-									className="border rounded-lg p-2 text-sm dark:bg-customGray-700">
-									<option value="">Select City</option>
-									<option value="karachi">Karachi</option>
-									<option value="lahore">Lahore</option>
-									<option value="islamabad">Islamabad</option>
-								</select>
-
-								{/* Shipping Service */}
-								<select
-									value={shippingService}
-									onChange={(e) => setShippingService(e.target.value)}
-									className="border rounded-lg p-2 text-sm dark:bg-customGray-700">
-									<option value="">Shipping Service</option>
-									<option value="tcs">TCS</option>
-									<option value="leopard">Leopard</option>
-									<option value="callcourier">Call Courier</option>
-								</select>
-
-								{/* Weight */}
-								<input
-									type="number"
-									placeholder="Weight (kg)"
-									value={shippingWeight}
-									onChange={(e) => setShippingWeight(e.target.value)}
-									className="border rounded-lg p-2 text-sm dark:bg-customGray-700"
-								/>
-							</div>
-
-							<div className="flex justify-end gap-2 mt-4">
-								<button
-									onClick={() => setShowShippingFields(false)}
-									className="px-3 py-1.5 text-sm border rounded-lg">
-									Cancel
-								</button>
-
-								<button
-									onClick={submitShippingDetails}
-									className="px-3 py-1.5 text-sm bg-primary text-white rounded-lg">
-									Confirm
-								</button>
-							</div>
-						</div>
+						<CCLDetailsFeilds
+							shippingCity={shippingCity}
+							shippingService={shippingService}
+							shippingWeight={shippingWeight}
+							setShippingCity={setShippingCity}
+							setShippingService={setShippingService}
+							setShippingWeight={setShippingWeight}
+							setShowShippingFields={setShowShippingFields}
+						/>
 					)}
 
 					{/* Customer Information */}
