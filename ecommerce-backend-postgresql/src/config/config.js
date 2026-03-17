@@ -59,6 +59,10 @@ const envVarsSchema = Joi.object()
 		BREVO_SMTP_PASS: Joi.string().description('BREVO SMTP password'),
 		BREVO_SENDER_EMAIL: Joi.string().description('BREVO SENDER EMAIL'),
 		BREVO_SENDER_NAME: Joi.string().description('BREVO SENDER NAME'),
+
+		// ccl details
+		CCL_API_KEY: Joi.string().description('CCL API KEY'),
+		CCL_CLIENTS: Joi.string().description('CCL CLIENTS'),
 	})
 	.unknown();
 
@@ -132,6 +136,10 @@ module.exports = {
 			pass: envVars.BREVO_SMTP_PASS,
 		},
 		from: `"${envVars.BREVO_SENDER_NAME}" <${envVars.BREVO_SENDER_EMAIL}>`,
+	},
+	cclCourier: {
+		apiKey: envVars.CCL_API_KEY,
+		clients: envVars.CCL_CLIENTS,
 	},
 	s3Bucket: {
 		accessKeyId: envVars.AWS_ACCESS_KEY_ID,
