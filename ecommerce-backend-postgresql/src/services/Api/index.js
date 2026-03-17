@@ -10,3 +10,5 @@ module.exports.apiOrderService = require('./orderService');
 module.exports.apiReviewService = require('./reviewService');
 module.exports.apiReturnedService = require('./returnedService');
 module.exports.apiSubscriberService = require('./subscriberService');
+module.exports.cartService = require('./cartService');
+module.exports.favouriteService = require('./favouriteService');

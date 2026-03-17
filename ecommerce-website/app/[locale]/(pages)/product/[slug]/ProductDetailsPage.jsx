@@ -9,6 +9,7 @@ import SocialShare from "@/app/components/Shared/SocialShare";
 import ProductsSlider from "@/app/components/Themes/KidsTheme/ProductsSlider";
 import { ENV_VARIABLES } from "@/app/constants/env_variables";
 import { useFetchReactQuery } from "@/app/hooks/useFetchReactQuery";
+import { useAuth } from "@/app/providers/AuthProvider";
 import { useStore } from "@/app/providers/StoreProvider";
 import ProductServices from "@/app/services/ProductServices";
 import { useCartStore } from "@/app/store/cartStore";
@@ -47,6 +48,7 @@ const cleanKeyFeaturesText = (html) => {
 export default function ProductDetailsPage() {
   const { slug } = useParams();
   const store = useStore();
+  const { isAuthenticated } = useAuth();
   const { addToCart, toggleFavourite, favourites } = useCartStore();
   const { openCartDrawer } = useAuthUIStore();
 
@@ -187,6 +189,7 @@ export default function ProductDetailsPage() {
         selectedVariant,
       },
       quantity,
+      isAuthenticated,
     );
     openCartDrawer();
 
@@ -195,7 +198,7 @@ export default function ProductDetailsPage() {
 
   const isFavourite = favourites?.some((f) => f.id === product.id);
   const handleFavourite = () => {
-    toggleFavourite(product);
+    toggleFavourite(product, isAuthenticated);
     toast.success(
       isFavourite ? "Removed from favourites!" : "Added to favourites!",
     );

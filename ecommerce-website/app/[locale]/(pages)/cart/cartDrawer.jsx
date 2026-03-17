@@ -5,6 +5,7 @@ import BaseImage from "@/app/components/BaseComponents/BaseImage";
 import BasePrice from "@/app/components/BaseComponents/BasePrice";
 import PrimaryButton from "@/app/components/Shared/PrimaryButton";
 import { ENV_VARIABLES } from "@/app/constants/env_variables";
+import { useAuth } from "@/app/providers/AuthProvider";
 import { useCartStore } from "@/app/store/cartStore";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -12,9 +13,10 @@ import { useRouter } from "next/navigation";
 
 export default function CartDrawer({ open, setOpen }) {
 	const { cart, addToCart, removeFromCart } = useCartStore();
+	const { isAuthenticated } = useAuth();
 	const updateQty = (item, type) => {
-		if (type === "inc") addToCart(item, 1);
-		if (type === "dec" && item.quantity > 1) addToCart(item, -1);
+		if (type === "inc") addToCart(item, 1, isAuthenticated);
+		if (type === "dec" && item.quantity > 1) addToCart(item, -1, isAuthenticated);
 	};
 
 	const subtotal = cart.reduce((acc, item) => {
@@ -107,7 +109,7 @@ export default function CartDrawer({ open, setOpen }) {
 									</div>
 
 									<button
-										onClick={() => removeFromCart(item)}
+										onClick={() => removeFromCart(item, isAuthenticated)}
 										className="text-muted hover:text-red-500">
 										<Trash2 size={16} />
 									</button>

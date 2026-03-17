@@ -249,7 +249,7 @@ export default function CheckoutPage() {
 				});
 
 				setOrderSuccess(true);
-				clearCart();
+				clearCart(isAuthenticated);
 
 				toast.success("Order placed successfully!");
 
