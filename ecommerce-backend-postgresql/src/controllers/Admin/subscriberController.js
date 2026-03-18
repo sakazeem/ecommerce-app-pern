@@ -6,6 +6,11 @@ const getSubscribers = catchAsync(async (req, res) => {
 	res.send(subscribers);
 });
 
+const exportSubscribers = catchAsync(async (req, res) => {
+	await adminSubscriberService.exportSubscribers(req, res);
+});
+
 module.exports = {
 	getSubscribers,
+	exportSubscribers,
 };
