@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import { trackEvent } from "../utils/trackEvent";
 import CartService from "../services/CartService";
 import FavouriteService from "../services/FavouriteService";
+import { toast } from "react-toastify";
 
 export const useCartStore = create(
   persist(
@@ -79,6 +80,102 @@ export const useCartStore = create(
         }
       },
 
+      // ─── VERIFY & SYNC (called when cart opens or page loads) ─────
+      verifyAndSyncCart: async (isAuthenticated) => {
+        const { cart } = get();
+        if (!cart.length) return;
+
+        try {
+          const itemsToVerify = cart.map((item) => ({
+            cartItemId: item.cartItemId || null,
+            id: item.id,
+            product_id: item.id,
+            product_variant_id: item.selectedVariant?.id || null,
+            selectedVariant: item.selectedVariant || null,
+            sku: item.sku,
+            quantity: item.quantity,
+          }));
+
+          const { verified, removed } =
+            await CartService.verifyCart(itemsToVerify);
+
+          if (removed.length) {
+            const reasons = {
+              product_deleted: "has been removed from the store",
+              variant_deleted: "variant is no longer available",
+              out_of_stock: "is out of stock",
+              missing_product: "could not be found",
+            };
+            removed.forEach((item) => {
+              const title = item.title || `Item #${item.id}`;
+              const reason = reasons[item.reason] || "is no longer available";
+              toast.warn(
+                `"${title}" ${reason} and was removed from your cart.`,
+              );
+            });
+
+            // For logged-in users, also remove from DB
+            if (isAuthenticated) {
+              for (const item of removed) {
+                if (item.cartItemId) {
+                  try {
+                    await CartService.removeFromCart(item.cartItemId);
+                  } catch (e) {
+                    // already cascade deleted, ignore
+                  }
+                }
+              }
+            }
+          }
+
+          set({ cart: verified });
+        } catch (e) {
+          console.error("verifyAndSyncCart error", e);
+        }
+      },
+
+      // ─── VERIFY FAVOURITES (called when favourites page loads) ────
+      verifyAndSyncFavourites: async (isAuthenticated) => {
+        const { favourites } = get();
+        if (!favourites.length) return;
+
+        try {
+          const itemsToVerify = favourites.map((item) => ({
+            id: item.id,
+            product_id: item.id,
+          }));
+
+          const { verified, removed } =
+            await FavouriteService.verifyFavourites(itemsToVerify);
+
+          if (removed.length) {
+            removed.forEach((item) => {
+              const title = item.title || `Item #${item.id}`;
+              toast.warn(
+                `"${title}" has been removed from the store and was removed from your favourites.`,
+              );
+            });
+
+            // For logged-in users, also remove from DB
+            if (isAuthenticated) {
+              for (const item of removed) {
+                if (item.id) {
+                  try {
+                    await FavouriteService.toggleFavourite(item.id);
+                  } catch (e) {
+                    // already cascade deleted, ignore
+                  }
+                }
+              }
+            }
+          }
+
+          set({ favourites: verified });
+        } catch (e) {
+          console.error("verifyAndSyncFavourites error", e);
+        }
+      },
+
       // ─── CART ─────────────────────────────────────────────────────
       addToCart: async (product, quantity = 1, isAuthenticated = false) => {
         if (isAuthenticated) {
@@ -86,6 +183,7 @@ export const useCartStore = create(
             await CartService.addToCart({
               product_id: product.id,
               product_variant_id: product.selectedVariant?.id || null,
+              sku: product.selectedVariant?.sku || product.sku || null,
               quantity,
             });
             await get().loadCart(true);

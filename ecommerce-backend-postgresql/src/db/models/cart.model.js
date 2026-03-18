@@ -29,6 +29,10 @@ module.exports = (sequelize, DataTypes) => {
 				defaultValue: 1,
 				validate: { min: 1 },
 			},
+			sku: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
 		},
 		{
 			tableName: 'cart',

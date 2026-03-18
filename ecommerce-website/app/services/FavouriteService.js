@@ -6,6 +6,7 @@ const FavouriteService = {
     requests.post("/favourites/toggle", { product_id }),
   syncFavourites: (productIds) =>
     requests.post("/favourites/sync", { productIds }),
+  verifyFavourites: (items) => requests.post("/favourites/verify", { items }),
 };
 
 export default FavouriteService;

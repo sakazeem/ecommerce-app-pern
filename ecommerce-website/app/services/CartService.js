@@ -7,6 +7,7 @@ const CartService = {
   removeFromCart: (id) => requests.delete(`/cart/${id}`),
   clearCart: () => requests.delete("/cart/clear"),
   syncCart: (items) => requests.post("/cart/sync", { items }),
+  verifyCart: (items) => requests.post("/cart/verify", { items }),
 };
 
 export default CartService;

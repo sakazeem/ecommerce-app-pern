@@ -68,6 +68,15 @@ const syncCart = catchAsync(async (req, res) => {
 	res.send({ cart });
 });
 
+const verifyCart = catchAsync(async (req, res) => {
+	const { items } = req.body;
+	if (!items || !Array.isArray(items)) {
+		return res.send({ verified: [], removed: [] });
+	}
+	const result = await cartService.verifyCart(items);
+	res.send(result);
+});
+
 module.exports = {
 	getCart,
 	addToCart,
@@ -75,4 +84,5 @@ module.exports = {
 	removeFromCart,
 	clearCart,
 	syncCart,
+	verifyCart,
 };

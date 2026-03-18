@@ -26,4 +26,18 @@ const syncFavourites = catchAsync(async (req, res) => {
 	res.send({ favourites });
 });
 
-module.exports = { getFavourites, toggleFavourite, syncFavourites };
+const verifyFavourites = catchAsync(async (req, res) => {
+	const { items } = req.body;
+	if (!items || !Array.isArray(items)) {
+		return res.send({ verified: [], removed: [] });
+	}
+	const result = await favouriteService.verifyFavourites(items);
+	res.send(result);
+});
+
+module.exports = {
+	getFavourites,
+	toggleFavourite,
+	syncFavourites,
+	verifyFavourites,
+};
