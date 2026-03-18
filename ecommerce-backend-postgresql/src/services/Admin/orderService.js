@@ -167,6 +167,12 @@ async function updateOrderStatus(req) {
 		const order = await db.order.findByPk(orderId, {
 			transaction,
 			lock: transaction.LOCK.UPDATE,
+			include: [
+				{
+					model: db.app_user,
+					required: false,
+				},
+			],
 		});
 
 		if (!order) {
@@ -177,6 +183,7 @@ async function updateOrderStatus(req) {
 
 		// 2️⃣ Deduct stock ONLY when pending → in_progress
 		if (oldStatus === 'pending' && newStatus === 'in_progress') {
+			let quantity = 0;
 			const orderItems = await db.order_item.findAll({
 				where: { order_id: orderId },
 				transaction,
@@ -226,9 +233,33 @@ async function updateOrderStatus(req) {
 
 				// deduct stock
 				stockRow.stock -= requiredQty;
+				quantity += requiredQty;
 
 				await stockRow.save({ transaction });
 			}
+			await createCCLBooking({
+				name: order.app_user_id
+					? order.app_user?.name
+					: order.guest_first_name || 'No Name',
+				email:
+					(order.app_user_id && order.app_user?.email) ||
+					order.guest_email ||
+					null,
+				phone:
+					(order.app_user_id && order.app_user?.phone) ||
+					order.guest_phone ||
+					null,
+				address: order.shipping_address,
+				instructions: req.body.instructions || null,
+				productDetails: req.body.details,
+				quantity,
+				total: order.total,
+				payment_method: order.payment_method,
+				tracking_id: order.tracking_id,
+				cityId: req.body.cityId,
+				weight: req.body.weight,
+				shipmentService: req.body.shippingService,
+			});
 		}
 
 		// 3️⃣ Update order status
@@ -257,21 +288,23 @@ async function createCCLBooking(data) {
 		name,
 		email,
 		phone,
-		city,
 		address,
 		instructions,
 		productDetails,
 		quantity,
 		total,
+		payment_method,
 		tracking_id,
 		cityId,
 		weight,
 		shipmentService,
 	} = data;
 
+	retun
+
 	const booking = await axios.post('https://oyeah.pk/bookingapi', {
-		clients: 905, //Client ID to be Provided by Admin - MANDATORY
-		token: 'PXQ13WQ962T77NOO6BQCQ2I7AGW0GLB2JMZNHDT7WFWWW24WFAXMHP2D91IEPXTEY87AZM4PXJ0NOKI7LI9CP32T59BXY4TMWU31', //Token To be Provided by Admin - MANDATORY
+		clients: config.cclCourier.clients, //Client ID to be Provided by Admin - MANDATORY
+		token: config.cclCourier.apiKey,
 		name, //Customer Name - MANDATORY
 		email, //Customer Email if any
 		mobile: phone, //Customer Mobile Number - MANDATORY
