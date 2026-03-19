@@ -211,7 +211,7 @@ async function verifyCart(items) {
 		// This means the variant was recreated — update the reference silently
 
 		// Check stock
-		const stock = variant.branches?.[0]?.pvb?.stock ?? null;
+		const stock = variant.branches?.[0]?.pvb?.dataValues?.stock ?? null;
 		if (stock !== null && stock === 0) {
 			removed.push({ ...item, reason: 'out_of_stock' });
 			continue;
@@ -239,10 +239,14 @@ function buildCartItem(item, product, variant) {
 			? {
 					id: variant.id,
 					sku: variant.sku,
-					price: variant.branches?.[0]?.pvb?.sale_price ?? null,
+					price:
+						variant.branches?.[0]?.pvb?.dataValues?.sale_price ??
+						null,
 					discount_percentage:
-						variant.branches?.[0]?.pvb?.discount_percentage ?? null,
-					stock: variant.branches?.[0]?.pvb?.stock ?? null,
+						variant.branches?.[0]?.pvb?.dataValues
+							?.discount_percentage ?? null,
+					stock:
+						variant.branches?.[0]?.pvb?.dataValues?.stock ?? null,
 					image: variant.image || null,
 					attributes: variant.attributes?.map((a) => ({
 						id: a.id,
