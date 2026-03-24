@@ -15,22 +15,19 @@ if (config.env !== 'test') {
 	transport
 		.verify()
 		.then(() => logger.info('Connected to email server'))
-		.catch((err) =>
-			logger.warn(
-				// 'Unable to connect to email server. Make sure you have configured the SMTP options in .env',
-				err.message
-			)
-		);
+		.catch((err) => logger.warn(err.message));
 }
 
 /**
  * Send an email
  * @param {string} to
  * @param {string} subject
- * @param {string} text
+ * @param {string} [text]
+ * @param {string} [html]
+ * @param {Array}  [attachments] - Nodemailer attachments array e.g. [{ filename, path }]
  * @returns {Promise}
  */
-const sendEmail = async ({ to, subject, text, html }) => {
+const sendEmail = async ({ to, subject, text, html, attachments = [] }) => {
 	await transport.sendMail({
 		from,
 		to,
@@ -41,6 +38,7 @@ const sendEmail = async ({ to, subject, text, html }) => {
 		subject,
 		text,
 		html,
+		attachments,
 	});
 };
 

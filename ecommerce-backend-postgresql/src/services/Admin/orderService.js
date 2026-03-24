@@ -163,17 +163,16 @@ async function updateOrderStatus(req) {
 	const transaction = await db.sequelize.transaction();
 
 	try {
-		// 1️⃣ Get current order with lock
 		const order = await db.order.findByPk(orderId, {
 			transaction,
 			lock: transaction.LOCK.UPDATE,
-			include: [
-				{
-					model: db.app_user,
-					required: false,
-				},
-			],
 		});
+
+		if (order?.app_user_id) {
+			order.app_user = await db.app_user.findByPk(order.app_user_id, {
+				transaction,
+			});
+		}
 
 		if (!order) {
 			throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
@@ -300,7 +299,7 @@ async function createCCLBooking(data) {
 		shipmentService,
 	} = data;
 
-	retun
+	return;
 
 	const booking = await axios.post('https://oyeah.pk/bookingapi', {
 		clients: config.cclCourier.clients, //Client ID to be Provided by Admin - MANDATORY

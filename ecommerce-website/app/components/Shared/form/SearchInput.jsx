@@ -138,8 +138,8 @@ const SearchInput = ({
                   <div
                     key={item.id}
                     onMouseDown={() => {
-                      router.push(`/product/${item.slug}`);
                       closeSearch();
+                      router.push(`/product/${item.slug}`);
                     }}
                     className="flex gap-4 px-4 py-1.5 cursor-pointer hover:bg-gray-50 transition"
                   >
@@ -194,9 +194,10 @@ const SearchInput = ({
 
           {/* Footer CTA */}
           <div
-            onMouseDown={() =>
-              router.push(`/products?search=${encodeURIComponent(query)}`)
-            }
+            onMouseDown={() => {
+              closeSearch();
+              router.push(`/products?search=${encodeURIComponent(query)}`);
+            }}
             className="px-4 py-3 border-t p4 font-medium text-gray-700 cursor-pointer hover:bg-gray-50 flex items-center gap-2"
           >
             <span>

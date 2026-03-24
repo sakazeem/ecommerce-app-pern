@@ -1,4 +1,5 @@
 const httpStatus = require('http-status');
+const fs = require('fs');
 const {
 	orderConfirmationAdminTemplate,
 } = require('../../config/emailTemplates/orderConfirmationAdmin');
@@ -13,6 +14,8 @@ const config = require('../../config/config');
 
 async function confirmOrder(req) {
 	const { customer, billingAddress, items, summary, userId } = req.body;
+
+	const receiptFile = req.file || null;
 
 	const data = {
 		shipping_address: customer.address,
@@ -108,7 +111,9 @@ async function confirmOrder(req) {
 
 		const orderId = createdOrder.tracking_id;
 
-		// send order confirmation email to user
+		const receiptAttachment = receiptFile
+			? [{ filename: receiptFile.originalname, path: receiptFile.path }]
+			: [];
 
 		if (customer.email) {
 			await sendEmail({
@@ -123,10 +128,10 @@ async function confirmOrder(req) {
 					shipping: summary.shipping,
 					total: summary.total,
 				}),
+				attachments: [],
 			});
 		}
 
-		// send order notification email to admin
 		await sendEmail({
 			// to: 'annasahmed1609@gmail.com',
 			// to: 'salmanazeemkhan@gmail.com',
@@ -141,17 +146,27 @@ async function confirmOrder(req) {
 				customer,
 				billingAddress,
 				items,
-				total: summary.total,
+				total: summary.total?.toFixed(1),
 				shipping: summary.shipping,
 				paymentMethod: customer.paymentMethod,
 			}),
+			attachments: receiptAttachment,
 		});
 
 		await transaction.commit();
 
+		if (receiptFile?.path) {
+			fs.unlink(receiptFile.path, () => {});
+		}
+
 		return createdOrder;
 	} catch (error) {
 		await transaction.rollback();
+
+		if (receiptFile?.path) {
+			fs.unlink(receiptFile.path, () => {});
+		}
+
 		console.log(error.message || error);
 
 		throw new ApiError(
