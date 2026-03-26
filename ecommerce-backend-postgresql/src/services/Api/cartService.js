@@ -162,6 +162,7 @@ async function verifyCart(items) {
 					model: db.product_variant,
 					required: false,
 					include: [
+						{ model: db.media, required: false },
 						{
 							model: db.attribute,
 							required: false,
@@ -247,10 +248,10 @@ function buildCartItem(item, product, variant) {
 							?.discount_percentage ?? null,
 					stock:
 						variant.branches?.[0]?.pvb?.dataValues?.stock ?? null,
-					image: variant.image || null,
+					image: variant?.medium?.url || null,
 					attributes: variant.attributes?.map((a) => ({
 						id: a.id,
-						name: a.name,
+						name: a.name?.en,
 						value: a.pva?.value?.en || a.pva?.value || '',
 					})),
 			  }
