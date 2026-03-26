@@ -14,6 +14,7 @@ import PrimaryButton from "../../Shared/PrimaryButton";
 import Ratings from "../../Shared/Ratings";
 import QuickViewModal from "../../Shared/QuickViewModal";
 import { useAuthUIStore } from "@/app/store/useAuthUIStore";
+import { useAuth } from "@/app/providers/AuthProvider";
 
 const MOBILE_NAV_DELAY = 500; // ms
 const LONG_PRESS_DURATION = 1; // ms
@@ -30,6 +31,7 @@ const ProductCard = ({ product }) => {
   const router = useRouter();
   const [selectedAttributes, setSelectedAttributes] = useState({});
   const [attributeOptions, setAttributeOptions] = useState({});
+  const { isAuthenticated } = useAuth();
   const { addToCart, toggleFavourite, favourites } = useCartStore();
   const { openCartDrawer } = useAuthUIStore();
 
@@ -122,25 +124,29 @@ const ProductCard = ({ product }) => {
     // }
     // const variantPrice = selectedVariant.price ?? discountedPrice;
 
-    addToCart({
-      id: product.id,
-      title: product.title,
-      sku: product.sku,
-      slug: product.slug,
-      thumbnail: product.thumbnail,
-      base_price: product.base_price || product.price,
-      base_discount_percentage:
-        product.discount || product.base_discount_percentage,
-      quantity: 1,
-      selectedVariant,
-    });
+    addToCart(
+      {
+        id: product.id,
+        title: product.title,
+        sku: product.sku,
+        slug: product.slug,
+        thumbnail: product.thumbnail,
+        base_price: product.base_price || product.price,
+        base_discount_percentage:
+          product.discount || product.base_discount_percentage,
+        quantity: 1,
+        selectedVariant,
+      },
+      1,
+      isAuthenticated,
+    );
     openCartDrawer();
 
     // toast.success("Added to cart!");
   };
 
   const handleFavourite = () => {
-    toggleFavourite(product);
+    toggleFavourite(product, isAuthenticated);
     toast.success(
       isFavourite ? "Removed from favourites!" : "Added to favourites!",
     );

@@ -10,3 +10,5 @@ module.exports.apiReviewController = require('./reviewController');
 module.exports.apiAppUserController = require('./appUserController');
 module.exports.apiReturnedController = require('./returnedController');
 module.exports.apiSubscriberController = require('./subscriberController');
+module.exports.cartController = require('./cartController');
+module.exports.favouriteController = require('./favouriteController');

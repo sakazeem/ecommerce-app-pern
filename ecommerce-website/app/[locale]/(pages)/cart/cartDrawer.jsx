@@ -5,16 +5,26 @@ import BaseImage from "@/app/components/BaseComponents/BaseImage";
 import BasePrice from "@/app/components/BaseComponents/BasePrice";
 import PrimaryButton from "@/app/components/Shared/PrimaryButton";
 import { ENV_VARIABLES } from "@/app/constants/env_variables";
+import { useAuth } from "@/app/providers/AuthProvider";
 import { useCartStore } from "@/app/store/cartStore";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function CartDrawer({ open, setOpen }) {
-	const { cart, addToCart, removeFromCart } = useCartStore();
+	const { cart, addToCart, removeFromCart, verifyAndSyncCart } = useCartStore();
+	const { isAuthenticated } = useAuth();
+
+	useEffect(() => {
+		if (open) {
+			verifyAndSyncCart(isAuthenticated);
+		}
+	}, [open]);
 	const updateQty = (item, type) => {
-		if (type === "inc") addToCart(item, 1);
-		if (type === "dec" && item.quantity > 1) addToCart(item, -1);
+		if (type === "inc") addToCart(item, 1, isAuthenticated);
+		if (type === "dec" && item.quantity > 1)
+			addToCart(item, -1, isAuthenticated);
 	};
 
 	const subtotal = cart.reduce((acc, item) => {
@@ -49,6 +59,7 @@ export default function CartDrawer({ open, setOpen }) {
 							const discountedPrice =
 								(item.selectedVariant?.price || 0) *
 								(1 - (item.selectedVariant?.discount_percentage || 0) / 100);
+							console.log(item, "chkking item111");
 
 							return (
 								<div
@@ -107,7 +118,7 @@ export default function CartDrawer({ open, setOpen }) {
 									</div>
 
 									<button
-										onClick={() => removeFromCart(item)}
+										onClick={() => removeFromCart(item, isAuthenticated)}
 										className="text-muted hover:text-red-500">
 										<Trash2 size={16} />
 									</button>

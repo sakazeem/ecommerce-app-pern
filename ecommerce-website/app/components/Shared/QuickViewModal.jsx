@@ -20,12 +20,14 @@ import SocialShare from "./SocialShare";
 import SpinLoader from "./SpinLoader";
 import { useAuthUIStore } from "@/app/store/useAuthUIStore";
 import { trackEvent } from "@/app/utils/trackEvent";
+import { useAuth } from "@/app/providers/AuthProvider";
 
 export default function QuickViewModal({ isOpen, onClose, slug }) {
 	const [quantity, setQuantity] = useState(1);
 	const [selectedAttributes, setSelectedAttributes] = useState({});
 	const [attributeOptions, setAttributeOptions] = useState({});
 	const store = useStore();
+	const { isAuthenticated } = useAuth();
 	const { addToCart, toggleFavourite, favourites } = useCartStore();
 	const { openCartDrawer } = useAuthUIStore();
 	const [selectedVariant, setSelectedVariant] = useState(null);
@@ -124,21 +126,22 @@ export default function QuickViewModal({ isOpen, onClose, slug }) {
 		// const variantPrice = selectedVariant.price ?? discountedPrice;
 
 		addToCart(
-			{
-				id: product.id,
-				title: product.title,
-				// sku: product.sku,
-				sku: selectedVariant.sku || product.sku,
-				slug: product.slug,
-				thumbnail: product.thumbnail,
-				base_price: product.base_price || product.price,
-				base_discount_percentage:
-					product.discount || product.base_discount_percentage,
-				quantity,
-				selectedVariant,
-			},
-			quantity,
-		);
+      {
+        id: product.id,
+        title: product.title,
+        // sku: product.sku,
+        sku: selectedVariant.sku || product.sku,
+        slug: product.slug,
+        thumbnail: product.thumbnail,
+        base_price: product.base_price || product.price,
+        base_discount_percentage:
+          product.discount || product.base_discount_percentage,
+        quantity,
+        selectedVariant,
+      },
+      quantity,
+      isAuthenticated,
+    );
 		openCartDrawer();
 
 		// toast.success("Added to cart!");
@@ -146,7 +149,7 @@ export default function QuickViewModal({ isOpen, onClose, slug }) {
 
 	const isFavourite = favourites?.some((f) => f.id === product.id);
 	const handleFavourite = () => {
-		toggleFavourite(product);
+		toggleFavourite(product, isAuthenticated);
 		toast.success(
 			isFavourite ? "Removed from favourites!" : "Added to favourites!",
 		);

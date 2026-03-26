@@ -16,9 +16,12 @@ import { triggerAuthDrawer } from "@/app/store/authEvents";
 import { useAuth } from "@/app/providers/AuthProvider";
 
 export default function CheckoutPage() {
-	const { cart, clearCart } = useCartStore();
+	const { cart, clearCart, verifyAndSyncCart } = useCartStore();
 	const [loading, setLoading] = useState(false);
 	const { isAuthenticated, user } = useAuth();
+	useEffect(() => {
+		verifyAndSyncCart(isAuthenticated);
+	}, []);
 	const paymentMethods = [
 		{
 			id: "cod",
@@ -249,7 +252,7 @@ export default function CheckoutPage() {
 				});
 
 				setOrderSuccess(true);
-				clearCart();
+				clearCart(isAuthenticated);
 
 				toast.success("Order placed successfully!");
 
@@ -660,45 +663,49 @@ export default function CheckoutPage() {
 							{/* Cart */}
 							<div className="space-y-4 mb-6">
 								{cart.map((item, idx) => {
-									return(
-									<div key={`item-${idx}`} className="flex gap-4">
-										<div className="relative">
-											<BaseImage
-												src={
-													item?.selectedVariant?.image
-														? ENV_VARIABLES.IMAGE_BASE_URL +
-															item.selectedVariant.image
-														: item.thumbnail
-															? ENV_VARIABLES.IMAGE_BASE_URL + item.thumbnail
-															: ENV_VARIABLES.IMAGE_BASE_URL + item.images?.[0]
-												}
-												width={64}
-												height={64}
-												className="rounded-xl shadow-md w-20 h-20 object-contain border"
-											/>
-											<p className="p6 text-light px-2 py-0.5 flex justify-center items-center rounded-sm absolute -top-2 -right-2 bg-dark">
-												{item.quantity}
-											</p>
-										</div>
+									return (
+										<div key={`item-${idx}`} className="flex gap-4">
+											<div className="relative">
+												<BaseImage
+													src={
+														item?.selectedVariant?.image
+															? ENV_VARIABLES.IMAGE_BASE_URL +
+																item.selectedVariant.image
+															: item.thumbnail
+																? ENV_VARIABLES.IMAGE_BASE_URL + item.thumbnail
+																: ENV_VARIABLES.IMAGE_BASE_URL +
+																	item.images?.[0]
+													}
+													width={64}
+													height={64}
+													className="rounded-xl shadow-md w-20 h-20 object-contain border"
+												/>
+												<p className="p6 text-light px-2 py-0.5 flex justify-center items-center rounded-sm absolute -top-2 -right-2 bg-dark">
+													{item.quantity}
+												</p>
+											</div>
 
-										<div className="flex-1">
-											<p className="p4 font-bold capitalize">
-												{item.title?.toLowerCase()}
-											</p>
-											<p className="p5 text-gray-500">Sku: {item.sku || "-"}</p>
-											<p className="p5 text-gray-500">Qty: {item.quantity}</p>
+											<div className="flex-1">
+												<p className="p4 font-bold capitalize">
+													{item.title?.toLowerCase()}
+												</p>
+												<p className="p5 text-gray-500">
+													Sku: {item.sku || "-"}
+												</p>
+												<p className="p5 text-gray-500">Qty: {item.quantity}</p>
+											</div>
+											<BasePrice
+												price={(
+													(item.selectedVariant?.price || 0) *
+													(1 -
+														(item.selectedVariant?.discount_percentage || 0) /
+															100) *
+													item.quantity
+												).toFixed(2)}
+											/>
 										</div>
-										<BasePrice
-											price={(
-												(item.selectedVariant?.price || 0) *
-												(1 -
-													(item.selectedVariant?.discount_percentage || 0) /
-														100) *
-												item.quantity
-											).toFixed(2)}
-										/>
-									</div>
-								)})}
+									);
+								})}
 							</div>
 
 							{/* Voucher */}

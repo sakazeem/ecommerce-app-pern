@@ -8,26 +8,33 @@ import { toast } from "react-toastify";
 import BasePrice from "@/app/components/BaseComponents/BasePrice";
 import BaseImage from "@/app/components/BaseComponents/BaseImage";
 import PrimaryButton from "@/app/components/Shared/PrimaryButton";
+import { useAuth } from "@/app/providers/AuthProvider";
+import { useEffect } from "react";
 
 export default function CartPage() {
-	const { cart, removeFromCart, addToCart, clearCart } = useCartStore();
+	const { cart, removeFromCart, addToCart, verifyAndSyncCart } = useCartStore();
+	const { isAuthenticated } = useAuth();
+
+	useEffect(() => {
+		verifyAndSyncCart(isAuthenticated);
+	}, []);
 
 	// Update quantity handler
 	const updateQuantity = (product, type) => {
 		if (type === "increase") {
-			addToCart(product, 1);
+			addToCart(product, 1, isAuthenticated);
 		} else {
 			// Decrease only if quantity > 1
 			const current = cart.find((item) => item.id === product.id);
 			if (current && current.quantity > 1) {
 				// Update by setting negative quantity (you can also add a decrease function in your store)
-				addToCart(product, -1);
+				addToCart(product, -1, isAuthenticated);
 			}
 		}
 	};
 
 	const removeItem = (id) => {
-		removeFromCart(id);
+		removeFromCart(id, isAuthenticated);
 		toast.success("Item removed from cart");
 	};
 

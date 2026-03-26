@@ -156,6 +156,7 @@ const Navbar = () => {
                 // href="/cart"
                 onClick={() => {
                   openCartDrawer();
+                  useCartStore.getState().verifyAndSyncCart(isAuthenticated);
                 }}
                 className="relative"
               >

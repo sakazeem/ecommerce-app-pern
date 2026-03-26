@@ -5,20 +5,21 @@ module.exports = (sequelize, DataTypes) => {
 			product_id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
-				references: {
-					model: 'product',
-					key: 'id',
-				},
+				references: { model: 'product', key: 'id' },
+				onDelete: 'CASCADE',
+				onUpdate: 'CASCADE',
+			},
+			product_variant_id: {
+				type: DataTypes.INTEGER,
+				allowNull: true,
+				references: { model: 'product_variant', key: 'id' },
 				onDelete: 'CASCADE',
 				onUpdate: 'CASCADE',
 			},
 			app_user_id: {
 				type: DataTypes.INTEGER,
 				allowNull: false,
-				references: {
-					model: 'app_user',
-					key: 'id',
-				},
+				references: { model: 'app_user', key: 'id' },
 				onDelete: 'CASCADE',
 				onUpdate: 'CASCADE',
 			},
@@ -28,24 +29,30 @@ module.exports = (sequelize, DataTypes) => {
 				defaultValue: 1,
 				validate: { min: 1 },
 			},
+			sku: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
 		},
 		{
-			/**
-			 * By default, sequelize will automatically transform all passed model names into plural
-			 * References: https://sequelize.org/master/manual/model-basics.html#table-name-inference
-			 */
 			tableName: 'cart',
 			timestamps: true,
 			uniqueKeys: {
 				unique_cart_item: {
-					fields: ['app_user_id', 'product_id'],
+					fields: ['app_user_id', 'product_id', 'product_variant_id'],
 				},
 			},
 		}
 	);
+
 	cart.associate = (models) => {
 		cart.belongsTo(models.product, {
 			foreignKey: 'product_id',
+			onDelete: 'CASCADE',
+			onUpdate: 'CASCADE',
+		});
+		cart.belongsTo(models.product_variant, {
+			foreignKey: 'product_variant_id',
 			onDelete: 'CASCADE',
 			onUpdate: 'CASCADE',
 		});

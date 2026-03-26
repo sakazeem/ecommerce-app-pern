@@ -4,13 +4,20 @@ import {
 	default as PrimaryButton,
 } from "@/app/components/Shared/PrimaryButton";
 import ProductCard from "@/app/components/Themes/KidsTheme/ProductCard";
+import { useAuth } from "@/app/providers/AuthProvider";
 import { useCartStore } from "@/app/store/cartStore";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { toast } from "react-toastify";
 
 export default function FavouritesPage() {
-	const { favourites, clearFavourites } = useCartStore();
+	const { favourites, clearFavourites, verifyAndSyncFavourites } =
+		useCartStore();
+	const { isAuthenticated } = useAuth();
+
+	// useEffect(() => {
+	//   verifyAndSyncFavourites(isAuthenticated);
+	// }, []);
 
 	return (
 		<section className="max-w-7xl mx-auto px-4 py-10">
