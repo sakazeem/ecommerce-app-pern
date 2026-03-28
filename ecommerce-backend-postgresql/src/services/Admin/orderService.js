@@ -75,18 +75,17 @@ async function getAllOrders(req) {
 		whereCondition.tracking_id = trackingId;
 	}
 
-	if (startDate && endDate) {
-		whereCondition.created_at = {
-			[Op.between]: [new Date(startDate), new Date(endDate)],
-		};
-	} else if (startDate) {
-		whereCondition.created_at = {
-			[Op.gte]: new Date(startDate),
-		};
-	} else if (endDate) {
-		whereCondition.created_at = {
-			[Op.lte]: new Date(endDate),
-		};
+	const start = startDate ? new Date(startDate) : null;
+	const end = endDate
+		? new Date(new Date(endDate).setHours(23, 59, 59, 999))
+		: null;
+
+	if (start && end) {
+		whereCondition.created_at = { [Op.between]: [start, end] };
+	} else if (start) {
+		whereCondition.created_at = { [Op.gte]: start };
+	} else if (end) {
+		whereCondition.created_at = { [Op.lte]: end };
 	}
 	/**
 	 * 🔎 SEARCH LOGIC

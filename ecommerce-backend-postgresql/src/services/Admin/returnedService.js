@@ -3,6 +3,7 @@ const db = require('../../db/models');
 const ApiError = require('../../utils/ApiError');
 const config = require('../../config/config');
 const { getOffset } = require('../../utils/query');
+const { Op } = require('sequelize');
 
 async function getReturnRequestById(req) {
 	const { id } = req.params;
@@ -51,12 +52,32 @@ async function getReturnRequestById(req) {
 
 async function getReturnRequests(req) {
 	const { page: defaultPage, limit: defaultLimit } = config.pagination;
-	const { page = defaultPage, limit = defaultLimit, status } = req.query;
+	const {
+		page = defaultPage,
+		limit = defaultLimit,
+		status,
+		startDate,
+		endDate,
+	} = req.query;
 	const offset = getOffset(page, limit);
 	const whereCondition = {};
 	if (status) {
 		whereCondition.status = status;
 	}
+
+	const start = startDate ? new Date(startDate) : null;
+	const end = endDate
+		? new Date(new Date(endDate).setHours(23, 59, 59, 999))
+		: null;
+
+	if (start && end) {
+		whereCondition.created_at = { [Op.between]: [start, end] };
+	} else if (start) {
+		whereCondition.created_at = { [Op.gte]: start };
+	} else if (end) {
+		whereCondition.created_at = { [Op.lte]: end };
+	}
+
 	const returned = await db.returned.findAndCountAll({
 		offset,
 		limit,
