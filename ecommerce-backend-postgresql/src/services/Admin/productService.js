@@ -1219,6 +1219,7 @@ async function getProducts(req) {
 		sortBy,
 		sortOrder = 'DESC',
 		status,
+		sku,
 	} = req.query;
 
 	const offset = getOffset(page, limit);
@@ -1245,15 +1246,40 @@ async function getProducts(req) {
 	}
 	const includes = getProductIncludes(req);
 	const lang = commonUtils.getLang(req);
+
+	const whereCondition = {};
+	if (status) whereCondition.status = status;
+
+	/**
+	 * 🔎 SKU FILTER — searches both product_variant.sku AND product.sku
+	 * Uses a subquery to avoid breaking findAndCountAll's COUNT query
+	 */
+	if (sku) {
+		// Find product IDs that have a matching variant SKU
+		const matchingVariants = await db.product_variant.findAll({
+			attributes: ['product_id'],
+			where: { sku: { [Op.iLike]: `%${sku}%` } },
+			raw: true,
+		});
+		const productIdsFromVariants = matchingVariants.map(
+			(v) => v.product_id
+		);
+
+		whereCondition[Op.or] = [
+			// Match on product-level SKU (if product table has a sku column)
+			{ sku: { [Op.iLike]: `%${sku}%` } },
+			// Match on variant-level SKU via subquery result
+			...(productIdsFromVariants.length
+				? [{ id: { [Op.in]: productIdsFromVariants } }]
+				: []),
+		];
+	}
+
 	const data = await db.product.findAndCountAll({
 		offset,
 		limit,
 		order: finalSort,
-		where: status
-			? {
-					status,
-			  }
-			: {},
+		where: whereCondition,
 		include: [...includes],
 		unique: true,
 		distinct: true, // to fix count

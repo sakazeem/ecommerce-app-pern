@@ -28,7 +28,8 @@ const Order = () => {
     `limit=${limit}&page=${page}` +
     `${filters.search ? `&search=${filters.search}` : ""}` +
     `${filters.startDate ? `&startDate=${filters.startDate}` : ""}` +
-    `${filters.endDate ? `&endDate=${filters.endDate}` : ""}`;
+    `${filters.endDate ? `&endDate=${filters.endDate}` : ""}` +
+    `${filters.sku ? `&sku=${filters.sku}` : ""}`;
 
   const {
     data: ordersData = { records: [], total: 0 },
@@ -89,6 +90,7 @@ const Order = () => {
         onClick={toggleDrawer}
         showAddButtom={false}
         showDateFilter={true}
+        showSkuFilter={true}
         onSubmitFilter={handleFilter}
       />
 

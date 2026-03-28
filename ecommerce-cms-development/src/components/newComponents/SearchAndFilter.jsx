@@ -10,11 +10,13 @@ const SearchAndFilter = ({
   onClick = () => {},
   showAddButtom = true, // fixed typo
   showDateFilter = false,
+  showSkuFilter = false,
 }) => {
   const formRef = useRef(null);
   const inputRef = useRef(null); // ref for search input
   const startDateRef = useRef(null);
   const endDateRef = useRef(null);
+  const skuRef = useRef(null);
 
   // Handler for form submit
   const handleSubmit = () => {
@@ -26,6 +28,10 @@ const SearchAndFilter = ({
       if (start) result.startDate = start;
       if (end) result.endDate = end;
     }
+    if (showSkuFilter) {
+      const sku = skuRef.current?.value;
+      if (sku) result.sku = sku;
+    }
     onSubmitFilter(result);
   };
 
@@ -35,7 +41,8 @@ const SearchAndFilter = ({
     if (inputRef.current) inputRef.current.value = "";
     if (startDateRef.current) startDateRef.current.value = "";
     if (endDateRef.current) endDateRef.current.value = "";
-    onSubmitFilter({ search: "", startDate: "", endDate: "" });
+    if (skuRef.current) skuRef.current.value = "";
+    onSubmitFilter({ search: "", startDate: "", endDate: "", sku: "" });
   };
 
   return (
@@ -73,6 +80,17 @@ const SearchAndFilter = ({
                   type="date"
                   name="endDate"
                   placeholder="End Date"
+                />
+              </div>
+            )}
+
+            {showSkuFilter && (
+              <div className="flex-grow-0 md:flex-grow lg:flex-grow xl:flex-grow">
+                <Input
+                  ref={skuRef}
+                  type="search"
+                  name="sku"
+                  placeholder="Filter by SKU"
                 />
               </div>
             )}
