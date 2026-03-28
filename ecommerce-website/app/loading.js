@@ -1,21 +1,27 @@
-import Loader from "./components/Shared/Loader";
-
 // app/loading.js
+// Slim top-bar progress indicator — avoids the full-screen white/gray flash
+// that caused the "Blue Screen" effect on back-navigation.
 export default function Loading() {
-	return <Loader />;
-	return <div className="p-4 text-center">Loading section...</div>;
-	return (
-		<div className="min-h-screen flex flex-col">
-			{/* Navbar skeleton */}
-			<div className="h-16 bg-gray-200 animate-pulse"></div>
-
-			{/* Hero Section skeleton */}
-			<div className="flex-1 flex items-center justify-center">
-				<div className="w-3/4 h-64 bg-gray-200 animate-pulse rounded-lg"></div>
-			</div>
-
-			{/* Footer skeleton */}
-			<div className="h-20 bg-gray-200 animate-pulse"></div>
-		</div>
-	);
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: "3px",
+        zIndex: 9999,
+        background: "var(--color-primary, #e91e8c)",
+        animation: "loadingBar 1.2s ease-in-out infinite",
+      }}
+    >
+      <style>{`
+				@keyframes loadingBar {
+					0%   { transform: translateX(-100%); opacity: 1; }
+					60%  { transform: translateX(0%);    opacity: 1; }
+					100% { transform: translateX(0%);    opacity: 0; }
+				}
+			`}</style>
+    </div>
+  );
 }

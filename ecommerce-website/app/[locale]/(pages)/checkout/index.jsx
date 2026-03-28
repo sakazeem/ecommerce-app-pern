@@ -18,6 +18,7 @@ import { useAuth } from "@/app/providers/AuthProvider";
 export default function CheckoutPage() {
 	const { cart, clearCart, verifyAndSyncCart } = useCartStore();
 	const [loading, setLoading] = useState(false);
+	const [ibftReceipt, setIbftReceipt] = useState(null);
 	const { isAuthenticated, user } = useAuth();
 	useEffect(() => {
 		verifyAndSyncCart(isAuthenticated);
@@ -208,6 +209,14 @@ export default function CheckoutPage() {
 			toast.error("Your cart is empty");
 			return;
 		}
+
+		if (formData.paymentMethod === "ibft" && !ibftReceipt) {
+			toast.error(
+				"Please upload your payment receipt to complete the IBFT order.",
+			);
+			return;
+		}
+
 		setLoading(true);
 
 		const orderPayload = {
@@ -231,18 +240,13 @@ export default function CheckoutPage() {
 			},
 		};
 
-		// setOrderSummary({
-		// 	...orderPayload,
-		// 	paymentMethod: formData.paymentMethod,
-		// 	// orderId: Date.now(), // fallback safe ID
-		// 	orderId: res?.order?.tracking_id || Date.now(), // fallback safe ID
-		// });
+		const fd = new FormData();
+		fd.append("order", JSON.stringify(orderPayload));
+		if (ibftReceipt) {
+			fd.append("receipt", ibftReceipt);
+		}
 
-		// setOrderSuccess(true);
-		// setLoading(false);
-		// return;
-
-		await OrderService.confirmOrder(orderPayload)
+		await OrderService.confirmOrder(fd)
 			.then((res) => {
 				// ✅ Success UI state
 				setOrderSummary({
@@ -253,6 +257,7 @@ export default function CheckoutPage() {
 
 				setOrderSuccess(true);
 				clearCart(isAuthenticated);
+				setIbftReceipt(null);
 
 				toast.success("Order placed successfully!");
 
@@ -387,13 +392,13 @@ export default function CheckoutPage() {
 										onChange={handleChange}
 									/>
 									{/* <input
-										name="lastName"
-										placeholder="Last name"
-										className="border rounded-md p-3"
-										required
-										value={formData.lastName}
-										onChange={handleChange}
-									/> */}
+						name="lastName"
+						placeholder="Last name"
+						className="border rounded-md p-3"
+						required
+						value={formData.lastName}
+						onChange={handleChange}
+					/> */}
 								</div>
 
 								<input
@@ -576,16 +581,16 @@ export default function CheckoutPage() {
 													}
 												/>
 												{/* <input
-													placeholder="Last name"
-													className="border rounded-md p-3"
-													value={billingAddress.lastName}
-													onChange={(e) =>
-														setBillingAddress({
-															...billingAddress,
-															lastName: e.target.value,
-														})
-													}
-												/> */}
+							placeholder="Last name"
+							className="border rounded-md p-3"
+							value={billingAddress.lastName}
+							onChange={(e) =>
+								setBillingAddress({
+									...billingAddress,
+									lastName: e.target.value,
+								})
+							}
+						/> */}
 											</div>
 
 											<input
@@ -601,16 +606,16 @@ export default function CheckoutPage() {
 											/>
 
 											{/* <input
-										placeholder="Apartment, suite, etc. (optional)"
-										className="border rounded-md p-3 w-full"
-										value={billingAddress.apartment}
-										onChange={(e) =>
-											setBillingAddress({
-												...billingAddress,
-												apartment: e.target.value,
-											})
-										}
-									/> */}
+							placeholder="Apartment, suite, etc. (optional)"
+							className="border rounded-md p-3 w-full"
+							value={billingAddress.apartment}
+							onChange={(e) =>
+								setBillingAddress({
+									...billingAddress,
+									apartment: e.target.value,
+								})
+							}
+						/> */}
 
 											<div className="grid grid-cols-2 gap-4">
 												<input

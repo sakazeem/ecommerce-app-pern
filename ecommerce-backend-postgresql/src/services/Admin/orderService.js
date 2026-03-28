@@ -166,7 +166,6 @@ async function updateOrderStatus(req) {
 	const transaction = await db.sequelize.transaction();
 
 	try {
-		// 1️⃣ Get current order with lock
 		const order = await db.order.findByPk(orderId, {
 			transaction,
 			lock: transaction.LOCK.UPDATE,
