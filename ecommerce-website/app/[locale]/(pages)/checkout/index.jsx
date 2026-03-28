@@ -51,6 +51,25 @@ export default function CheckoutPage() {
 					<p>
 						<strong>IBAN:</strong> PK70MEZN0099990113990738
 					</p>
+					<div className="mt-4 pt-4 border-t border-gray-200">
+						<label className="block text-sm font-medium text-gray-700 mb-1">
+							Payment Receipt <span className="text-red-500">*</span>
+						</label>
+						<input
+							type="file"
+							accept="image/*,.pdf"
+							onChange={(e) => setIbftReceipt(e.target.files[0] || null)}
+							className="block w-full text-sm text-gray-600 border border-gray-300 rounded-md p-2 cursor-pointer file:mr-3 file:py-1 file:px-3 file:border-0 file:text-sm file:font-medium file:bg-primary/10 file:text-primary"
+						/>
+						{ibftReceipt && (
+							<p className="text-xs text-green-600 mt-1">
+								✓ {ibftReceipt.name}
+							</p>
+						)}
+						<p className="text-xs text-gray-400 mt-1">
+							Accepted: JPG, PNG, PDF (max 10 MB)
+						</p>
+					</div>
 				</div>
 			),
 		},
