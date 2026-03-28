@@ -87,8 +87,9 @@ const Footer = ({ showOnMobile = true }) => {
 										icon: MapPin,
 										className: "w-6 h-6",
 										label: "Address",
-										value:
-											"Babiesnbaba Warehouse, Plot No. 21, 1st Floor, Sector 11-G-78, New Karachi, North Town, Karachi",
+										value: "Karachi, Pakistan",
+										// value:
+										// 	"Babiesnbaba Warehouse, Plot No. 21, 1st Floor, Sector 11-G-78, New Karachi, North Town, Karachi",
 									},
 									{
 										icon: Phone,
