@@ -241,9 +241,11 @@ const Profile = () => {
 			</div>
 			<div className="space-y-4 mt-4">
 				{user?.addresses?.length > 0 ? (
-					user.addresses.map((address) => {
+					user.addresses.map((address, idx) => {
 						return (
-							<div className="bg-white rounded-lg p-6 border-2 border-secondary">
+							<div
+								key={idx}
+								className="bg-white rounded-lg p-6 border-2 border-secondary">
 								<div className="flex justify-between items-start mb-4">
 									<div>
 										<div className="font-semibold text-lg mb-2 capitalize">

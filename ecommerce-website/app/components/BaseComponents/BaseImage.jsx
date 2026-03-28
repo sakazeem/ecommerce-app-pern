@@ -13,8 +13,6 @@ const BaseImage = ({
 	const validSrc = src ? src : noImage;
 	const isNetworkImage =
 		typeof validSrc === "string" ? validSrc.startsWith("http") : false;
-	console.log(validSrc, "chkking src");
-
 	return isNetworkImage ? (
 		<Image
 			src={validSrc}

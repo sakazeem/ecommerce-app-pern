@@ -5,7 +5,7 @@ import { useFetchReactQuery } from "@/app/hooks/useFetchReactQuery";
 import OrderService from "@/app/services/OrderService";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 
 const orderSubmenu = [
@@ -53,6 +53,7 @@ const Orders = ({ setSearchQuery, searchQuery }) => {
 				tracking_id: order.tracking_id,
 				trackingId: order.tracking_id,
 				courier_tracking_id: order.courier_tracking_id,
+				courier_details: order.courier_details,
 				date: order.created_at,
 				deliveredDate: order.updated_at,
 				items: products.reduce((sum, product) => sum + product.quantity, 0),
@@ -142,6 +143,10 @@ const Orders = ({ setSearchQuery, searchQuery }) => {
 				<div className="text-center py-12 text-gray-500">No orders found</div>
 			) : (
 				filteredOrders.map((order) => {
+					const orderCourierDetails = order.courier_details
+						? JSON.parse(order.courier_details)
+						: null;
+
 					return (
 						<div
 							key={order.id}
@@ -151,16 +156,16 @@ const Orders = ({ setSearchQuery, searchQuery }) => {
 								<div className="flex justify-between items-center flex-wrap gap-3">
 									<h2 className="h3 font-semibold text-gray-800">
 										Order # {order.tracking_id}
-										{order.courier_tracking_id ? (
+										{orderCourierDetails?.trackingId ? (
 											<div className="font-normal text-base flex items-center gap-2">
 												Tracking Id #{" "}
 												<span className="text-sm font-mono font-semibold text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-customGray-700 px-3 py-2 rounded-lg border border-gray-200 dark:border-customGray-600">
-													{order.courier_tracking_id}111
+													{orderCourierDetails?.trackingId}
 												</span>
 												<button
 													onClick={() => {
 														navigator.clipboard.writeText(
-															order.courier_tracking_id,
+															orderCourierDetails?.trackingId,
 														);
 														toast.success("Tracking ID copied to clipboard");
 													}}
@@ -290,17 +295,17 @@ const Orders = ({ setSearchQuery, searchQuery }) => {
 								<button
 									className="flex-1 min-w-[150px] bg-secondary disabled:bg-muted text-white py-3 rounded-lg font-medium"
 									// disabled
-									disabled={!order.courier_tracking_id}>
-									{order.courier_tracking_id ? (
+									disabled={!orderCourierDetails?.trackingId}>
+									{orderCourierDetails?.trackingId ? (
 										<Link
-											href={`https://leopardsexpress.com/tracking`}
+											href={`https://cclpak.com/tracking?trackingno=${orderCourierDetails.trackingId}`}
 											target="_blank"
 											// href={`/order-tracking?id=${order.trackingId}`}
 											className="">
 											Track{" "}
-											{order.courier_tracking_id && (
+											{orderCourierDetails?.trackingId && (
 												<span className="text-sm italic">
-													({order.courier_tracking_id})
+													({orderCourierDetails?.trackingId})
 												</span>
 											)}
 										</Link>

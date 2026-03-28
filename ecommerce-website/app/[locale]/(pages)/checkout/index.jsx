@@ -673,8 +673,10 @@ export default function CheckoutPage() {
 																item.selectedVariant.image
 															: item.thumbnail
 																? ENV_VARIABLES.IMAGE_BASE_URL + item.thumbnail
-																: ENV_VARIABLES.IMAGE_BASE_URL +
-																	item.images?.[0]
+																: item.images?.[0]
+																	? ENV_VARIABLES.IMAGE_BASE_URL +
+																		item.images?.[0]
+																	: null
 													}
 													width={64}
 													height={64}

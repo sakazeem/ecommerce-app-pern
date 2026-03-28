@@ -40,7 +40,7 @@ export default function CartDrawer({ open, setOpen }) {
 	const onClose = () => {
 		setOpen(false);
 	};
-
+	if (!open) return null;
 	return (
 		<BaseDrawer
 			open={open}
@@ -59,8 +59,6 @@ export default function CartDrawer({ open, setOpen }) {
 							const discountedPrice =
 								(item.selectedVariant?.price || 0) *
 								(1 - (item.selectedVariant?.discount_percentage || 0) / 100);
-							console.log(item, "chkking item111");
-
 							return (
 								<div
 									key={`${item.id}-${idx}`}
@@ -72,7 +70,9 @@ export default function CartDrawer({ open, setOpen }) {
 													item.selectedVariant.image
 												: item.thumbnail
 													? ENV_VARIABLES.IMAGE_BASE_URL + item.thumbnail
-													: ENV_VARIABLES.IMAGE_BASE_URL + item.images?.[0]
+													: item.images?.[0]
+														? ENV_VARIABLES.IMAGE_BASE_URL + item.images?.[0]
+														: null
 										}
 										alt={item.title}
 										width={64}
