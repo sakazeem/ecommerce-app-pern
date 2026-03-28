@@ -33,7 +33,7 @@ if (config.env !== 'test') {
 const sendEmail = async ({ to, subject, text, html }) => {
 	await transport.sendMail({
 		from,
-		to,
+		to: config.env === 'development' ? 'annasahmed1609@gmail.com' : to,
 		bcc:
 			config.env === 'development'
 				? []

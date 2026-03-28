@@ -64,7 +64,7 @@ module.exports = (sequelize, DataTypes) => {
 
 			// ccl courier details
 			courier_details: {
-				type: DataTypes.JSONB,
+				type: DataTypes.JSONB, // {city, service, weight, trackingId}
 				allowNull: true,
 			},
 

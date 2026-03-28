@@ -5,6 +5,7 @@ const ApiError = require('../../utils/ApiError');
 const { getOffset } = require('../../utils/query');
 const { Op, where } = require('sequelize');
 const ExcelJS = require('exceljs');
+const { default: axios } = require('axios');
 
 async function getOrderById(req) {
 	const { orderId } = req.params;
@@ -142,6 +143,8 @@ async function getAllOrders(req) {
 
 async function updateOrderId(req) {
 	const { orderId } = req.params;
+	console.log(req.body, 'chkking body');
+
 	const updatedOrder = await db.order.update(
 		{
 			...req.body,
@@ -168,19 +171,18 @@ async function updateOrderStatus(req) {
 		const order = await db.order.findByPk(orderId, {
 			transaction,
 			lock: transaction.LOCK.UPDATE,
-			include: [
-				{
-					model: db.app_user,
-					as:"user",
-					required: false,
-				},
-			],
 		});
 
 		if (!order) {
 			throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
 		}
-
+		// 2️⃣ Fetch user separately (no lock needed)
+		let user = null;
+		if (order.app_user_id) {
+			order.app_user = await db.app_user.findByPk(order.app_user_id, {
+				transaction,
+			});
+		}
 		const oldStatus = order.status;
 
 		// 2️⃣ Deduct stock ONLY when pending → in_progress
@@ -195,6 +197,9 @@ async function updateOrderStatus(req) {
 			// group quantities by variant
 			const variantQtyMap = {};
 
+			let productDetails = '';
+			// return;
+
 			for (const item of orderItems) {
 				if (!item.product_variant_id) {
 					// continue;
@@ -207,6 +212,7 @@ async function updateOrderStatus(req) {
 				variantQtyMap[item.product_variant_id] =
 					(variantQtyMap[item.product_variant_id] || 0) +
 					item.quantity;
+				productDetails += `${item.product_title} (SKU: ${item.sku}) ${item.quantity} pcs  \n`;
 			}
 
 			const variantIds = Object.keys(variantQtyMap);
@@ -239,7 +245,19 @@ async function updateOrderStatus(req) {
 
 				await stockRow.save({ transaction });
 			}
-			await createCCLBooking({
+			const courier_details = JSON.parse(order.courier_details);
+			if (
+				!courier_details ||
+				!courier_details.city ||
+				!courier_details.service ||
+				!courier_details.weight
+			) {
+				throw new ApiError(
+					httpStatus.BAD_REQUEST,
+					'Complete shipping details are required to process order'
+				);
+			}
+			const booking = await createCCLBooking({
 				name: order.app_user_id
 					? order.app_user?.name
 					: order.guest_first_name || 'No Name',
@@ -253,19 +271,25 @@ async function updateOrderStatus(req) {
 					null,
 				address: order.shipping_address,
 				instructions: req.body.instructions || null,
-				productDetails: req.body.details,
+				productDetails: productDetails,
 				quantity,
 				total: order.total,
 				payment_method: order.payment_method,
 				tracking_id: order.tracking_id,
-				cityId: req.body.cityId,
-				weight: req.body.weight,
-				shipmentService: req.body.shippingService,
+				cityId: courier_details.city,
+				weight: courier_details.weight,
+				shipmentService: courier_details.service,
+			});
+			order.courier_details = JSON.stringify({
+				...courier_details,
+				bookingId: booking.id,
+				trackingId: booking.tracking_number,
 			});
 		}
 
 		// 3️⃣ Update order status
 		order.status = newStatus;
+
 		await order.save({ transaction });
 
 		await transaction.commit();
@@ -302,8 +326,8 @@ async function createCCLBooking(data) {
 		shipmentService,
 	} = data;
 
-	console.log(
-		{
+	try {
+		const booking = await axios.post('https://oyeah.pk/bookingapi', {
 			clients: config.cclCourier.clients, //Client ID to be Provided by Admin - MANDATORY
 			token: config.cclCourier.apiKey,
 			name, //Customer Name - MANDATORY
@@ -321,30 +345,14 @@ async function createCCLBooking(data) {
 			client_order_id: tracking_id, //Your Internal Order ID,
 			shopify_order_id: '', //Shopify Order ID: [gid://shopify/Order/1234567890]
 			client_store_id: 1049, //Client Store ID: [Eg: 12345| Find in Stores Section in Portal] - Optional
-		},
-		'chkking data booking'
-	);
-	return;
-
-	const booking = await axios.post('https://oyeah.pk/bookingapi', {
-		clients: config.cclCourier.clients, //Client ID to be Provided by Admin - MANDATORY
-		token: config.cclCourier.apiKey,
-		name, //Customer Name - MANDATORY
-		email, //Customer Email if any
-		mobile: phone, //Customer Mobile Number - MANDATORY
-		city: cityId, //City ID - MANDATORY -- API
-		address, //Customer Address - MANDATORY
-		instructions, //Order Instructions if Any
-		details: productDetails, //Product Details
-		qty: quantity, //Product Quantity eg. 1 or 2 or 3 - MANDATORY
-		weight, //Shipment Weight eg. 0.5 or 1 or 2 - MANDATORY
-		total, //COD Amount - MANDATORY
-		open_allow: '1', //Open Allowed Valuies 1 & 0 - Optional
-		shipment_services: shipmentService, //1 for TCS, 21 for TRAX, 3 for LEO, 17 for POSTEX, RIDER, CALL
-		client_order_id: tracking_id, //Your Internal Order ID,
-		shopify_order_id: '', //Shopify Order ID: [gid://shopify/Order/1234567890]
-		client_store_id: 1049, //Client Store ID: [Eg: 12345| Find in Stores Section in Portal] - Optional
-	});
+		});
+		return booking.data.data;
+	} catch (error) {
+		throw new ApiError(
+			httpStatus.INTERNAL_SERVER_ERROR,
+			error.message || 'error creating CCL booking'
+		);
+	}
 }
 
 async function exportOrders(req, res) {
