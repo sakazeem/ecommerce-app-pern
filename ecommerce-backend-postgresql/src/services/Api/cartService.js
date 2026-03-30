@@ -226,6 +226,26 @@ async function verifyCart(items) {
 
 function buildCartItem(item, product, variant) {
 	const translation = product.product_translations?.[0] || {};
+
+	let selectedVariant = null;
+	if (variant) {
+		const pvb = variant.branches?.[0]?.pvb;
+
+		selectedVariant = {
+			id: variant.id,
+			sku: variant.sku,
+			price: pvb?.sale_price ?? null,
+			discount_percentage: pvb?.discount_percentage ?? null,
+			stock: pvb?.stock ?? null,
+			image: variant.medium?.url || null,
+			attributes: variant.attributes?.map((a) => ({
+				id: a.id,
+				name: a.name?.en || a.name,
+				value: a.pva?.value?.en || a.pva?.value || '',
+			})),
+		};
+	}
+
 	return {
 		cartItemId: item.cartItemId || null,
 		id: product.id,
@@ -236,26 +256,7 @@ function buildCartItem(item, product, variant) {
 		base_price: product.base_price,
 		base_discount_percentage: product.base_discount_percentage,
 		quantity: item.quantity || 1,
-		selectedVariant: variant
-			? {
-					id: variant.id,
-					sku: variant.sku,
-					price:
-						variant.branches?.[0]?.pvb?.dataValues?.sale_price ??
-						null,
-					discount_percentage:
-						variant.branches?.[0]?.pvb?.dataValues
-							?.discount_percentage ?? null,
-					stock:
-						variant.branches?.[0]?.pvb?.dataValues?.stock ?? null,
-					image: variant?.medium?.url || null,
-					attributes: variant.attributes?.map((a) => ({
-						id: a.id,
-						name: a.name?.en,
-						value: a.pva?.value?.en || a.pva?.value || '',
-					})),
-			  }
-			: null,
+		selectedVariant,
 	};
 }
 
