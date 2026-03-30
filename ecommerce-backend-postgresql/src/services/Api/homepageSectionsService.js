@@ -17,9 +17,19 @@ async function getHomepageSections() {
 	for (const section of sections) {
 		const config = section.config || {};
 
-		// Slider
+		// Slider — images now stored as [{imageId, categoryId}] (or legacy plain string ids)
 		if (Array.isArray(config.images)) {
-			config.images.forEach((id) => mediaIds.add(id));
+			config.images.forEach((img) => {
+				const imageId =
+					typeof img === 'object' && img !== null ? img.imageId : img;
+				const categoryId =
+					typeof img === 'object' && img !== null
+						? img.categoryId
+						: null;
+				if (imageId) mediaIds.add(imageId);
+				if (categoryId && Number(categoryId))
+					categoryIds.add(Number(categoryId));
+			});
 		}
 
 		// Banner
@@ -55,7 +65,6 @@ async function getHomepageSections() {
 		categoryIds.size
 			? db.category.findAll({
 					where: { id: [...categoryIds] },
-					// attributes: ['id', 'name', 'slug', 'image_id'],
 					include: [
 						{
 							model: db.category_translation,
@@ -76,17 +85,34 @@ async function getHomepageSections() {
 
 	// 4. Create lookup maps
 	const mediaMap = Object.fromEntries(media.map((m) => [m.id, m]));
-
 	const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c]));
 
-	// 5. Hydrate sections (THIS IS THE MAGIC)
+	// 5. Hydrate sections
 	const hydratedSections = sections.map((section) => {
 		const config = { ...section.config };
 
-		// Slider images
+		// Slider images — hydrate each slide to {imageId: mediaUrl, categoryId, category}
 		if (Array.isArray(config.images)) {
 			config.images = config.images
-				.map((id) => mediaMap[id])
+				.map((img) => {
+					const imageId =
+						typeof img === 'object' && img !== null
+							? img.imageId
+							: img;
+					const categoryId =
+						typeof img === 'object' && img !== null
+							? img.categoryId
+							: null;
+					const mediaObj = mediaMap[imageId];
+					if (!mediaObj) return null;
+					return {
+						imageId: mediaObj, // full media object with .url
+						categoryId: categoryId || null,
+						category: categoryId
+							? categoryMap[Number(categoryId)] || null
+							: null,
+					};
+				})
 				.filter(Boolean);
 		}
 
@@ -110,7 +136,6 @@ async function getHomepageSections() {
 			config.categories = config.category_ids
 				.map((id) => categoryMap[id])
 				.filter(Boolean);
-
 			delete config.category_ids;
 		}
 
@@ -119,7 +144,6 @@ async function getHomepageSections() {
 			config.tabs = config.tab_categories
 				.map((id) => categoryMap[id])
 				.filter(Boolean);
-
 			delete config.tab_categories;
 		}
 

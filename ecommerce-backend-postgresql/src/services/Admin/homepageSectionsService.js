@@ -26,15 +26,19 @@ async function getHomepageSections(req) {
 		raw: true,
 	});
 
-	// return sections
 	if (!sections.length) return [];
+
 	const mediaIds = new Set();
+
 	for (const section of sections) {
 		const config = section.config || {};
 
-		// Slider
 		if (Array.isArray(config.images)) {
-			config.images.forEach((id) => mediaIds.add(id));
+			config.images.forEach((img) => {
+				const id =
+					typeof img === 'object' && img !== null ? img.imageId : img;
+				if (id) mediaIds.add(id);
+			});
 		}
 
 		// Banner
@@ -43,7 +47,7 @@ async function getHomepageSections(req) {
 		}
 	}
 
-	// 3. Fetch media in bulk
+	// Fetch media in bulk
 	const [media] = await Promise.all([
 		mediaIds.size
 			? db.media.findAll({
@@ -53,17 +57,27 @@ async function getHomepageSections(req) {
 			: [],
 	]);
 
-	// 4. Create lookup maps
 	const mediaMap = Object.fromEntries(media.map((m) => [m.id, m]));
 
-	// 5. Hydrate sections (THIS IS THE MAGIC)
 	const hydratedSections = sections.map((section) => {
 		const config = { ...section.config };
 
-		// Slider images
+		// Slider images — return imagesUrl as [{url, categoryId}] for CMS preview
 		if (Array.isArray(config.images)) {
 			config.imagesUrl = config.images
-				.map((id) => mediaMap[id])
+				.map((img) => {
+					const imageId =
+						typeof img === 'object' && img !== null
+							? img.imageId
+							: img;
+					const categoryId =
+						typeof img === 'object' && img !== null
+							? img.categoryId || ''
+							: '';
+					const mediaObj = mediaMap[imageId];
+					if (!mediaObj) return null;
+					return { url: mediaObj.url, categoryId };
+				})
 				.filter(Boolean);
 		}
 
