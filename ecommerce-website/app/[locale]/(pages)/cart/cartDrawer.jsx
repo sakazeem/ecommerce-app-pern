@@ -40,7 +40,7 @@ export default function CartDrawer({ open, setOpen }) {
 	const onClose = () => {
 		setOpen(false);
 	};
-	if (!open) return null;
+	// if (!open) return null;
 	return (
 		<BaseDrawer
 			open={open}
