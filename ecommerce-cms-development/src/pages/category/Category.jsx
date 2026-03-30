@@ -55,23 +55,24 @@ const Category = () => {
 	};
 
 	return (
-		<>
-			<PageTitle>{t("Category")}</PageTitle>
-			<SearchAndFilter
-				buttonText={t("AddCategory")}
-				inputPlaceholder={t("SearchCategory")}
-				onClick={toggleDrawer}
-				onSubmitFilter={handleFilter}
-			/>
-			<TableWrapperWithPagination
-				loading={loading}
-				error={error}
-				data={categoriesData}
-				onPageChange={setPage}>
-				<Table>
-					<TableHeader>
-						<tr>
-							{/* <TableCell>
+    <>
+      <PageTitle>{t("Category")}</PageTitle>
+      <SearchAndFilter
+        buttonText={t("AddCategory")}
+        inputPlaceholder={t("SearchCategory")}
+        onClick={toggleDrawer}
+        onSubmitFilter={handleFilter}
+      />
+      <TableWrapperWithPagination
+        loading={loading}
+        error={error}
+        data={categoriesData}
+        onPageChange={setPage}
+      >
+        <Table>
+          <TableHeader>
+            <tr>
+              {/* <TableCell>
 								<CheckBox
 									type="checkbox"
 									name="selectAll"
@@ -80,36 +81,37 @@ const Category = () => {
 									isChecked={isCheckAll}
 								/>
 							</TableCell> */}
-							<TableCell>{t("catIdTbl")}</TableCell>
-							<TableCell>{t("catIconTbl")}</TableCell>
-							<TableCell>{t("CatTbName")}</TableCell>
-							<TableCell>{t("CatTbSlug")}</TableCell>
-							<TableCell>{t("Parent Cat")}</TableCell>
-							<TableCell>{t("CatTbLevel")}</TableCell>
-							<TableCell>{t("CatTbLeafCat")}</TableCell>
-							<TableCell className="text-center">
-								{t("catPublishedTbl")}
-							</TableCell>
-							<TableCell className="text-right">{t("catActionsTbl")}</TableCell>
-						</tr>
-					</TableHeader>
-					<CategoryTable
-						data={categoriesData.records}
-						isCheck={isCheck}
-						setIsCheck={setIsCheck}
-						toggleDrawerData={toggleDrawerData}
-					/>
-				</Table>
-			</TableWrapperWithPagination>
-			<MainDrawer>
-				<CategoryDrawer
-					id={serviceId}
-					data={categoriesData.records}
-					lang={lang}
-				/>
-			</MainDrawer>
-		</>
-	);
+              <TableCell>{t("catIdTbl")}</TableCell>
+              <TableCell>{t("catIconTbl")}</TableCell>
+              <TableCell>{t("CatTbName")}</TableCell>
+              <TableCell>{t("CatTbSlug")}</TableCell>
+              <TableCell>{t("Parent Cat")}</TableCell>
+              <TableCell>{t("CatTbLevel")}</TableCell>
+              <TableCell>{t("CatTbLeafCat")}</TableCell>
+              <TableCell className="text-center">{t("Products")}</TableCell>
+              <TableCell className="text-center">
+                {t("catPublishedTbl")}
+              </TableCell>
+              <TableCell className="text-right">{t("catActionsTbl")}</TableCell>
+            </tr>
+          </TableHeader>
+          <CategoryTable
+            data={categoriesData.records}
+            isCheck={isCheck}
+            setIsCheck={setIsCheck}
+            toggleDrawerData={toggleDrawerData}
+          />
+        </Table>
+      </TableWrapperWithPagination>
+      <MainDrawer>
+        <CategoryDrawer
+          id={serviceId}
+          data={categoriesData.records}
+          lang={lang}
+        />
+      </MainDrawer>
+    </>
+  );
 };
 
 export default Category;

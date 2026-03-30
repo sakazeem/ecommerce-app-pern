@@ -1,9 +1,7 @@
 import { Button, Table, TableCell, TableHeader } from "@windmill/react-ui";
-import { useContext, useState } from "react";
+import { useContext, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
-
-//internal import
 
 import MainDrawer from "@/components/drawer/MainDrawer";
 import SearchAndFilter from "@/components/newComponents/SearchAndFilter";
@@ -14,6 +12,7 @@ import ProductTable from "@/components/product/ProductTable";
 import UploadProductsExcel from "@/components/product/UploadProductsExcel";
 import PageTitle from "@/components/Typography/PageTitle";
 import { SidebarContext } from "@/context/SidebarContext";
+import CategoryServices from "@/services/CategoryServices";
 import useAsync from "@/hooks/useAsync";
 import useToggleDrawer from "@/hooks/useToggleDrawer";
 import ProductServices from "@/services/ProductServices";
@@ -28,6 +27,7 @@ const Product = () => {
   const [exportLoading, setExportLoading] = useState(false);
   const [stockSortOrder, setStockSortOrder] = useState(null);
   const limit = 10;
+
   const {
     data: productsData,
     loading,
@@ -37,32 +37,32 @@ const Product = () => {
       ProductServices.getAllProducts(
         `limit=${limit}&page=${page}${
           filters.search ? `&search=${filters.search}` : ""
-        }${filters.sku ? `&sku=${filters.sku}` : ""}${
-          stockSortOrder ? `&sortBy=stock&sortOrder=${stockSortOrder}` : ""
-        }`,
+        }${filters.categoryId ? `&categoryId=${filters.categoryId}` : ""
+        }${stockSortOrder ? `&sortBy=stock&sortOrder=${stockSortOrder}` : ""}`,
       ),
-    // ProductServices.getAllProducts(
-    // 	`limit=${limit}&page=${page}${filters.search ? `&search=${filters.search}` : ""}`,
-    // ),
     [page, filters, stockSortOrder],
-  ); // 👈 refetch when page changes
+  );
+
+  const { data: categoriesOptions } = useAsync(
+    () => CategoryServices.getAllCategoriesForOptions(),
+    [],
+  );
+
+  const categoryList = useMemo(() => {
+    console.log("categoriesOptions =>", categoriesOptions);
+    return (categoriesOptions || []).map((cat) => ({
+      id: cat.id,
+      label: cat.translations?.[0]?.title || cat.title || `Category ${cat.id}`,
+    }));
+  }, [categoriesOptions]);
+
   const history = useHistory();
   const toggleDrawerData = useToggleDrawer();
   const { serviceId } = toggleDrawerData;
-
   const { t } = useTranslation();
 
-  // react hooks
   const [isCheckAll, setIsCheckAll] = useState(false);
   const [isCheck, setIsCheck] = useState([]);
-
-  const handleSelectAll = () => {
-    setIsCheckAll(!isCheckAll);
-    setIsCheck(data[0]?.children.map((li) => li.id));
-    if (isCheckAll) {
-      setIsCheck([]);
-    }
-  };
 
   const downloadProductsExcel = async () => {
     setExportLoading(true);
@@ -95,26 +95,22 @@ const Product = () => {
     setPage(1);
     setFilters(values);
   };
+
   const handleStockSort = () => {
     setPage(1);
-
-    if (!stockSortOrder) {
-      setStockSortOrder("ASC");
-    } else if (stockSortOrder === "ASC") {
-      setStockSortOrder("DESC");
-    } else {
-      setStockSortOrder(null);
-    }
+    if (!stockSortOrder) setStockSortOrder("ASC");
+    else if (stockSortOrder === "ASC") setStockSortOrder("DESC");
+    else setStockSortOrder(null);
   };
 
   return (
     <>
       <PageTitle>{t("Product")}</PageTitle>
+
       <SearchAndFilter
         buttonText={t("AddProduct")}
-        inputPlaceholder={t("SearchProduct")}
+        inputPlaceholder="Search by name or SKU..."
         onClick={toggleDrawer}
-        showSkuFilter={true}
         onSubmitFilter={handleFilter}
         // onClick={() => {
         // 	if (serviceId) {
@@ -124,6 +120,7 @@ const Product = () => {
         // 	}
         // }}
       />
+
       <div className="mb-4 flex flex-col/ gap-4">
         <Button
           layout="outline"

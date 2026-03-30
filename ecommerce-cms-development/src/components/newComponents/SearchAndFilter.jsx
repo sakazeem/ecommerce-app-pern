@@ -8,41 +8,46 @@ const SearchAndFilter = ({
   inputPlaceholder = "",
   buttonText = "",
   onClick = () => {},
-  showAddButtom = true, // fixed typo
+  showAddButtom = true,
   showDateFilter = false,
-  showSkuFilter = false,
+  categories = [],
 }) => {
   const formRef = useRef(null);
-  const inputRef = useRef(null); // ref for search input
+  const searchRef = useRef(null);
   const startDateRef = useRef(null);
   const endDateRef = useRef(null);
-  const skuRef = useRef(null);
+  const categoryRef = useRef(null);
 
-  // Handler for form submit
   const handleSubmit = () => {
-    const searchValue = inputRef.current?.value || "";
-    const result = { search: searchValue };
+    const searchValue = searchRef.current?.value || "";
+    const result = {
+      search: searchValue,
+    };
     if (showDateFilter) {
       const start = startDateRef.current?.value;
       const end = endDateRef.current?.value;
       if (start) result.startDate = start;
       if (end) result.endDate = end;
     }
-    if (showSkuFilter) {
-      const sku = skuRef.current?.value;
-      if (sku) result.sku = sku;
+    if (categories.length) {
+      result.categoryId = categoryRef.current?.value || "";
     }
     onSubmitFilter(result);
   };
 
-  // Handler for form reset
   const handleReset = () => {
     if (formRef.current) formRef.current.reset();
-    if (inputRef.current) inputRef.current.value = "";
+    if (searchRef.current) searchRef.current.value = "";
     if (startDateRef.current) startDateRef.current.value = "";
     if (endDateRef.current) endDateRef.current.value = "";
-    if (skuRef.current) skuRef.current.value = "";
-    onSubmitFilter({ search: "", startDate: "", endDate: "", sku: "" });
+    if (categoryRef.current) categoryRef.current.value = "";
+    onSubmitFilter({
+      search: "",
+      sku: "",
+      startDate: "",
+      endDate: "",
+      categoryId: "",
+    });
   };
 
   return (
@@ -52,20 +57,38 @@ const SearchAndFilter = ({
           <form
             ref={formRef}
             onSubmit={(e) => {
-              e.preventDefault(); // prevent default page reload
-              handleSubmit(); // call separate handler
+              e.preventDefault();
+              handleSubmit();
             }}
             className="py-3 grid gap-4 lg:gap-6 xl:gap-6 md:flex xl:flex"
           >
-            {/* Search Input */}
+            {/* Combined search — matches product name OR SKU */}
             <div className="flex-grow-0 md:flex-grow lg:flex-grow xl:flex-grow">
               <Input
-                ref={inputRef}
+                ref={searchRef}
                 type="search"
                 name="search"
-                placeholder={inputPlaceholder}
+                placeholder={inputPlaceholder || "Search by name or SKU..."}
               />
             </div>
+
+            {/* Category filter */}
+            {categories.length > 0 && (
+              <div className="flex-grow-0 md:flex-grow lg:flex-grow xl:flex-grow">
+                <select
+                  ref={categoryRef}
+                  name="categoryId"
+                  className="h-12 w-full px-3 border rounded-md text-sm bg-white dark:bg-customGray-700 dark:text-customGray-200 border-gray-300 dark:border-customGray-600 focus:outline-none focus:ring-1 focus:ring-customTeal-700"
+                >
+                  <option value="">All Categories</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {showDateFilter && (
               <div className="flex items-center gap-2 flex-grow-0 md:flex-grow lg:flex-grow xl:flex-grow">
@@ -84,17 +107,6 @@ const SearchAndFilter = ({
               </div>
             )}
 
-            {showSkuFilter && (
-              <div className="flex-grow-0 md:flex-grow lg:flex-grow xl:flex-grow">
-                <Input
-                  ref={skuRef}
-                  type="search"
-                  name="sku"
-                  placeholder="Filter by SKU"
-                />
-              </div>
-            )}
-
             {/* Filter & Reset Buttons */}
             <div className="flex items-center gap-2 flex-grow-0 md:flex-grow lg:flex-grow xl:flex-grow">
               <div className="w-full mx-1">
@@ -102,7 +114,6 @@ const SearchAndFilter = ({
                   Filter
                 </Button>
               </div>
-
               <div className="w-full mx-1">
                 <Button
                   layout="outline"

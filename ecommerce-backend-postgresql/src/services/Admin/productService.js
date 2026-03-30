@@ -509,14 +509,7 @@ function getProductIncludes(req) {
 		},
 		{
 			model: db.product_translation,
-			required: req.query.search ? true : false,
-			where: req.query.search
-				? {
-						title: {
-							[Op.iLike]: `%${req.query.search}%`,
-						},
-				  }
-				: {},
+			required: false,
 		},
 		{
 			model: db.brand,
@@ -1219,7 +1212,8 @@ async function getProducts(req) {
 		sortBy,
 		sortOrder = 'DESC',
 		status,
-		sku,
+		search,
+		categoryId,
 	} = req.query;
 
 	const offset = getOffset(page, limit);
@@ -1250,29 +1244,49 @@ async function getProducts(req) {
 	const whereCondition = {};
 	if (status) whereCondition.status = status;
 
-	/**
-	 * 🔎 SKU FILTER — searches both product_variant.sku AND product.sku
-	 * Uses a subquery to avoid breaking findAndCountAll's COUNT query
-	 */
-	if (sku) {
-		// Find product IDs that have a matching variant SKU
-		const matchingVariants = await db.product_variant.findAll({
+	if (search) {
+		const variantMatch = await db.product_variant.findOne({
+			where: { sku: search },
 			attributes: ['product_id'],
-			where: { sku: { [Op.iLike]: `%${sku}%` } },
 			raw: true,
 		});
-		const productIdsFromVariants = matchingVariants.map(
-			(v) => v.product_id
-		);
 
-		whereCondition[Op.or] = [
-			// Match on product-level SKU (if product table has a sku column)
-			{ sku: { [Op.iLike]: `%${sku}%` } },
-			// Match on variant-level SKU via subquery result
-			...(productIdsFromVariants.length
-				? [{ id: { [Op.in]: productIdsFromVariants } }]
-				: []),
-		];
+		const productMatch = await db.product.findOne({
+			where: { sku: search },
+			attributes: ['id'],
+			raw: true,
+		});
+
+		if (variantMatch || productMatch) {
+			const productId = variantMatch?.product_id || productMatch?.id;
+			whereCondition.id = productId;
+		} else {
+			includes.push({
+				model: db.product_translation,
+				required: true, // 🔥 important
+				where: {
+					title: {
+						[Op.iLike]: `%${search}%`,
+					},
+				},
+			});
+		}
+	}
+
+	if (categoryId) {
+		const matchingProducts = await db.product_to_category.findAll({
+			attributes: ['product_id'],
+			where: { category_id: categoryId },
+			raw: true,
+		});
+		const productIdsFromCategory = matchingProducts.map(
+			(p) => p.product_id
+		);
+		whereCondition.id = {
+			[Op.in]: productIdsFromCategory.length
+				? productIdsFromCategory
+				: [-1],
+		};
 	}
 
 	const data = await db.product.findAndCountAll({

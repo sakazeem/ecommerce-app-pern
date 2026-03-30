@@ -525,6 +525,14 @@ module.exports = {
 				// 	'is_leaf',
 				// ],
 				'created_at',
+				[
+					db.sequelize.literal(`(
+                    SELECT COUNT(*)
+                    FROM product_to_category ptc
+                    WHERE ptc.category_id = category.id
+                )`),
+					'product_count',
+				],
 			],
 			[['id', 'DESC']]
 		),
