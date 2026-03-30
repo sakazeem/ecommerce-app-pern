@@ -259,12 +259,13 @@ const getProducts = async (req) => {
 				// --- PRODUCT VARIANTS & ATTRIBUTE FILTER ---
 				{
 					model: db.product_variant,
+					// required: false,
 					required: variantAttributeFilter.length > 0,
 					include: [
 						{
 							model: db.product_variant_to_attribute,
 							as: 'product_variant_to_attributes', // must match the alias above
-							required: true,
+							required: false,
 							where:
 								variantAttributeFilter.length > 0
 									? { [Op.and]: variantAttributeFilter }
@@ -358,6 +359,7 @@ const getProducts = async (req) => {
 					// ],
 				},
 			],
+
 			unique: true,
 			distinct: true, // to fix count
 			col: 'id', // to fix count
