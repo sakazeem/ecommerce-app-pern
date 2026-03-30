@@ -272,3 +272,46 @@ img {
 	height: 0;
 	width: 0;
 }
+
+/* Desktop — vertical column */
+@media (min-width: 768px) {
+  .mySwiperThumbnails {
+    width: 100px !important;
+    height: 600px !important;       /* match your main image height */
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  .mySwiperThumbnails .swiper-slide {
+    width: 96px !important;
+    height: 96px !important;        /* square thumbnails */
+    flex-shrink: 0;
+  }
+  .mySwiperThumbnails::-webkit-scrollbar {
+  width: 5px;
+}
+.mySwiperThumbnails::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+.mySwiperThumbnails::-webkit-scrollbar-thumb {
+	background: #aaaaaa; 
+	border-radius: 4px;
+}
+}
+
+/* Active/selected thumbnail highlight */
+.mySwiperThumbnails .swiper-slide-thumb-active img {
+  border-color: #4a90e2 !important;
+  opacity: 1;
+}
+
+.mySwiperThumbnails .swiper-slide img {
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.mySwiperThumbnails .swiper-slide:hover img,
+.mySwiperThumbnails .swiper-slide-thumb-active img {
+  opacity: 1;
+}

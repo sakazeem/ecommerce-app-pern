@@ -119,25 +119,33 @@ export default function ProductImageSlider({ images, selectedVariant }) {
       <Swiper
         onSwiper={setThumbsSwiper}
         direction="horizontal"
-        spaceBetween={10}
+        spaceBetween={6}
         slidesPerView={3}
         freeMode={true}
         watchSlidesProgress={true}
         breakpoints={{
           768: {
             direction: "vertical",
+            slidesPerView: Math.min(uniqueImages?.length || 1, 8),
+            spaceBetween: 6,
+          },
+          768: {
+            direction: "vertical",
+            slidesPerView: Math.min(uniqueImages?.length || 1, 5),
+            spaceBetween: 3,
           },
         }}
         modules={[FreeMode, Navigation, Thumbs]}
-        className="mySwiper md:min-w-24 md:max-h-95"
+        className="mySwiper mySwiperThumbnails hide-scrollbar"
       >
         {uniqueImages?.map((v, idx) => (
           <SwiperSlide key={`product-images-${idx}`}>
             <BaseImage
               src={v ? ENV_VARIABLES.IMAGE_BASE_URL + v : null}
-              width={500}
-              height={500}
-              className="w-full h-auto max-h-30 object-cover cursor-pointer border"
+              width={300}
+              height={300}
+              className="w-full object-cover bg-gray-200 cursor-pointer border border-transparent hover:border-gray-400 transition-colors"
+              style={{ aspectRatio: "1 / 1" }}
             />
           </SwiperSlide>
         ))}

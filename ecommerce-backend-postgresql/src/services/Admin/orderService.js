@@ -61,6 +61,7 @@ async function getAllOrders(req) {
 		startDate,
 		endDate,
 		search,
+		sku,
 	} = req.query;
 	const offset = getOffset(page, limit);
 
@@ -87,6 +88,7 @@ async function getAllOrders(req) {
 	} else if (end) {
 		whereCondition.created_at = { [Op.lte]: end };
 	}
+
 	/**
 	 * 🔎 SEARCH LOGIC
 	 */
@@ -115,6 +117,22 @@ async function getAllOrders(req) {
 		];
 	}
 
+	/**
+	 * 🔎 SKU FILTER — use subquery to avoid breaking findAndCountAll's COUNT query
+	 */
+	if (sku) {
+		const matchingItems = await db.order_item.findAll({
+			attributes: ['order_id'],
+			where: { sku: { [Op.iLike]: `%${sku}%` } },
+			raw: true,
+		});
+		const matchingOrderIds = matchingItems.map((item) => item.order_id);
+		// Use [-1] if no matches so the query returns 0 results instead of all results
+		whereCondition.id = {
+			[Op.in]: matchingOrderIds.length ? matchingOrderIds : [-1],
+		};
+	}
+
 	const orders = await db.order.findAndCountAll({
 		offset,
 		limit,
@@ -127,7 +145,6 @@ async function getAllOrders(req) {
 			},
 		],
 		order: [['id', 'DESC']],
-		unique: true,
 		distinct: true, // to fix count
 		col: 'id', // to fix count
 	});
@@ -354,7 +371,8 @@ async function createCCLBooking(data) {
 }
 
 async function exportOrders(req, res) {
-	const { status, startDate, endDate, search, paymentMethod } = req.query;
+	const { status, startDate, endDate, search, paymentMethod, sku } =
+		req.query;
 
 	const whereCondition = {};
 	if (status) whereCondition.status = status;
@@ -380,10 +398,25 @@ async function exportOrders(req, res) {
 		];
 	}
 
+	/**
+	 * 🔎 SKU FILTER — use subquery to avoid broken JOIN in findAll with user association
+	 */
+	if (sku) {
+		const matchingItems = await db.order_item.findAll({
+			attributes: ['order_id'],
+			where: { sku: { [Op.iLike]: `%${sku}%` } },
+			raw: true,
+		});
+		const matchingOrderIds = matchingItems.map((item) => item.order_id);
+		whereCondition.id = {
+			[Op.in]: matchingOrderIds.length ? matchingOrderIds : [-1],
+		};
+	}
+
 	const orders = await db.order.findAll({
 		where: whereCondition,
 		include: [{ model: db.app_user, as: 'user', required: false }],
-		order: [['id', 'DESC']],
+		order: [['id', 'ASC']],
 	});
 
 	const workbook = new ExcelJS.Workbook();
