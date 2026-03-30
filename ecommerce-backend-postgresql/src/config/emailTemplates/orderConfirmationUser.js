@@ -85,6 +85,15 @@ const orderConfirmationCustomerTemplate = ({
 							</table>
 						</td>
 					</tr>
+					<tr>
+						<td style="padding-top:15px; font-size:13px; color:#555;">
+							You can review our 
+							<a href="https://babiesnbaba.com/return-and-exchange" target="_blank" style="color:#5DABEA; text-decoration:none;">
+								Return & Exchange Policy
+							</a> 
+							for details on returns, exchanges, and eligibility.
+						</td>
+					</tr>
 					<!-- CTA Button -->
 					<tr>
 						<td align="center" style="padding:30px 0;">
