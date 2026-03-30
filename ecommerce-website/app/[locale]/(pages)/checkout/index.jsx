@@ -16,7 +16,15 @@ import { triggerAuthDrawer } from "@/app/store/authEvents";
 import { useAuth } from "@/app/providers/AuthProvider";
 
 export default function CheckoutPage() {
-	const { cart, clearCart, verifyAndSyncCart } = useCartStore();
+	const {
+		cart,
+		clearCart,
+		verifyAndSyncCart,
+		cartLoading,
+		addToCartLoading,
+		syncLoading,
+		verifyLoading,
+	} = useCartStore();
 	const [loading, setLoading] = useState(false);
 	const [ibftReceipt, setIbftReceipt] = useState(null);
 	const { isAuthenticated, user } = useAuth();
@@ -683,59 +691,67 @@ export default function CheckoutPage() {
 						</div>
 
 						{/* RIGHT */}
-						<div className="lg:col-span-5 bg-gray-50 p-6 rounded-lg">
-							{/* Cart */}
-							<div className="space-y-4 mb-6">
-								{cart.map((item, idx) => {
-									return (
-										<div key={`item-${idx}`} className="flex gap-4">
-											<div className="relative">
-												<BaseImage
-													src={
-														item?.selectedVariant?.image
-															? ENV_VARIABLES.IMAGE_BASE_URL +
-																item.selectedVariant.image
-															: item.thumbnail
-																? ENV_VARIABLES.IMAGE_BASE_URL + item.thumbnail
-																: item.images?.[0]
-																	? ENV_VARIABLES.IMAGE_BASE_URL +
-																		item.images?.[0]
-																	: null
-													}
-													width={64}
-													height={64}
-													className="rounded-xl shadow-md w-20 h-20 object-contain border"
-												/>
-												<p className="p6 text-light px-2 py-0.5 flex justify-center items-center rounded-sm absolute -top-2 -right-2 bg-dark">
-													{item.quantity}
-												</p>
-											</div>
-
-											<div className="flex-1">
-												<p className="p4 font-bold capitalize">
-													{item.title?.toLowerCase()}
-												</p>
-												<p className="p5 text-gray-500">
-													Sku: {item.sku || "-"}
-												</p>
-												<p className="p5 text-gray-500">Qty: {item.quantity}</p>
-											</div>
-											<BasePrice
-												price={(
-													(item.selectedVariant?.price || 0) *
-													(1 -
-														(item.selectedVariant?.discount_percentage || 0) /
-															100) *
-													item.quantity
-												).toFixed(2)}
-											/>
-										</div>
-									);
-								})}
+						{cartLoading || addToCartLoading || syncLoading || verifyLoading ? (
+							<div className="lg:col-span-5 bg-gray-50 p-6 rounded-lg self-start">
+								<SpinLoader />
 							</div>
+						) : (
+							<div className="lg:col-span-5 bg-gray-50 p-6 rounded-lg self-start">
+								{/* Cart */}
+								<div className="space-y-4 mb-6">
+									{cart.map((item, idx) => {
+										return (
+											<div key={`item-${idx}`} className="flex gap-4">
+												<div className="relative">
+													<BaseImage
+														src={
+															item?.selectedVariant?.image
+																? ENV_VARIABLES.IMAGE_BASE_URL +
+																	item.selectedVariant.image
+																: item.thumbnail
+																	? ENV_VARIABLES.IMAGE_BASE_URL +
+																		item.thumbnail
+																	: item.images?.[0]
+																		? ENV_VARIABLES.IMAGE_BASE_URL +
+																			item.images?.[0]
+																		: null
+														}
+														width={64}
+														height={64}
+														className="rounded-xl shadow-md w-20 h-20 object-contain border"
+													/>
+													<p className="p6 text-light px-2 py-0.5 flex justify-center items-center rounded-sm absolute -top-2 -right-2 bg-dark">
+														{item.quantity}
+													</p>
+												</div>
 
-							{/* Voucher */}
-							{/* <div className="flex gap-2 mb-6">
+												<div className="flex-1">
+													<p className="p4 font-bold capitalize">
+														{item.title?.toLowerCase()}
+													</p>
+													<p className="p5 text-gray-500">
+														Sku: {item.sku || "-"}
+													</p>
+													<p className="p5 text-gray-500">
+														Qty: {item.quantity}
+													</p>
+												</div>
+												<BasePrice
+													price={(
+														(item.selectedVariant?.price || 0) *
+														(1 -
+															(item.selectedVariant?.discount_percentage || 0) /
+																100) *
+														item.quantity
+													).toFixed(2)}
+												/>
+											</div>
+										);
+									})}
+								</div>
+
+								{/* Voucher */}
+								{/* <div className="flex gap-2 mb-6">
 						<input
 							placeholder="Discount code"
 							className="border rounded-md p-2 flex-1"
@@ -747,23 +763,24 @@ export default function CheckoutPage() {
 						</button>
 					</div> */}
 
-							{/* Totals */}
-							<div className="space-y-2 p4">
-								<div className="flex justify-between">
-									<span>Subtotal</span>
-									<BasePrice price={subtotal} />
+								{/* Totals */}
+								<div className="space-y-2 p4">
+									<div className="flex justify-between">
+										<span>Subtotal</span>
+										<BasePrice price={subtotal} />
+									</div>
+									<div className="flex justify-between">
+										<span>Shipping</span>
+										<BasePrice price={shipping} />
+									</div>
+									<hr />
+									<h4 className="flex justify-between font-medium h5">
+										<span>Total</span>
+										<BasePrice price={total} />
+									</h4>
 								</div>
-								<div className="flex justify-between">
-									<span>Shipping</span>
-									<BasePrice price={shipping} />
-								</div>
-								<hr />
-								<h4 className="flex justify-between font-medium h5">
-									<span>Total</span>
-									<BasePrice price={total} />
-								</h4>
 							</div>
-						</div>
+						)}
 					</form>
 				)}
 			</section>

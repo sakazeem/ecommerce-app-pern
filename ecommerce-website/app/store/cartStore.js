@@ -10,10 +10,16 @@ export const useCartStore = create(
 		(set, get) => ({
 			cart: [],
 			favourites: [],
+			cartLoading: false,
+			favouritesLoading: false,
+			addToCartLoading: false,
+			syncLoading: false,
+			verifyLoading: false,
 
 			// ─── LOAD (called on mount and after login) ───────────────────
 			loadCart: async (isAuthenticated) => {
 				if (isAuthenticated) {
+					set({ cartLoading: true });
 					try {
 						const res = await CartService.getCart();
 						// Normalize DB cart items to match the shape the UI expects
@@ -30,10 +36,12 @@ export const useCartStore = create(
 							quantity: item.quantity,
 							selectedVariant: item.product_variant || null,
 						}));
-            
+
 						set({ cart: normalized });
 					} catch (e) {
 						console.error("loadCart error", e);
+					} finally {
+						set({ cartLoading: false });
 					}
 				} else {
 					// Guest — already persisted via zustand persist
@@ -42,6 +50,7 @@ export const useCartStore = create(
 
 			loadFavourites: async (isAuthenticated) => {
 				if (isAuthenticated) {
+					set({ favouritesLoading: true });
 					try {
 						const res = await FavouriteService.getFavourites();
 						const normalized = (res.favourites || []).map((item) => ({
@@ -57,6 +66,8 @@ export const useCartStore = create(
 						set({ favourites: normalized });
 					} catch (e) {
 						console.error("loadFavourites error", e);
+					} finally {
+						set({ favouritesLoading: false });
 					}
 				}
 			},
@@ -64,6 +75,7 @@ export const useCartStore = create(
 			// ─── SYNC ─────────────────────────────────────────────────────
 			syncToDb: async () => {
 				const { cart, favourites } = get();
+				set({ syncLoading: true });
 				try {
 					if (cart.length) {
 						await CartService.syncCart(cart);
@@ -78,6 +90,8 @@ export const useCartStore = create(
 					set({ cart: [], favourites: [] });
 				} catch (e) {
 					console.error("syncToDb error", e);
+				} finally {
+					set({ syncLoading: false });
 				}
 			},
 
@@ -85,7 +99,7 @@ export const useCartStore = create(
 			verifyAndSyncCart: async (isAuthenticated) => {
 				const { cart } = get();
 				if (!cart.length) return;
-
+				set({ verifyLoading: true });
 				try {
 					const itemsToVerify = cart.map((item) => ({
 						cartItemId: item.cartItemId || null,
@@ -132,6 +146,8 @@ export const useCartStore = create(
 					set({ cart: verified });
 				} catch (e) {
 					console.error("verifyAndSyncCart error", e);
+				} finally {
+					set({ verifyLoading: false });
 				}
 			},
 
@@ -180,6 +196,7 @@ export const useCartStore = create(
 			// ─── CART ─────────────────────────────────────────────────────
 			addToCart: async (product, quantity = 1, isAuthenticated = false) => {
 				if (isAuthenticated) {
+					set({ addToCartLoading: true });
 					try {
 						await CartService.addToCart({
 							product_id: product.id,
@@ -188,9 +205,11 @@ export const useCartStore = create(
 							quantity,
 						});
 						await get().loadCart(true);
-						await get().verifyAndSyncFavourites(true);
+						await get().verifyAndSyncCart(true);
 					} catch (e) {
 						console.error("addToCart error", e);
+					} finally {
+						set({ addToCartLoading: false });
 					}
 				} else {
 					// Guest localStorage logic
@@ -231,6 +250,7 @@ export const useCartStore = create(
 					try {
 						await CartService.removeFromCart(product.cartItemId);
 						await get().loadCart(true);
+						await get().verifyAndSyncCart(true);
 					} catch (e) {
 						console.error("removeFromCart error", e);
 					}
@@ -253,6 +273,7 @@ export const useCartStore = create(
 					try {
 						await CartService.updateCartItem(product.cartItemId, quantity);
 						await get().loadCart(true);
+						await get().verifyAndSyncCart(true);
 					} catch (e) {
 						console.error("updateQuantity error", e);
 					}
@@ -305,6 +326,12 @@ export const useCartStore = create(
 
 			clearFavourites: () => set({ favourites: [] }),
 		}),
-		{ name: "ecommerce-storage" },
+		{
+			name: "ecommerce-storage",
+			partialize: (state) => ({
+				cart: state.cart,
+				favourites: state.favourites,
+			}),
+		},
 	),
 );

@@ -10,9 +10,19 @@ import BaseImage from "@/app/components/BaseComponents/BaseImage";
 import PrimaryButton from "@/app/components/Shared/PrimaryButton";
 import { useAuth } from "@/app/providers/AuthProvider";
 import { useEffect } from "react";
+import SpinLoader from "@/app/components/Shared/SpinLoader";
 
 export default function CartPage() {
-	const { cart, removeFromCart, addToCart, verifyAndSyncCart } = useCartStore();
+	const {
+		cart,
+		removeFromCart,
+		addToCart,
+		verifyAndSyncCart,
+		cartLoading,
+		addToCartLoading,
+		syncLoading,
+		verifyLoading,
+	} = useCartStore();
 	const { isAuthenticated } = useAuth();
 
 	useEffect(() => {
@@ -55,7 +65,9 @@ export default function CartPage() {
 		<section className="max-w-7xl mx-auto px-4 py-10">
 			<h1 className="h4 font-semibold mb-6">Shopping Cart</h1>
 
-			{cart.length === 0 ? (
+			{cartLoading || addToCartLoading || syncLoading || verifyLoading ? (
+				<SpinLoader />
+			) : cart.length === 0 ? (
 				<div className="text-center py-5 text-muted/">
 					<h3 className="h3">Your cart is empty.</h3>
 					<PrimaryButton
