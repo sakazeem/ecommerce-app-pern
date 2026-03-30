@@ -65,6 +65,13 @@ const LoginPage = () => {
 					placeholder={"Enter your password"}
 					errorName={errors.password}
 				/>
+				<div className="flex justify-end">
+					<BaseLink
+						href="/forgot-password"
+						className="text-secondary text-sm font-medium">
+						Forgot password?
+					</BaseLink>
+				</div>
 				<CheckboxInput
 					name="remember"
 					label="Remember Me"

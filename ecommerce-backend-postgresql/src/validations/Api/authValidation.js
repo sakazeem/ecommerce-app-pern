@@ -1,4 +1,5 @@
 const Joi = require('@hapi/joi');
+const { password } = require('../customValidation');
 
 const login = {
 	body: Joi.object().keys({
@@ -31,6 +32,19 @@ const logout = {
 const refresh = {
 	body: Joi.object().keys({}),
 };
+const forgotPassword = {
+	body: Joi.object().keys({
+		email: Joi.string().email().required(),
+	}),
+};
+const resetPassword = {
+	query: Joi.object().keys({
+		token: Joi.string().required(),
+	}),
+	body: Joi.object().keys({
+		password: Joi.string().required().custom(password),
+	}),
+};
 
 module.exports = {
 	login,
@@ -38,4 +52,6 @@ module.exports = {
 	logout,
 	refresh,
 	sendOtp,
+	forgotPassword,
+	resetPassword,
 };

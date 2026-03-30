@@ -13,6 +13,10 @@ const httpStatus = require('http-status');
 const db = require('../../db/models');
 const { Op } = require('sequelize');
 const { tokenTypes } = require('../../config/tokens');
+const {
+	forgotPasswordTemplate,
+} = require('../../config/emailTemplates/forgotPassword');
+const { sendEmail } = require('../../services/email.service');
 
 const login = catchAsync(async (req, res) => {
 	const user = await apiAuthService.loginUserWithEmailAndPassword(req);
@@ -32,6 +36,33 @@ const login = catchAsync(async (req, res) => {
 		generateExpires(config.jwt.accessExpirationMinutes / 60)
 	);
 	res.send({ user });
+});
+
+const forgotPassword = catchAsync(async (req, res) => {
+	const { email } = req.body;
+	const resetPasswordToken = await tokenService.generateResetPasswordToken(
+		email
+	);
+	const resetUrl = `${config.websiteUrl}/reset-password?token=${resetPasswordToken}`;
+	await sendEmail({
+		to: email,
+		subject: 'Reset your password',
+		html: forgotPasswordTemplate({
+			customerName: '',
+			resetUrl,
+			expiresMinutes: config.jwt.resetPasswordExpirationMinutes,
+		}),
+	});
+	res.send({ success: true });
+});
+
+const resetPassword = catchAsync(async (req, res) => {
+	const { userId } = await verifyToken(
+		req.query.token,
+		tokenTypes.RESET_PASSWORD
+	);
+	await apiAppUserService.resetPassword(userId, req.body.password);
+	res.send({ success: true });
 });
 
 const sendOtp = catchAsync(async (req, res) => {
@@ -168,4 +199,6 @@ module.exports = {
 	me,
 	sendOtp,
 	changePassword,
+	forgotPassword,
+	resetPassword,
 };

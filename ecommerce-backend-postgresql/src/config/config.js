@@ -63,6 +63,7 @@ const envVarsSchema = Joi.object()
 		// ccl details
 		CCL_API_KEY: Joi.string().description('CCL API KEY'),
 		CCL_CLIENTS: Joi.string().description('CCL CLIENTS'),
+		WEBSITE_URL: Joi.string().description('Website base URL'),
 	})
 	.unknown();
 
@@ -141,6 +142,7 @@ module.exports = {
 		apiKey: envVars.CCL_API_KEY,
 		clients: envVars.CCL_CLIENTS,
 	},
+	websiteUrl: envVars.WEBSITE_URL || 'http://localhost:3000',
 	s3Bucket: {
 		accessKeyId: envVars.AWS_ACCESS_KEY_ID,
 		secretAccessKey: envVars.AWS_SECRET_ACCESS_KEY,

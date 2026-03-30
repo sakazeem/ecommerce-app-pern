@@ -31,10 +31,8 @@ const sendEmail = async ({ to, subject, text, html, attachments = [] }) => {
 	await transport.sendMail({
 		from,
 		to: config.env === 'development' ? 'annasahmed1609@gmail.com' : to,
-		bcc:
-			config.env === 'development'
-				? []
-				: ['salmanazeemkhan@gmail.com', 'annasahmed1609@gmail.com'],
+		bcc: config.env === 'development' ? [] : ['annasahmed1609@gmail.com'],
+		// : ['salmanazeemkhan@gmail.com', 'annasahmed1609@gmail.com'],
 		subject,
 		text,
 		html,

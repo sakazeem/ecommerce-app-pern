@@ -25,10 +25,11 @@ function generateToken(data, expiresMs, secret = config.jwt.secret) {
 async function verifyToken(token, type = tokenTypes.ACCESS) {
 	try {
 		const payload = jwt.verify(token, config.jwt.secret);
-		if (type === tokenTypes.REFRESH) {
+		if (type === tokenTypes.REFRESH || type === tokenTypes.RESET_PASSWORD) {
 			const tokenInDb = await db.token.findOne({
 				where: {
 					jti: payload.jti,
+					type,
 					expires_at: { [Op.gt]: new Date() },
 					revoked: false,
 				},

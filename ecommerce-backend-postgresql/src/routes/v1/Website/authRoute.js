@@ -23,6 +23,18 @@ router.post(
 	apiAuthController.register
 );
 
+router.post(
+	'/forgot-password',
+	validate(apiAuthValidation.forgotPassword),
+	apiAuthController.forgotPassword
+);
+
+router.post(
+	'/reset-password',
+	validate(apiAuthValidation.resetPassword),
+	apiAuthController.resetPassword
+);
+
 router.patch('/change-password', apiAuthController.changePassword);
 
 router.post(

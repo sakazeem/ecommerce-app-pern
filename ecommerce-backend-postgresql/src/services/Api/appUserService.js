@@ -8,6 +8,7 @@ const {
 const { sendEmail } = require('../email.service.js');
 const { Op } = require('sequelize');
 const { encryptData } = require('../../utils/auth.js');
+const { tokenTypes } = require('../../config/tokens');
 
 const validations = async (data) => {
 	if (data.email) {
@@ -156,6 +157,14 @@ async function addOrUpdateAddress(data, userId) {
 	});
 }
 
+async function resetPassword(userId, newPassword) {
+	const hashedPassword = await encryptData(newPassword);
+	await appUserService.update(userId, { password: hashedPassword });
+	await db.token.destroy({
+		where: { app_user_id: userId, type: tokenTypes.RESET_PASSWORD },
+	});
+}
+
 module.exports = {
 	getAppUserById: (id) => appUserService.getById(id),
 	getAppUserByEmail: (email) =>
@@ -168,5 +177,6 @@ module.exports = {
 	createAppUser,
 	updateAppUser: (req) => appUserService.update(req.body.id, req.body),
 	sendRegistrationOtp,
+	resetPassword,
 	addOrUpdateAddress,
 };

@@ -7,8 +7,11 @@ const db = require('../db/models');
 const { tokenTypes } = require('../config/tokens');
 const crypto = require('crypto');
 
-async function generateResetPasswordToken(email) {
-	const user = await userService.getUserByEmail(email);
+async function generateResetPasswordToken(email, isCmsUser = false) {
+	const { apiAppUserService } = require('./Api');
+	const user = isCmsUser
+		? await userService.getUserByEmail(email)
+		: await apiAppUserService.getAppUserByEmail(email);
 	if (!user || !user.id) {
 		throw new ApiError(
 			httpStatus.NOT_FOUND,
@@ -19,7 +22,29 @@ async function generateResetPasswordToken(email) {
 	const expiresMs = generateExpires(
 		config.jwt.resetPasswordExpirationMinutes / 60
 	);
-	const resetPasswordToken = generateToken({ id: user.id }, expiresMs);
+	const resetJti = crypto.randomUUID();
+	await db.token.destroy({
+		where: {
+			type: tokenTypes.RESET_PASSWORD,
+			...(isCmsUser ? { user_id: user.id } : { app_user_id: user.id }),
+		},
+	});
+	const resetPasswordToken = generateToken(
+		{
+			userId: user.id,
+			type: tokenTypes.RESET_PASSWORD,
+			jti: resetJti,
+			isCmsUser,
+		},
+		expiresMs
+	);
+
+	await db.token.create({
+		jti: resetJti,
+		expires_at: expiresMs,
+		type: tokenTypes.RESET_PASSWORD,
+		...(isCmsUser ? { user_id: user.id } : { app_user_id: user.id }),
+	});
 
 	return resetPasswordToken;
 }
