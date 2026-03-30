@@ -4,6 +4,7 @@ const ApiError = require('../../utils/ApiError');
 const config = require('../../config/config');
 const { getOffset } = require('../../utils/query');
 const { Op } = require('sequelize');
+const commonUtils = require('../../utils/commonUtils');
 
 async function getReturnRequestById(req) {
 	const { id } = req.params;
@@ -108,7 +109,9 @@ async function getReturnRequests(req) {
 }
 
 async function approveReturn(req) {
-	const { returnId, adminId } = req.body;
+	// const { adminId } = req.body;
+	const adminId = commonUtils.getUserId(req);
+	const returnId = req.params.id;
 	return await db.sequelize.transaction(async (t) => {
 		const returned = await db.returned.findOne({
 			where: { id: returnId },
@@ -141,7 +144,9 @@ async function approveReturn(req) {
 }
 
 async function rejectReturn(req) {
-	const { returnId, adminId, note } = req.body;
+	const { note } = req.body;
+	const adminId = commonUtils.getUserId(req);
+	const returnId = req.params.id;
 	return await db.sequelize.transaction(async (t) => {
 		const returned = await db.returned.findOne({
 			where: { id: returnId },
