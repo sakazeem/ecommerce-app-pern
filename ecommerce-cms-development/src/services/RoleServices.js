@@ -24,6 +24,10 @@ const RoleServices = {
 	deleteRole: async (id, body) => {
 		return requests.delete(`/role/${id}`, body);
 	},
+
+	getAllPermissions: async () => {
+		return requests.get("/permissions");
+	},
 };
 
 export default RoleServices;
