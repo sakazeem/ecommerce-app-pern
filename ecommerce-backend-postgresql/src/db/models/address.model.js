@@ -10,6 +10,10 @@ module.exports = (sequelize, DataTypes) => {
 				primaryKey: true,
 				autoIncrement: true,
 			},
+			title: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
 			address: { type: DataTypes.TEXT, allowNull: false },
 			apartment: { type: DataTypes.TEXT, allowNull: true },
 			city: {

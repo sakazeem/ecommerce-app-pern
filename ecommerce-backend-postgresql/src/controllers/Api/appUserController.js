@@ -31,7 +31,17 @@ const addOrUpdateAddress = catchAsync(async (req, res) => {
 	res.send(address);
 });
 
+const deleteAddress = catchAsync(async (req, res) => {
+	const accessToken = req.cookies.accessToken;
+	if (!accessToken)
+		throw new ApiError(httpStatus.UNAUTHORIZED, 'Unauthorized');
+	const payload = await verifyToken(accessToken);
+	await apiAppUserService.deleteAddress(req.params.id, payload.userId);
+	res.send({ success: true });
+});
+
 module.exports = {
 	updateAppUser,
 	addOrUpdateAddress,
+	deleteAddress,
 };
