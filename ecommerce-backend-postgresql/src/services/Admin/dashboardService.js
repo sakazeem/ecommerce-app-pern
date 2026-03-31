@@ -46,8 +46,7 @@ async function getPendingKPI() {
    ROW 2 — ORDERS TREND
 ========================= */
 
-async function getOrdersTrend(days = 7) {
-	const safeDays = days === 30 ? 30 : 7;
+async function getOrdersTrend(startDate, endDate) {
 	const tableName = db.order.getTableName();
 
 	return db.sequelize.query(
@@ -59,11 +58,14 @@ async function getOrdersTrend(days = 7) {
 		FROM "${tableName}"
 		WHERE
 			status = 'delivered'
-			AND "created_at" >= CURRENT_DATE - INTERVAL '${safeDays} days'
+			AND "created_at" BETWEEN :startDate AND :endDate
 		GROUP BY DATE("created_at")
 		ORDER BY DATE("created_at")
 		`,
-		{ type: QueryTypes.SELECT }
+		{
+			replacements: { startDate, endDate },
+			type: QueryTypes.SELECT,
+		}
 	);
 }
 

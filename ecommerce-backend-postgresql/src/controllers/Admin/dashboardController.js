@@ -8,7 +8,16 @@ const getDashboardData = catchAsync(async (req, res) => {
 
 	const monthStart = startOfMonth(new Date());
 	const monthEnd = endOfMonth(new Date());
-	const days = req.query.days === '30' ? 30 : 7;
+
+	const { startDate, endDate } = req.query;
+
+	const trendStart = startDate
+		? startOfDay(new Date(startDate))
+		: startOfDay(new Date());
+	const trendEnd = endDate
+		? endOfDay(new Date(endDate))
+		: endOfDay(new Date());
+
 	const [
 		today,
 		month,
@@ -21,7 +30,7 @@ const getDashboardData = catchAsync(async (req, res) => {
 		adminDashboardService.getTodayKPI(todayStart, todayEnd),
 		adminDashboardService.getMonthKPI(monthStart, monthEnd),
 		adminDashboardService.getPendingKPI(),
-		adminDashboardService.getOrdersTrend(days),
+		adminDashboardService.getOrdersTrend(trendStart, trendEnd),
 		adminDashboardService.getOrderStatusBreakdown(),
 		adminDashboardService.getRevenueByPaymentMethod(),
 		adminDashboardService.getRecentOrders(),
