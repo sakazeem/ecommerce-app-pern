@@ -38,6 +38,7 @@ adminRouter.use('/subscriber', require('./subscriberRoute'));
 adminRouter.use('/appuser', require('./appUserRoute'));
 adminRouter.use('/user', require('./userRoute'));
 adminRouter.use('/role', require('./roleRoute'));
+adminRouter.use('/permission', require('./permissionRoute'));
 adminRouter.use('/dashboard', require('./dashboardRoute'));
 
 module.exports = adminRouter;

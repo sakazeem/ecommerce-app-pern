@@ -23,4 +23,5 @@ module.exports.adminReturnedService = require('./returnedService');
 module.exports.adminSubscriberService = require('./subscriberService');
 module.exports.adminAppUserService = require('./appUserService');
 module.exports.adminRoleService = require('./roleService');
+module.exports.adminPermissionService = require('./permissionService');
 module.exports.adminDashboardService = require('./dashboardService');
