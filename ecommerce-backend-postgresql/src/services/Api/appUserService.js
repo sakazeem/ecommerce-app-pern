@@ -113,47 +113,40 @@ async function createAppUser(req) {
 }
 
 async function addOrUpdateAddress(data, userId) {
-	const { address, apartment, city, country, postal_code, type } = data;
+	const { id, address, apartment, city, country, postal_code, type, title } =
+		data;
 
 	if (!type) {
 		throw new ApiError(httpStatus.BAD_REQUEST, 'Address type is required');
 	}
 
-	return await db.sequelize.transaction(async (t) => {
-		const existingAddress = await db.address.findOne({
-			where: {
-				app_user_id: userId,
-				type, // 👈 important
-			},
-			transaction: t,
+	if (id) {
+		const existing = await db.address.findOne({
+			where: { id, app_user_id: userId },
 		});
+		if (!existing)
+			throw new ApiError(httpStatus.NOT_FOUND, 'Address not found');
+		await existing.update({
+			address,
+			apartment,
+			city,
+			country,
+			postal_code,
+			type,
+			title,
+		});
+		return existing;
+	}
 
-		if (existingAddress) {
-			await existingAddress.update(
-				{
-					address,
-					apartment,
-					city,
-					country,
-					postal_code,
-				},
-				{ transaction: t }
-			);
-			return existingAddress;
-		}
-
-		return await db.address.create(
-			{
-				address,
-				apartment,
-				city,
-				country,
-				postal_code,
-				type,
-				app_user_id: userId,
-			},
-			{ transaction: t }
-		);
+	return await db.address.create({
+		address,
+		apartment,
+		city,
+		country,
+		postal_code,
+		type,
+		title: title || null,
+		app_user_id: userId,
 	});
 }
 
@@ -163,6 +156,14 @@ async function resetPassword(userId, newPassword) {
 	await db.token.destroy({
 		where: { app_user_id: userId, type: tokenTypes.RESET_PASSWORD },
 	});
+}
+
+async function deleteAddress(addressId, userId) {
+	const deleted = await db.address.destroy({
+		where: { id: addressId, app_user_id: userId },
+	});
+	if (!deleted) throw new ApiError(httpStatus.NOT_FOUND, 'Address not found');
+	return { success: true };
 }
 
 module.exports = {
@@ -179,4 +180,5 @@ module.exports = {
 	sendRegistrationOtp,
 	resetPassword,
 	addOrUpdateAddress,
+	deleteAddress,
 };
