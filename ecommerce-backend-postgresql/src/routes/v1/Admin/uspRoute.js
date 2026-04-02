@@ -9,12 +9,12 @@ const router = express.Router();
 router
 	.route('/')
 	.get(
-		checkPermission('view_usp'),
+		checkPermission('view_filter'),
 		validate(adminUspValidation.getUsps),
 		adminUspController.getUsps
 	)
 	.post(
-		checkPermission('create_usp'),
+		checkPermission('create_filter'),
 		validate(adminUspValidation.createUsp),
 		adminUspController.createUsp
 	);
@@ -22,24 +22,24 @@ router
 router
 	.route('/:uspId')
 	.get(
-		checkPermission('view_usp'),
+		checkPermission('view_filter'),
 		validate(adminUspValidation.getUsp),
 		adminUspController.getUspById
 	)
 	.patch(
-		checkPermission('update_usp'),
+		checkPermission('update_filter'),
 		validate(adminUspValidation.updateUsp),
 		adminUspController.updateUsp
 	)
 	.delete(
-		checkPermission('delete_usp'),
+		checkPermission('delete_filter'),
 		validate(adminUspValidation.deleteUsp),
 		adminUspController.softDeleteUsp
 	);
 router
 	.route('/permanent/:usp')
 	.delete(
-		checkPermission('delete_usp'),
+		checkPermission('delete_filter'),
 		validate(adminUspValidation.deleteUsp),
 		adminUspController.permanentDeleteUsp
 	);

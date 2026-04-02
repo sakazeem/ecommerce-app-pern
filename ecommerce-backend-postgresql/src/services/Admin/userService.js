@@ -10,6 +10,11 @@ const commonUtils = require('../../utils/commonUtils.js');
 async function getUserByEmail(email, scope = 'defaultScope') {
 	const user = await db.user.scope(scope).findOne({
 		where: { email },
+		include: [
+			{
+				model: db.role,
+			},
+		],
 	});
 
 	return user;

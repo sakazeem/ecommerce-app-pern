@@ -2,7 +2,8 @@ const db = require('../db/models');
 
 async function registerPermissions(
 	moduleName,
-	actions = ['create', 'edit', 'delete', 'view']
+	actions = ['create', 'edit', 'delete', 'view'],
+	show = true
 ) {
 	const adminRole = await db.role.findOne({ where: { name: 'admin' } });
 	if (!adminRole) {
@@ -16,7 +17,7 @@ async function registerPermissions(
 
 		const [perm] = await db.permission.findOrCreate({
 			where: { name },
-			defaults: { description, parent },
+			defaults: { description, parent, show },
 		});
 
 		// Associate permission with admin role

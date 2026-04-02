@@ -9,12 +9,12 @@ const router = express.Router();
 router
 	.route('/')
 	.get(
-		checkPermission('view_vendor'),
+		// checkPermission('view_vendor'),
 		validate(adminVendorValidation.getVendors),
 		adminVendorController.getVendors
 	)
 	.post(
-		checkPermission('create_vendor'),
+		// checkPermission('create_vendor'),
 		validate(adminVendorValidation.createVendor),
 		adminVendorController.createVendor
 	);
@@ -22,24 +22,24 @@ router
 router
 	.route('/:vendorId')
 	.get(
-		checkPermission('view_vendor'),
+		// checkPermission('view_vendor'),
 		validate(adminVendorValidation.getVendor),
 		adminVendorController.getVendorById
 	)
 	.patch(
-		checkPermission('update_vendor'),
+		// checkPermission('update_vendor'),
 		validate(adminVendorValidation.updateVendor),
 		adminVendorController.updateVendor
 	)
 	.delete(
-		checkPermission('delete_vendor'),
+		// checkPermission('delete_vendor'),
 		validate(adminVendorValidation.deleteVendor),
 		adminVendorController.softDeleteVendor
 	);
 router
 	.route('/permanent/:vendor')
 	.delete(
-		checkPermission('delete_vendor'),
+		// checkPermission('delete_vendor'),
 		validate(adminVendorValidation.deleteVendor),
 		adminVendorController.permanentDeleteVendor
 	);

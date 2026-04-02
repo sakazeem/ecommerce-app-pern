@@ -9,12 +9,12 @@ const router = express.Router();
 router
 	.route('/')
 	.get(
-		checkPermission('view_attribute'),
+		checkPermission('view_filter'),
 		// validate(adminAttributeValidation.getAttributes),
 		adminAttributeController.getAttributes
 	)
 	.post(
-		checkPermission('create_attribute'),
+		checkPermission('create_filter'),
 		validate(adminAttributeValidation.createAttribute),
 		adminAttributeController.createAttribute
 	);
@@ -23,17 +23,17 @@ router.route('/filters').get(adminAttributeController.getFilterAttributes);
 router
 	.route('/:attributeId')
 	.get(
-		checkPermission('view_attribute'),
+		checkPermission('view_filter'),
 		validate(adminAttributeValidation.getAttribute),
 		adminAttributeController.getAttributeById
 	)
 	.patch(
-		checkPermission('update_attribute'),
+		checkPermission('update_filter'),
 		validate(adminAttributeValidation.updateAttribute),
 		adminAttributeController.updateAttribute
 	)
 	.delete(
-		checkPermission('delete_attribute'),
+		checkPermission('delete_filter'),
 		validate(adminAttributeValidation.deleteAttribute),
 		adminAttributeController.softDeleteAttribute
 	);
@@ -41,7 +41,7 @@ router
 router
 	.route('/permanent/:attributeId')
 	.delete(
-		checkPermission('delete_attribute'),
+		checkPermission('delete_filter'),
 		validate(adminAttributeValidation.deleteAttribute),
 		adminAttributeController.permanentDeleteAttribute
 	);

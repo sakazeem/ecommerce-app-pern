@@ -109,7 +109,7 @@ app.use((req, _, next) => {
 });
 
 // jwt authentication
-app.use(jwt());
+// app.use(jwt());
 
 app.use(setUserMiddleware); // Fetches user from DB & sets full `req.user`
 

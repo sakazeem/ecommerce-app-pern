@@ -16,6 +16,13 @@ const roleService = createBaseService(db.role, {
 		return toUpdate;
 	},
 	useSoftDelete: false,
+	includes: [
+		{
+			model: db.permission,
+			required: false,
+			attributes: ['id'],
+		},
+	],
 });
 
 // Using userId logic from request

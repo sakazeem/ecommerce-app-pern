@@ -1,31 +1,30 @@
 import { Avatar, Badge, WindmillContext } from "@windmill/react-ui";
 import Cookies from "js-cookie";
-import React, { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Scrollbars } from "react-custom-scrollbars-2";
 
+import cookies from "js-cookie";
+import { useTranslation } from "react-i18next";
 import {
-	FiTrash2,
+	FiBell,
 	FiGrid,
 	FiLogOut,
 	FiMenu,
-	FiSun,
 	FiMoon,
-	FiBell,
-	FiSettings,
+	FiSun,
+	FiTrash2,
+	FiUser,
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import cookies from "js-cookie";
-import { useTranslation } from "react-i18next";
 
 //internal import
 import ellipse from "@/assets/img/icons/ellipse.svg";
+import NotFoundTwo from "@/components/table/NotFoundTwo";
 import { AdminContext } from "@/context/AdminContext";
 import { SidebarContext } from "@/context/SidebarContext";
 import useNotification from "@/hooks/useNotification";
 import useUtilsFunction from "@/hooks/useUtilsFunction";
-import NotFoundTwo from "@/components/table/NotFoundTwo";
 import NotificationServices from "@/services/NotificationServices";
-import SelectLanguage from "@/components/form/selectOption/SelectLanguage";
 import { notifyError } from "@/utils/toast";
 
 const Header = () => {
@@ -131,6 +130,8 @@ const Header = () => {
 	//     i18next.changeLanguage(event.target.value);
 
 	// }
+
+	console.log(adminInfo, "chkking admin info");
 
 	return (
 		<>
@@ -337,11 +338,20 @@ const Header = () => {
 									/>
 								) : (
 									<span>{adminInfo.email[0].toUpperCase()}</span>
+									// <span>{adminInfo.email[0].toUpperCase()}</span>
 								)}
 							</button>
 
 							{profileOpen && (
 								<ul className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-customWhite dark:bg-customGray-800 focus:outline-none">
+									<li className="justify-between font-serif font-medium py-2 pl-4 transition-colors duration-150 text-customGray-500">
+										<span className="flex items-center text-sm">
+											<FiUser className="w-4 h-4 mr-3" aria-hidden="true" />
+											<span className="capitalize">
+												{adminInfo?.role?.name}
+											</span>
+										</span>
+									</li>
 									<li className="justify-between font-serif font-medium py-2 pl-4 transition-colors duration-150 hover:bg-customGray-100 text-customGray-500 hover:text-customTeal-500 dark:text-customGray-400 dark:hover:bg-customGray-800 dark:hover:text-customGray-200">
 										<Link to="/dashboard">
 											<span className="flex items-center text-sm">

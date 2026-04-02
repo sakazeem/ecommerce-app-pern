@@ -9,12 +9,12 @@ const router = express.Router();
 router
 	.route('/')
 	.get(
-		checkPermission('view_brand'),
+		checkPermission('view_filter'),
 		// validate(adminBrandValidation.getBrands),
 		adminBrandController.getBrands
 	)
 	.post(
-		checkPermission('create_brand'),
+		checkPermission('create_filter'),
 		// validate(adminBrandValidation.createBrand),
 		adminBrandController.createBrand
 	);
@@ -22,24 +22,24 @@ router
 router
 	.route('/:brandId')
 	.get(
-		checkPermission('view_brand'),
+		checkPermission('view_filter'),
 		validate(adminBrandValidation.getBrand),
 		adminBrandController.getBrandById
 	)
 	.patch(
-		checkPermission('update_brand'),
+		checkPermission('update_filter'),
 		// validate(adminBrandValidation.updateBrand),
 		adminBrandController.updateBrand
 	)
 	.delete(
-		checkPermission('delete_brand'),
+		checkPermission('delete_filter'),
 		validate(adminBrandValidation.deleteBrand),
 		adminBrandController.softDeleteBrand
 	);
 router
 	.route('/permanent/:brand')
 	.delete(
-		checkPermission('delete_brand'),
+		checkPermission('delete_filter'),
 		validate(adminBrandValidation.deleteBrand),
 		adminBrandController.permanentDeleteBrand
 	);

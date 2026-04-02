@@ -26,7 +26,7 @@ const RoleServices = {
 	},
 
 	getAllPermissions: async () => {
-		return requests.get("/permissions");
+		return requests.get("/permission");
 	},
 };
 
