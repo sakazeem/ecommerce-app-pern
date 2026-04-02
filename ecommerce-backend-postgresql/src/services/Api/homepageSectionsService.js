@@ -26,9 +26,22 @@ async function getHomepageSections() {
 					typeof img === 'object' && img !== null
 						? img.categoryId
 						: null;
+
 				if (imageId) mediaIds.add(imageId);
-				if (categoryId && Number(categoryId))
+				if (categoryId && Number(categoryId)) {
 					categoryIds.add(Number(categoryId));
+				}
+			});
+		}
+
+		// ✅ Video slider
+		if (section.type === 'video_slider' && Array.isArray(config.slides)) {
+			config.slides.forEach((slide) => {
+				if (slide.videoId) mediaIds.add(slide.videoId);
+				if (slide.poster) mediaIds.add(slide.poster);
+				if (slide.categoryId && Number(slide.categoryId)) {
+					categoryIds.add(Number(slide.categoryId));
+				}
 			});
 		}
 
@@ -44,12 +57,12 @@ async function getHomepageSections() {
 
 		// Categories section
 		if (Array.isArray(config.category_ids)) {
-			config.category_ids.forEach((id) => categoryIds.add(id));
+			config.category_ids.forEach((id) => categoryIds.add(Number(id)));
 		}
 
 		// Tabs section
 		if (Array.isArray(config.tab_categories)) {
-			config.tab_categories.forEach((id) => categoryIds.add(id));
+			config.tab_categories.forEach((id) => categoryIds.add(Number(id)));
 		}
 	}
 
@@ -58,7 +71,7 @@ async function getHomepageSections() {
 		mediaIds.size
 			? db.media.findAll({
 					where: { id: [...mediaIds] },
-					attributes: ['id', 'url'],
+					attributes: ['id', 'url', 'media_type'],
 			  })
 			: [],
 
@@ -89,9 +102,9 @@ async function getHomepageSections() {
 
 	// 5. Hydrate sections
 	const hydratedSections = sections.map((section) => {
-		const config = { ...section.config };
+		const config = { ...(section.config || {}) };
 
-		// Slider images — hydrate each slide to {imageId: mediaUrl, categoryId, category}
+		// Slider images — hydrate each slide to {imageId: mediaObj, categoryId, category}
 		if (Array.isArray(config.images)) {
 			config.images = config.images
 				.map((img) => {
@@ -103,8 +116,10 @@ async function getHomepageSections() {
 						typeof img === 'object' && img !== null
 							? img.categoryId
 							: null;
+
 					const mediaObj = mediaMap[imageId];
 					if (!mediaObj) return null;
+
 					return {
 						imageId: mediaObj, // full media object with .url
 						categoryId: categoryId || null,
@@ -116,25 +131,42 @@ async function getHomepageSections() {
 				.filter(Boolean);
 		}
 
+		// ✅ Video slider hydration
+		if (section.type === 'video_slider' && Array.isArray(config.slides)) {
+			config.slides = config.slides
+				.map((slide) => {
+					const videoMedia = mediaMap[slide.videoId];
+					if (!videoMedia) return null;
+
+					return {
+						videoUrl: videoMedia.url,
+						poster: slide.poster
+							? mediaMap[slide.poster]?.url || null
+							: null,
+						categoryId: slide.categoryId || null,
+						category: slide.categoryId
+							? categoryMap[Number(slide.categoryId)] || null
+							: null,
+					};
+				})
+				.filter(Boolean);
+		}
+
 		// Banner image
 		if (config.image) {
 			config.image = mediaMap[config.image] || null;
 		}
 
-		if (config.category_id && Number(config.category_id)) {
-			categoryIds.add(Number(config.category_id));
-		}
-
 		// Single product category
 		if (config.category_id && Number(config.category_id)) {
-			config.category = categoryMap[config.category_id];
+			config.category = categoryMap[Number(config.category_id)] || null;
 			delete config.category_id;
 		}
 
 		// Categories
 		if (Array.isArray(config.category_ids)) {
 			config.categories = config.category_ids
-				.map((id) => categoryMap[id])
+				.map((id) => categoryMap[Number(id)])
 				.filter(Boolean);
 			delete config.category_ids;
 		}
@@ -142,7 +174,7 @@ async function getHomepageSections() {
 		// Tabs
 		if (Array.isArray(config.tab_categories)) {
 			config.tabs = config.tab_categories
-				.map((id) => categoryMap[id])
+				.map((id) => categoryMap[Number(id)])
 				.filter(Boolean);
 			delete config.tab_categories;
 		}

@@ -8,6 +8,7 @@ import HeroSection from "../Themes/KidsTheme/HeroSection";
 import PopularCatTabs from "../Themes/KidsTheme/PopularCatTabs";
 import ProductsSlider from "../Themes/KidsTheme/ProductsSlider";
 import ParentCategoriesGrid from "../Themes/KidsTheme/ParentCategoriesGrid";
+import VideoHeroSection from "../Themes/KidsTheme/VideoHeroSection";
 
 export default function HomepageSection({ section }) {
   const { type, config, title } = section;
@@ -22,6 +23,23 @@ export default function HomepageSection({ section }) {
               src: ENV_VARIABLES.IMAGE_BASE_URL + img.imageId,
               // Use slug for cleaner URL if available, else fall back to id
               categorySlug: img.categorySlug || img.categoryId || null,
+            }))}
+            autoplay={config.autoplay}
+          />
+        )
+      );
+
+    case "video_slider":
+      return (
+        config.slides?.length > 0 && (
+          <VideoHeroSection
+            title={title}
+            slides={config.slides.map((s) => ({
+              videoUrl: ENV_VARIABLES.IMAGE_BASE_URL + s.videoUrl,
+              poster: s.poster
+                ? ENV_VARIABLES.IMAGE_BASE_URL + s.poster
+                : undefined,
+              categorySlug: s.categorySlug || s.categoryId || null,
             }))}
             autoplay={config.autoplay}
           />

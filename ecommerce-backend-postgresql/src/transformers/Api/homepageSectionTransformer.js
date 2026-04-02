@@ -32,6 +32,20 @@ function transformHomepageSection(product, lang) {
 		});
 	} else if (product.config.image) {
 		product.config.image = product.config.image.url;
+	} else if (product.config.slides) {
+		// video_slider
+		product.config.slides = product.config.slides.map((slide) => {
+			const result = {
+				videoUrl: slide.videoUrl,
+				poster: slide.poster || null,
+				categoryId: slide.categoryId || null,
+			};
+			if (slide.category) {
+				const cat = transformCategory(slide.category, lang);
+				result.categorySlug = cat?.slug || null;
+			}
+			return result;
+		});
 	}
 
 	if (product.title) {

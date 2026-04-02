@@ -45,6 +45,13 @@ async function getHomepageSections(req) {
 		if (config.image) {
 			mediaIds.add(config.image);
 		}
+
+		if (section.type === 'video_slider' && Array.isArray(config.slides)) {
+			config.slides.forEach((slide) => {
+				if (slide.videoId) mediaIds.add(slide.videoId);
+				if (slide.poster) mediaIds.add(slide.poster);
+			});
+		}
 	}
 
 	// Fetch media in bulk
@@ -84,6 +91,19 @@ async function getHomepageSections(req) {
 		// Banner image
 		if (config.image) {
 			config.imageUrl = mediaMap[config.image] || null;
+		}
+
+		if (section.type === 'video_slider' && Array.isArray(config.slides)) {
+			config.slidesResolved = config.slides
+				.map((slide) => ({
+					videoId: slide.videoId,
+					videoUrl: mediaMap[slide.videoId]?.url || null,
+					poster: slide.poster
+						? mediaMap[slide.poster]?.url || null
+						: null,
+					categoryId: slide.categoryId || '',
+				}))
+				.filter((s) => s.videoUrl);
 		}
 
 		return {

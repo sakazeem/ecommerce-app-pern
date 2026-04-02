@@ -1,6 +1,7 @@
 import ImageSelectorField from "@/components/form/fields/ImageSelectorField";
 import InputAreaField from "@/components/form/fields/InputAreaField";
 import InputMultipleSelectField from "@/components/form/fields/InputMultipleSelectField";
+import VideoSelector from "@/components/image-uploader/VideoSelector";
 import useUtilsFunction from "@/hooks/useUtilsFunction";
 import CategoryServices from "@/services/CategoryServices";
 import { useEffect, useMemo, useState } from "react";
@@ -30,9 +31,7 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
   const { showingTranslateValue, showSelectedLanguageTranslation } =
     useUtilsFunction();
 
-  // ─── Slider: selectedImage = array of image IDs (what ImageSelector expects) ──
-  // For slider we extract imageId from existing config if it's the new format {imageId, categoryId}
-  // or use the raw id if it's the old format (plain string).
+  // ─── Image slider state ───────────────────────────────────────────────────────
   const extractImageId = (img) =>
     typeof img === "object" && img !== null ? img.imageId : img;
 
@@ -57,7 +56,6 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
         : null,
   );
 
-  // ─── Per-slide category mapping: { [imageId]: categoryId } ───────────────────
   const [slideCategories, setSlideCategories] = useState(() => {
     if (section.type !== "slider") return {};
     const map = {};
@@ -69,24 +67,48 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
     return map;
   });
 
+  // ─── Video slider state — mirrors image slider pattern exactly ────────────────
+  const [selectedVideo, setSelectedVideo] = useState(
+    section.type === "video_slider"
+      ? (section.config?.slides || []).map((s) => s.videoId).filter(Boolean)
+      : [],
+  );
+
+  const [selectedVideoUrl, setSelectedVideoUrl] = useState(
+    section.type === "video_slider"
+      ? (section.config?.slidesResolved || [])
+          .map((s) =>
+            s.videoUrl
+              ? import.meta.env.VITE_APP_CLOUDINARY_URL + s.videoUrl
+              : null,
+          )
+          .filter(Boolean)
+      : [],
+  );
+
+  const [slideVideoCategories, setSlideVideoCategories] = useState(() => {
+    if (section.type !== "video_slider") return {};
+    const map = {};
+    (section.config?.slides || []).forEach((s) => {
+      if (s.videoId) map[s.videoId] = s.categoryId || "";
+    });
+    return map;
+  });
+
   useEffect(() => {
     CategoryServices.getAllCategories().then((data) => {
       setCategories(data?.records || []);
     });
   }, []);
 
-  // ─── Sync to parent on image or category change ───────────────────────────────
+  // ─── Sync image slider to parent ─────────────────────────────────────────────
   useEffect(() => {
     if (section.type === "slider") {
-      // Build the new images array as [{imageId, categoryId}]
       const images = (selectedImage || []).map((imgId) => ({
         imageId: imgId,
         categoryId: slideCategories[imgId] || "",
       }));
-      onUpdate({
-        ...section,
-        config: { ...section.config, images },
-      });
+      onUpdate({ ...section, config: { ...section.config, images } });
     }
     if (section.type === "banner") {
       onUpdate({
@@ -95,6 +117,17 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
       });
     }
   }, [selectedImage, slideCategories]);
+
+  // ─── Sync video slider to parent ─────────────────────────────────────────────
+  useEffect(() => {
+    if (section.type === "video_slider") {
+      const slides = (selectedVideo || []).map((vidId) => ({
+        videoId: vidId,
+        categoryId: slideVideoCategories[vidId] || "",
+      }));
+      onUpdate({ ...section, config: { ...section.config, slides } });
+    }
+  }, [selectedVideo, slideVideoCategories]);
 
   const categoriesOptions = useMemo(() => {
     return categories?.map((cat) => ({
@@ -111,6 +144,14 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
       borderColor: "border-purple-200",
       textColor: "text-purple-700",
       focusColor: "focus:border-purple-500",
+    },
+    video_slider: {
+      icon: <Play size={18} />,
+      gradient: "from-violet-500 to-violet-600",
+      bgLight: "bg-violet-50",
+      borderColor: "border-violet-200",
+      textColor: "text-violet-700",
+      focusColor: "focus:border-violet-500",
     },
     banner: {
       icon: <Image size={18} />,
@@ -158,11 +199,7 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
         Delete
       </button>
       <div className="flex justify-between items-start gap-4">
-        <div
-          className="flex-1
-				bg-white border-2 border-gray-200 rounded-xl p-6 space-y-5
-				"
-        >
+        <div className="flex-1 bg-white border-2 border-gray-200 rounded-xl p-6 space-y-5">
           <InputAreaField
             label={"Section Title"}
             register={register}
@@ -200,7 +237,7 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
           </div>
         </div>
 
-        {/* Slider */}
+        {/* Image Slider */}
         {section.type === "slider" && (
           <div className="space-y-5">
             <label className="flex items-center gap-3 p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-purple-300 transition-colors group">
@@ -210,10 +247,7 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
                 onChange={(e) =>
                   onUpdate({
                     ...section,
-                    config: {
-                      ...section.config,
-                      autoplay: e.target.checked,
-                    },
+                    config: { ...section.config, autoplay: e.target.checked },
                   })
                 }
                 className="w-5 h-5 text-purple-600 rounded focus:ring-2 focus:ring-purple-500"
@@ -242,8 +276,6 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
                 isVertical
                 imageDimensions={`w-96`}
               />
-
-              {/* ── Per-slide category dropdowns ── */}
               {(selectedImage || []).length > 0 && (
                 <div className="mt-4 space-y-3">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
@@ -285,6 +317,85 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
           </div>
         )}
 
+        {/* Video Slider — mirrors image slider pattern */}
+        {section.type === "video_slider" && (
+          <div className="space-y-5">
+            <label className="flex items-center gap-3 p-4 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-violet-300 transition-colors group">
+              <input
+                type="checkbox"
+                checked={section.config?.autoplay || false}
+                onChange={(e) =>
+                  onUpdate({
+                    ...section,
+                    config: { ...section.config, autoplay: e.target.checked },
+                  })
+                }
+                className="w-5 h-5 text-violet-600 rounded focus:ring-2 focus:ring-violet-500"
+              />
+              <div className="flex items-center gap-2 flex-1">
+                <Play size={18} className="text-violet-600" />
+                <div>
+                  <span className="text-sm font-semibold text-gray-700 block">
+                    Enable Autoplay
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    Automatically transition between slides
+                  </span>
+                </div>
+              </div>
+            </label>
+
+            <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
+              <VideoSelector
+                selectedVideo={selectedVideo}
+                setSelectedVideo={setSelectedVideo}
+                selectedVideoUrl={selectedVideoUrl}
+                setSelectedVideoUrl={setSelectedVideoUrl}
+                isMultipleSelect
+                imageDimensions="w-48 h-28"
+              />
+
+              {(selectedVideo || []).length > 0 && (
+                <div className="mt-4 space-y-3">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Link each slide to a category
+                  </p>
+                  {(selectedVideo || []).map((vidId, idx) => (
+                    <div
+                      key={vidId}
+                      className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg"
+                    >
+                      <span className="text-xs text-gray-500 font-medium min-w-[60px]">
+                        Slide {idx + 1}
+                      </span>
+                      <select
+                        value={slideVideoCategories[vidId] || ""}
+                        onChange={(e) =>
+                          setSlideVideoCategories((prev) => ({
+                            ...prev,
+                            [vidId]: e.target.value,
+                          }))
+                        }
+                        className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:border-violet-500 focus:outline-none transition-colors"
+                      >
+                        <option value="">No category (no redirect)</option>
+                        {categories.map((cat) => (
+                          <option key={cat.id} value={cat.id}>
+                            {showSelectedLanguageTranslation(
+                              cat?.translations,
+                              "title",
+                            )}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Banner */}
         {section.type === "banner" && (
           <div className="space-y-5">
@@ -299,7 +410,6 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
                 imageDimensions={`w-full`}
               />
             </div>
-
             <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
                 <Link size={16} className="text-blue-600" />
@@ -316,10 +426,7 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
                 onChange={(e) =>
                   onUpdate({
                     ...section,
-                    config: {
-                      ...section.config,
-                      link: e.target.value,
-                    },
+                    config: { ...section.config, link: e.target.value },
                   })
                 }
               />
@@ -371,10 +478,7 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
                       onChange={(e) =>
                         onUpdate({
                           ...section,
-                          config: {
-                            ...section.config,
-                            layout: e.target.value,
-                          },
+                          config: { ...section.config, layout: e.target.value },
                         })
                       }
                     >
@@ -400,10 +504,7 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
                       onChange={(e) =>
                         onUpdate({
                           ...section,
-                          config: {
-                            ...section.config,
-                            design: e.target.value,
-                          },
+                          config: { ...section.config, design: e.target.value },
                         })
                       }
                     >
@@ -415,6 +516,7 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
                 />
               </div>
             </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
@@ -426,65 +528,26 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
                     </span>
                   )}
                 </label>
-
-                {/* Quick Color Presets */}
                 <div className="flex gap-2 mb-3">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onUpdate({
-                        ...section,
-                        config: {
-                          ...section.config,
-                          color: "#5DABEA",
-                        },
-                      })
-                    }
-                    className="group relative flex-1 h-10 rounded-lg border-2 border-gray-200 hover:border-blue-400 transition-all overflow-hidden"
-                    style={{ backgroundColor: "#5DABEA" }}
-                  >
-                    <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-20">
-                      Primary
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onUpdate({
-                        ...section,
-                        config: {
-                          ...section.config,
-                          color: "#E95CA7",
-                        },
-                      })
-                    }
-                    className="group relative flex-1 h-10 rounded-lg border-2 border-gray-200 hover:border-pink-400 transition-all overflow-hidden"
-                    style={{ backgroundColor: "#E95CA7" }}
-                  >
-                    <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-20">
-                      Secondary
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onUpdate({
-                        ...section,
-                        config: {
-                          ...section.config,
-                          color: "#EDA62A",
-                        },
-                      })
-                    }
-                    className="group relative flex-1 h-10 rounded-lg border-2 border-gray-200 hover:border-gray-400 transition-all overflow-hidden"
-                    style={{ backgroundColor: "#EDA62A" }}
-                  >
-                    <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-10">
-                      Turtiary
-                    </span>
-                  </button>
+                  {["#5DABEA", "#E95CA7", "#EDA62A"].map((color, i) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() =>
+                        onUpdate({
+                          ...section,
+                          config: { ...section.config, color },
+                        })
+                      }
+                      className="group relative flex-1 h-10 rounded-lg border-2 border-gray-200 hover:border-gray-400 transition-all overflow-hidden"
+                      style={{ backgroundColor: color }}
+                    >
+                      <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-20">
+                        {["Primary", "Secondary", "Tertiary"][i]}
+                      </span>
+                    </button>
+                  ))}
                 </div>
-
                 <div className="flex gap-3 items-center">
                   <div className="relative">
                     <input
@@ -493,10 +556,7 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
                       onChange={(e) =>
                         onUpdate({
                           ...section,
-                          config: {
-                            ...section.config,
-                            color: e.target.value,
-                          },
+                          config: { ...section.config, color: e.target.value },
                         })
                       }
                       className="h-10 w-20 rounded-lg border-2 border-gray-200 cursor-pointer"
@@ -515,10 +575,7 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
                     onChange={(e) =>
                       onUpdate({
                         ...section,
-                        config: {
-                          ...section.config,
-                          color: e.target.value,
-                        },
+                        config: { ...section.config, color: e.target.value },
                       })
                     }
                     placeholder="No color selected"
@@ -530,10 +587,7 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
                       onClick={() =>
                         onUpdate({
                           ...section,
-                          config: {
-                            ...section.config,
-                            color: null,
-                          },
+                          config: { ...section.config, color: null },
                         })
                       }
                       className="px-3 py-2 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-200"
@@ -586,10 +640,7 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
                 onChange={(e) =>
                   onUpdate({
                     ...section,
-                    config: {
-                      ...section.config,
-                      category_id: e.target.value,
-                    },
+                    config: { ...section.config, category_id: e.target.value },
                   })
                 }
               >
@@ -619,10 +670,7 @@ const SectionForm = ({ section, onUpdate, onDelete }) => {
                 onChange={(e) =>
                   onUpdate({
                     ...section,
-                    config: {
-                      ...section.config,
-                      layout: e.target.value,
-                    },
+                    config: { ...section.config, layout: e.target.value },
                   })
                 }
               >

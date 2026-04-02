@@ -19,7 +19,8 @@ module.exports = (sequelize, DataTypes) => {
 					'banner',
 					'categories',
 					'tab',
-					'products'
+					'products',
+					'video_slider'
 				),
 				allowNull: false,
 			},
