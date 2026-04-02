@@ -30,8 +30,8 @@ const RoleDrawer = ({ id, data }) => {
 		const fetchPermissions = async () => {
 			try {
 				const res = await RoleServices.getAllPermissions(); // create this API
-				const visiblePermissions = res.records.filter((p) => p);
-				// const visiblePermissions = res.records.filter((p) => p.show);
+				// const visiblePermissions = res.records.filter((p) => p);
+				const visiblePermissions = res.records.filter((p) => p.show);
 				setPermissions(visiblePermissions);
 
 				const grouped = visiblePermissions.reduce((acc, perm) => {
