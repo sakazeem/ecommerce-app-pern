@@ -23,6 +23,7 @@ const ProductsPage = () => {
   const paramsSearch = searchParams.get("search");
   const store = useStore();
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [resolvedCategory, setResolvedCategory] = useState(null);
   useScrollRestoration();
 
   const [selectedFilters, setSelectedFilters] = useState({
@@ -133,6 +134,7 @@ const ProductsPage = () => {
                 paramsBrand={paramsBrand}
                 defaultFilters={defaultFilters}
                 setDefaultFilters={setDefaultFilters}
+                onCategoryResolved={setResolvedCategory}
               />
             </div>
           </aside>
@@ -140,11 +142,13 @@ const ProductsPage = () => {
           <section className="md:col-span-3">
             <h4 className="h4 font-bold mb-4 border-b pb-1">
               Results
-              {/* {data?.pages[0]?.total > 0 && (
-								<span className="text-muted ml-2 text-sm font-normal">
-									(Showing {products.length} of {data.pages[0].total})
-								</span>
-							)} */}
+              {resolvedCategory && (
+                <span>
+                  {" > "}
+                  {resolvedCategory.translations?.[0]?.title ??
+                    resolvedCategory.title}
+                </span>
+              )}
             </h4>
 
             {isLoading ? (
