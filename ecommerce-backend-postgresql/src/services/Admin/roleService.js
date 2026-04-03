@@ -28,12 +28,22 @@ const roleService = createBaseService(db.role, {
 // Using userId logic from request
 async function createRole(req) {
 	const userId = commonUtils.getUserId(req);
-	return roleService.create(req.body, userId);
+	const { permissions } = req.body;
+	const role = await roleService.create(req.body, userId);
+	if (permissions.length > 0) {
+		const currentRoles = await db.role.findByPk(role.id);
+		await currentRoles.setPermissions(permissions);
+	}
+	return role;
 }
 
 async function updateRole(req) {
 	const userId = commonUtils.getUserId(req);
-	return roleService.update(req.params.roleId, req.body, userId);
+	const { permissions } = req.body;
+	const role = await roleService.update(req.params.roleId, req.body, userId);
+	const currentRoles = await db.role.findByPk(req.params.roleId);
+	await currentRoles.setPermissions(permissions);
+	return role;
 }
 
 async function softDeleteRoleById(req) {
