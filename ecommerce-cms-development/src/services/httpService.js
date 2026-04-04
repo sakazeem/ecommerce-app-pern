@@ -83,6 +83,13 @@ instance.interceptors.response.use(
 				window.location.href = "/login";
 			}
 		}
+		// ✅ HANDLE 403 (NEW)
+		if (error.response?.status === 403) {
+			// prevent infinite redirect loop
+			if (window.location.pathname !== "/forbidden") {
+				window.location.href = "/forbidden";
+			}
+		}
 
 		return Promise.reject(error);
 	},

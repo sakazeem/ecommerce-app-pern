@@ -8,6 +8,9 @@ const BrandServices = {
 	getAllBrands: async (query) => {
 		return requests.get(`/brand${query ? `?${query}` : ""}`);
 	},
+	getAllBrandsForOptions: async () => {
+		return requests.get("/brand/options");
+	},
 
 	getBrandById: async (id) => {
 		return requests.get(`/brand/${id}`);

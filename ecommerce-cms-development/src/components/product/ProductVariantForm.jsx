@@ -113,7 +113,7 @@ const ProductVariantForm = ({
 	console.log(generatedVariants, "chkking generatedVariants");
 
 	useEffect(() => {
-		AttributeServices.getActiveAttributes().then((v) =>
+		AttributeServices.getActiveAttributesForOptions().then((v) =>
 			setAttribtes(v.records),
 		);
 	}, []);

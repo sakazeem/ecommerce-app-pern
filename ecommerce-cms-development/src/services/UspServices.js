@@ -8,6 +8,9 @@ const UspServices = {
 	getAllUsps: async () => {
 		return requests.get("/usp");
 	},
+	getAllUspsForOptions: async () => {
+		return requests.get("/usp/options");
+	},
 
 	getUspById: async (id) => {
 		return requests.get(`/usp/${id}`);

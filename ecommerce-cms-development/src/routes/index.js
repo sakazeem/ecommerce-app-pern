@@ -39,6 +39,7 @@ const Setting = lazy(() => import("@/pages/Setting"));
 const StoreHome = lazy(() => import("@/pages/StoreHome"));
 const StoreSetting = lazy(() => import("@/pages/StoreSetting"));
 const Notifications = lazy(() => import("@/pages/Notifications"));
+const Forbidden = lazy(() => import("@/pages/forbidden/Forbidden"));
 /*
 //  * ⚠ These are internal routes!
 //  * They will be rendered inside the app, using the default `containers/Layout`.
@@ -188,6 +189,10 @@ const routes = [
 	{
 		path: "/homepage",
 		component: Homepage,
+	},
+	{
+		path: "/forbidden",
+		component: Forbidden,
 	},
 ];
 

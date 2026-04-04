@@ -131,6 +131,7 @@ const RoleDrawer = ({ id, data }) => {
 			})();
 		} else {
 			reset();
+			setSelectedPermissions([]);
 		}
 	}, [id, isDrawerOpen, setValue, clearErrors, data]);
 
