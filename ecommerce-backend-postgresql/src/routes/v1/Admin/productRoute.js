@@ -47,7 +47,7 @@ router
 		adminProductController.getProductById
 	)
 	.patch(
-		checkPermission('update_product'),
+		checkPermission('edit_product'),
 		// validate(adminProductValidation.updateProduct),
 		adminProductController.updateProduct
 	)

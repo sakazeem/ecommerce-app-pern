@@ -18,6 +18,11 @@ router
 		validate(adminAttributeValidation.createAttribute),
 		adminAttributeController.createAttribute
 	);
+
+router.route('/options').get(
+	// validate(adminAttributeValidation.getAttributes),
+	adminAttributeController.getAttributes
+);
 router.route('/filters').get(adminAttributeController.getFilterAttributes);
 
 router
@@ -28,7 +33,7 @@ router
 		adminAttributeController.getAttributeById
 	)
 	.patch(
-		checkPermission('update_filter'),
+		checkPermission('edit_filter'),
 		validate(adminAttributeValidation.updateAttribute),
 		adminAttributeController.updateAttribute
 	)

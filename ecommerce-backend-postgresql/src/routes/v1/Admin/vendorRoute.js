@@ -27,7 +27,7 @@ router
 		adminVendorController.getVendorById
 	)
 	.patch(
-		// checkPermission('update_vendor'),
+		// checkPermission('edit_vendor'),
 		validate(adminVendorValidation.updateVendor),
 		adminVendorController.updateVendor
 	)
@@ -36,13 +36,11 @@ router
 		validate(adminVendorValidation.deleteVendor),
 		adminVendorController.softDeleteVendor
 	);
-router
-	.route('/permanent/:vendor')
-	.delete(
-		// checkPermission('delete_vendor'),
-		validate(adminVendorValidation.deleteVendor),
-		adminVendorController.permanentDeleteVendor
-	);
+router.route('/permanent/:vendor').delete(
+	// checkPermission('delete_vendor'),
+	validate(adminVendorValidation.deleteVendor),
+	adminVendorController.permanentDeleteVendor
+);
 
 router.route('/import').post(adminVendorController.importVendors);
 

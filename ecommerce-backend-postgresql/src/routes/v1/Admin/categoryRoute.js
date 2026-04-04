@@ -27,7 +27,6 @@ router
 router
 	.route('/options')
 	.get(
-		checkPermission('view_categoryfilter'),
 		validate(adminCategoryValidation.getCategoriesOptions),
 		adminCategoryController.getCategoriesForOptions
 	);
@@ -40,7 +39,7 @@ router
 		adminCategoryController.getCategoryById
 	)
 	.patch(
-		checkPermission('update_filter'),
+		checkPermission('edit_filter'),
 		validate(adminCategoryValidation.updateCategory),
 		adminCategoryController.updateCategory
 	)

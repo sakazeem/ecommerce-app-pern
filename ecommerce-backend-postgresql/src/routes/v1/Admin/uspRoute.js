@@ -20,6 +20,10 @@ router
 	);
 
 router
+	.route('/options')
+	.get(validate(adminUspValidation.getUsps), adminUspController.getUsps);
+
+router
 	.route('/:uspId')
 	.get(
 		checkPermission('view_filter'),
@@ -27,7 +31,7 @@ router
 		adminUspController.getUspById
 	)
 	.patch(
-		checkPermission('update_filter'),
+		checkPermission('edit_filter'),
 		validate(adminUspValidation.updateUsp),
 		adminUspController.updateUsp
 	)

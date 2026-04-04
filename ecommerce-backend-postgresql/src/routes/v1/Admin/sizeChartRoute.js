@@ -27,7 +27,7 @@ router
 		adminSizeChartController.getSizeChartById
 	)
 	.patch(
-		// checkPermission('update_sizeChart'),
+		// checkPermission('edit_sizeChart'),
 		validate(adminSizeChartValidation.updateSizeChart),
 		adminSizeChartController.updateSizeChart
 	)
@@ -36,12 +36,10 @@ router
 		validate(adminSizeChartValidation.deleteSizeChart),
 		adminSizeChartController.softDeleteSizeChart
 	);
-router
-	.route('/permanent/:sizeChart')
-	.delete(
-		// checkPermission('delete_sizeChart'),
-		validate(adminSizeChartValidation.deleteSizeChart),
-		adminSizeChartController.permanentDeleteSizeChart
-	);
+router.route('/permanent/:sizeChart').delete(
+	// checkPermission('delete_sizeChart'),
+	validate(adminSizeChartValidation.deleteSizeChart),
+	adminSizeChartController.permanentDeleteSizeChart
+);
 
 module.exports = router;

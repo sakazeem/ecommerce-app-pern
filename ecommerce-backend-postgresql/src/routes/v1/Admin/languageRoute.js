@@ -27,7 +27,7 @@ router
 		adminLanguageController.getLanguageById
 	)
 	.patch(
-		// checkPermission('update_language'),
+		// checkPermission('edit_language'),
 		validate(adminLanguageValidation.updateLanguage),
 		adminLanguageController.updateLanguage
 	)
@@ -36,12 +36,10 @@ router
 		validate(adminLanguageValidation.deleteLanguage),
 		adminLanguageController.softDeleteLanguage
 	);
-router
-	.route('/permanent/:language')
-	.delete(
-		// checkPermission('delete_language'),
-		validate(adminLanguageValidation.deleteLanguage),
-		adminLanguageController.permanentDeleteLanguage
-	);
+router.route('/permanent/:language').delete(
+	// checkPermission('delete_language'),
+	validate(adminLanguageValidation.deleteLanguage),
+	adminLanguageController.permanentDeleteLanguage
+);
 
 module.exports = router;

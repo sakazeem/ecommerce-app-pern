@@ -19,6 +19,11 @@ router
 		adminBrandController.createBrand
 	);
 
+router.route('/options').get(
+	// validate(adminBrandValidation.getBrands),
+	adminBrandController.getBrands
+);
+
 router
 	.route('/:brandId')
 	.get(
@@ -27,7 +32,7 @@ router
 		adminBrandController.getBrandById
 	)
 	.patch(
-		checkPermission('update_filter'),
+		checkPermission('edit_filter'),
 		// validate(adminBrandValidation.updateBrand),
 		adminBrandController.updateBrand
 	)

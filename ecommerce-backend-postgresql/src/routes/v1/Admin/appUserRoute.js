@@ -12,7 +12,7 @@ router.route('/').get(
 	adminAppUserController.getAppUsers
 );
 router.route('/:id').patch(
-	// checkPermission('update_app_user'),
+	// checkPermission('edit_app_user'),
 	adminAppUserController.updateAppUser
 );
 

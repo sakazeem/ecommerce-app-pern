@@ -12,7 +12,7 @@ router
 router
 	.route('/:roleId')
 	.get(checkPermission('view_role'), adminRoleController.getRoleById)
-	.patch(checkPermission('update_role'), adminRoleController.updateRole)
+	.patch(checkPermission('edit_role'), adminRoleController.updateRole)
 	.delete(checkPermission('delete_role'), adminRoleController.softDeleteRole);
 router
 	.route('/permanent/:role')

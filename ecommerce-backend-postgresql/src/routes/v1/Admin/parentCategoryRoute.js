@@ -27,7 +27,7 @@ router
 		adminParentCategoryController.getParentCategoryById
 	)
 	.patch(
-		// checkPermission('update_parentCategory'),
+		// checkPermission('edit_parentCategory'),
 		validate(adminParentCategoryValidation.updateParentCategory),
 		adminParentCategoryController.updateParentCategory
 	)

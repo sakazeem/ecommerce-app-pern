@@ -21,18 +21,16 @@ router
 		// validate(adminHomepageSectionsValidation.createSection),
 		adminHomepageSectionsController.createHomepageSection
 	);
-router
-	.route('/reorder')
-	.patch(
-		checkPermission('update_homepage'),
-		// validate(adminHomepageSectionsValidation.reorderSections),
-		adminHomepageSectionsController.reorderHomepageSections
-	);
+router.route('/reorder').patch(
+	checkPermission('edit_homepage'),
+	// validate(adminHomepageSectionsValidation.reorderSections),
+	adminHomepageSectionsController.reorderHomepageSections
+);
 
 router
 	.route('/:sectionId')
 	.patch(
-		checkPermission('update_homepage'),
+		checkPermission('edit_homepage'),
 		// validate(adminHomepageSectionsValidation.updateSection),
 		adminHomepageSectionsController.updateHomepageSection
 	)

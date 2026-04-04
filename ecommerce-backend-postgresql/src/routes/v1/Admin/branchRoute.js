@@ -27,7 +27,7 @@ router
 		adminBranchController.getBranchById
 	)
 	.patch(
-		// checkPermission('update_branch'),
+		// checkPermission('edit_branch'),
 		validate(adminBranchValidation.updateBranch),
 		adminBranchController.updateBranch
 	)
