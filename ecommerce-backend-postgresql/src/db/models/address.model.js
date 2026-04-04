@@ -14,6 +14,11 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: true,
 			},
+			is_default: {
+				type: DataTypes.BOOLEAN,
+				allowNull: false,
+				defaultValue: false,
+			},
 			address: { type: DataTypes.TEXT, allowNull: false },
 			apartment: { type: DataTypes.TEXT, allowNull: true },
 			city: {
@@ -29,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 			},
 			type: {
-				type: DataTypes.ENUM('general', 'shipping', 'billing'), // use general for both/all
+				type: DataTypes.ENUM('shipping', 'billing'), // use general for both/all
 				allowNull: false,
 			},
 			app_user_id: {

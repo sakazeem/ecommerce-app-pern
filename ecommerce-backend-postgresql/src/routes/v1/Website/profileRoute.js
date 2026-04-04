@@ -6,5 +6,8 @@ const router = express.Router();
 router.route('/').patch(apiAppUserController.updateAppUser);
 router.route('/address').patch(apiAppUserController.addOrUpdateAddress);
 router.route('/address/:id').delete(apiAppUserController.deleteAddress);
+router
+	.route('/address/:id/default')
+	.patch(apiAppUserController.setDefaultAddress);
 
 module.exports = router;

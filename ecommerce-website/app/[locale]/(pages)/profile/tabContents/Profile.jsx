@@ -239,48 +239,6 @@ const Profile = () => {
 					</div> */}
 				</div>
 			</div>
-			<div className="space-y-4 mt-4">
-				{user?.addresses?.length > 0 ? (
-					user.addresses.map((address, idx) => {
-						return (
-							<div
-								key={idx}
-								className="bg-white rounded-lg p-6 border-2 border-secondary">
-								<div className="flex justify-between items-start mb-4">
-									<div>
-										<div className="font-semibold text-lg mb-2 capitalize">
-											{address.type} Address
-										</div>
-										<p className="text-gray-600">
-											{address.address} {address.appartment || ""}
-										</p>
-										<p className="text-gray-600">
-											{address.city} {address.postal_code}
-										</p>
-										<p className="text-gray-600">{address.country}</p>
-									</div>
-									<span className="bg-secondary/20 text-secondary px-3 py-1 rounded-full text-sm">
-										{address.type}
-									</span>
-								</div>
-								{/* <div className="flex gap-3">
-						<button className="text-secondary hover:text-secondary font-medium">
-							Edit
-						</button>
-						<button className="text-gray-500 hover:text-gray-600 font-medium">
-							Delete
-						</button>
-					</div> */}
-							</div>
-						);
-					})
-				) : (
-					<></>
-				)}
-				{/* <button className="w-full border-2 border-dashed border-gray-300 rounded-lg p-6 text-gray-500 hover:border-secondary hover:text-secondary transition-colors">
-					+ Add New Address
-				</button> */}
-			</div>
 		</>
 	);
 };

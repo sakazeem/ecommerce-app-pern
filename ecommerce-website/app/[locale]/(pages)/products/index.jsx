@@ -13,6 +13,7 @@ import { useStore } from "@/app/providers/StoreProvider";
 import ProductServices from "@/app/services/ProductServices";
 import { useScrollRestoration } from "@/app/hooks/useScrollRestoration";
 import { SlidersHorizontal } from "lucide-react";
+import { loadThemeComponents } from "@/app/components/Themes/autoLoader";
 
 const PRODUCTS_PER_PAGE = 12;
 
@@ -25,6 +26,7 @@ const ProductsPage = () => {
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [resolvedCategory, setResolvedCategory] = useState(null);
   useScrollRestoration();
+  const { Footer } = loadThemeComponents(store.themeName);
 
   const [selectedFilters, setSelectedFilters] = useState({
     categories: [],
@@ -111,100 +113,104 @@ const ProductsPage = () => {
   }, [isFetchingNextPage, hasNextPage, fetchNextPage, loaderRef]);
 
   return (
-    <main>
-      <section className="container-layout section-layout">
-        {/* Mobile Filter Button */}
-        <div className="md:hidden flex justify-between items-center mb-4">
-          <button
-            onClick={() => setMobileFilterOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 border rounded-lg bg-white shadow-sm"
-          >
-            <SlidersHorizontal size={18} />
-            Filters
-          </button>
-        </div>
-        <section className="grid md:grid-cols-4 gap-10 relative">
-          {/* Desktop Sidebar */}
-          <aside className="md:col-span-1 max-md:hidden bg-light">
-            <div className="sticky/ top-46/">
-              <FilterSidebar
-                selectedFilters={selectedFilters}
-                setSelectedFilters={setSelectedFilters}
-                paramsCategory={paramsCategory}
-                paramsBrand={paramsBrand}
-                defaultFilters={defaultFilters}
-                setDefaultFilters={setDefaultFilters}
-                onCategoryResolved={setResolvedCategory}
-              />
-            </div>
-          </aside>
-
-          <section className="md:col-span-3">
-            <h4 className="h4 font-bold mb-4 border-b pb-1">
-              Results
-              {resolvedCategory && (
-                <span>
-                  {" > "}
-                  {resolvedCategory.translations?.[0]?.title ??
-                    resolvedCategory.title}
-                </span>
-              )}
-            </h4>
-
-            {isLoading ? (
-              <div className="flex justify-center py-20">
-                <SpinLoader />
+    <>
+      <main>
+        <section className="container-layout section-layout">
+          {/* Mobile Filter Button */}
+          <div className="md:hidden flex justify-between items-center mb-4">
+            <button
+              onClick={() => setMobileFilterOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 border rounded-lg bg-white shadow-sm"
+            >
+              <SlidersHorizontal size={18} />
+              Filters
+            </button>
+          </div>
+          <section className="grid md:grid-cols-4 gap-10 relative">
+            {/* Desktop Sidebar */}
+            <aside className="md:col-span-1 max-md:hidden bg-light">
+              <div className="sticky/ top-46/">
+                <FilterSidebar
+                  selectedFilters={selectedFilters}
+                  setSelectedFilters={setSelectedFilters}
+                  paramsCategory={paramsCategory}
+                  paramsBrand={paramsBrand}
+                  defaultFilters={defaultFilters}
+                  setDefaultFilters={setDefaultFilters}
+                  onCategoryResolved={setResolvedCategory}
+                />
               </div>
-            ) : products.length > 0 ? (
-              <>
-                {/* Render each page separately to ensure all products show */}
-                {data?.pages.map((page, pageIndex) => (
-                  <div key={pageIndex} className="mb-8">
-                    <ProductsSlider
-                      productsData={page.records}
-                      isSlider={false}
-                      showTitle={false}
-                    />
-                  </div>
-                ))}
+            </aside>
 
-                {/* Infinite scroll trigger */}
-                {hasNextPage && (
-                  <div ref={loaderRef} className="flex justify-center py-10">
-                    {isFetchingNextPage && <SpinLoader />}
-                  </div>
+            <section className="md:col-span-3">
+              <h4 className="h4 font-bold mb-4 border-b pb-1">
+                Results
+                {resolvedCategory && (
+                  <span>
+                    {" > "}
+                    {resolvedCategory.translations?.[0]?.title ??
+                      resolvedCategory.title}
+                  </span>
                 )}
-
-                {/* End of results indicator */}
-                {!hasNextPage && products.length > PRODUCTS_PER_PAGE && (
-                  <p className="text-center text-muted py-6 p4">
-                    You've reached the end of the results
-                  </p>
-                )}
-              </>
-            ) : (
-              <h4 className="h4 text-muted text-center section-layout">
-                No products found, please adjust filters
               </h4>
-            )}
+
+              {isLoading ? (
+                <div className="flex justify-center max-sm:min-h-screen py-20">
+                  <SpinLoader />
+                </div>
+              ) : products.length > 0 ? (
+                <>
+                  {/* Render each page separately to ensure all products show */}
+                  {data?.pages.map((page, pageIndex) => (
+                    <div key={pageIndex} className="mb-8">
+                      <ProductsSlider
+                        productsData={page.records}
+                        isSlider={false}
+                        showTitle={false}
+                      />
+                    </div>
+                  ))}
+
+                  {/* Infinite scroll trigger */}
+                  {hasNextPage && (
+                    <div
+                      ref={loaderRef}
+                      className="flex justify-center max-sm:min-h-screen py-10"
+                    >
+                      {isFetchingNextPage && <SpinLoader />}
+                    </div>
+                  )}
+
+                  {/* End of results indicator */}
+                  {!hasNextPage && products.length > PRODUCTS_PER_PAGE && (
+                    <p className="text-center text-muted py-6 p4">
+                      You've reached the end of the results
+                    </p>
+                  )}
+                </>
+              ) : (
+                <h4 className="h4 text-muted text-center section-layout">
+                  No products found, please adjust filters
+                </h4>
+              )}
+            </section>
           </section>
         </section>
-      </section>
 
-      {/* Mobile Drawer */}
-      {mobileFilterOpen && (
-        <MobileFilterDrawer
-          onClose={() => setMobileFilterOpen(false)}
-          selectedFilters={selectedFilters}
-          setSelectedFilters={setSelectedFilters}
-          paramsCategory={paramsCategory}
-          paramsBrand={paramsBrand}
-          defaultFilters={defaultFilters}
-          setDefaultFilters={setDefaultFilters}
-        />
-      )}
+        {/* Mobile Drawer */}
+        {mobileFilterOpen && (
+          <MobileFilterDrawer
+            onClose={() => setMobileFilterOpen(false)}
+            selectedFilters={selectedFilters}
+            setSelectedFilters={setSelectedFilters}
+            paramsCategory={paramsCategory}
+            paramsBrand={paramsBrand}
+            defaultFilters={defaultFilters}
+            setDefaultFilters={setDefaultFilters}
+          />
+        )}
 
-      {/* <div className="w-full h-px bg-border-color" />
+        {/* <div className="w-full h-px bg-border-color" />
 
 			<section className="container-layout section-layout">
 				{recentlyViewed.length > 0 && (
@@ -216,7 +222,10 @@ const ProductsPage = () => {
 					/>
 				)}
 			</section> */}
-    </main>
+      </main>
+
+      {!isLoading && <Footer />}
+    </>
   );
 };
 

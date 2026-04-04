@@ -40,8 +40,19 @@ const deleteAddress = catchAsync(async (req, res) => {
 	res.send({ success: true });
 });
 
+const setDefaultAddress = catchAsync(async (req, res) => {
+	const userId = req.user.id;
+	const result = await apiAppUserService.setDefaultAddress(
+		req.params.id,
+		userId
+	);
+	res.send(result);
+});
+
+
 module.exports = {
 	updateAppUser,
 	addOrUpdateAddress,
 	deleteAddress,
+	setDefaultAddress
 };
