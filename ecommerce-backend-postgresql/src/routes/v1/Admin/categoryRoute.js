@@ -18,6 +18,10 @@ router
 		validate(adminCategoryValidation.createCategory),
 		adminCategoryController.createCategory
 	);
+router.route('/cms-options').get(
+	// validate(adminCategoryValidation.getCategories),
+	adminCategoryController.getCategories
+);
 router.route('/similar').get(adminCategoryController.findSimilarCategories);
 router.route('/fix-slugs').patch(adminCategoryController.fixSlugsCategories);
 router
