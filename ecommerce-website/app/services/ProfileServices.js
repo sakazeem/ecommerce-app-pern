@@ -1,12 +1,9 @@
 import requests from "./httpServices";
 
 const ProfileServices = {
-  addOrUpdateAddress: async (body) => {
-    return requests.patch("/profile/address", body);
-  },
-  deleteAddress: async (id) => {
-    return requests.delete(`/profile/address/${id}`);
-  },
+  addOrUpdateAddress: (body) => requests.patch("/profile/address", body),
+  deleteAddress: (id) => requests.delete(`/profile/address/${id}`),
+  setDefaultAddress: (id) => requests.patch(`/profile/address/${id}/default`),
 };
 
 export default ProfileServices;

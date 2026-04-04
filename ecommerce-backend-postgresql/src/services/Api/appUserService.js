@@ -116,38 +116,89 @@ async function addOrUpdateAddress(data, userId) {
 	const { id, address, apartment, city, country, postal_code, type, title } =
 		data;
 
-	if (!type) {
+	if (!type)
 		throw new ApiError(httpStatus.BAD_REQUEST, 'Address type is required');
-	}
 
-	if (id) {
-		const existing = await db.address.findOne({
-			where: { id, app_user_id: userId },
+	return await db.sequelize.transaction(async (t) => {
+		// Count existing addresses of this type for this user
+		const count = await db.address.count({
+			where: { app_user_id: userId, type },
+			transaction: t,
 		});
-		if (!existing)
-			throw new ApiError(httpStatus.NOT_FOUND, 'Address not found');
-		await existing.update({
-			address,
-			apartment,
-			city,
-			country,
-			postal_code,
-			type,
-			title,
-		});
-		return existing;
-	}
 
-	return await db.address.create({
-		address,
-		apartment,
-		city,
-		country,
-		postal_code,
-		type,
-		title: title || null,
-		app_user_id: userId,
+		if (id) {
+			// UPDATE existing
+			const existing = await db.address.findOne({
+				where: { id, app_user_id: userId },
+				transaction: t,
+			});
+			if (!existing)
+				throw new ApiError(httpStatus.NOT_FOUND, 'Address not found');
+			await existing.update(
+				{ address, apartment, city, country, postal_code, type, title },
+				{ transaction: t }
+			);
+			return existing;
+		}
+
+		// CREATE new — first of its type is auto-default
+		const isFirst = count === 0;
+		return await db.address.create(
+			{
+				address,
+				apartment,
+				city,
+				country,
+				postal_code,
+				type,
+				title,
+				app_user_id: userId,
+				is_default: isFirst,
+			},
+			{ transaction: t }
+		);
 	});
+}
+
+async function setDefaultAddress(addressId, userId) {
+	const address = await db.address.findOne({
+		where: { id: addressId, app_user_id: userId },
+	});
+	if (!address) throw new ApiError(httpStatus.NOT_FOUND, 'Address not found');
+
+	await db.sequelize.transaction(async (t) => {
+		// Unset all defaults of same type
+		await db.address.update(
+			{ is_default: false },
+			{
+				where: { app_user_id: userId, type: address.type },
+				transaction: t,
+			}
+		);
+		// Set new default
+		await address.update({ is_default: true }, { transaction: t });
+	});
+
+	return { success: true };
+}
+
+async function deleteAddress(addressId, userId) {
+	const address = await db.address.findOne({
+		where: { id: addressId, app_user_id: userId },
+	});
+	if (!address) throw new ApiError(httpStatus.NOT_FOUND, 'Address not found');
+
+	await address.destroy();
+
+	// If deleted was default, promote the next one
+	if (address.is_default) {
+		const next = await db.address.findOne({
+			where: { app_user_id: userId, type: address.type },
+		});
+		if (next) await next.update({ is_default: true });
+	}
+
+	return { success: true };
 }
 
 async function resetPassword(userId, newPassword) {
@@ -181,4 +232,5 @@ module.exports = {
 	resetPassword,
 	addOrUpdateAddress,
 	deleteAddress,
+	setDefaultAddress
 };

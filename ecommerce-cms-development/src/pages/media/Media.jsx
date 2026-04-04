@@ -38,6 +38,7 @@ const Media = ({
   // const [selectedImage, setSelectedImage] = useState([]);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [hoveredImage, setHoveredImage] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   console.log(variantImages, "chkking variantImages");
 
@@ -78,6 +79,10 @@ const Media = ({
 
   console.log(isSelectImage, "chkking selectedImage111");
 
+  const filteredRecords = mediaData.records.filter((img) =>
+    img.title?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
   return (
     <div
       className={`${isUnderModal ? "max-h-[60vh] overflow-y-auto" : ""} pr-2 scrollbar-thin scrollbar-thumb-gray-300`}
@@ -87,8 +92,17 @@ const Media = ({
       <div className="my-8">
         <Uploader />
       </div>
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search by image title..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-customGray-700 dark:border-customGray-600 dark:text-white"
+        />
+      </div>
 
-      {mediaData.records.length === 0 ? (
+      {filteredRecords.length === 0 ? (
         <Card className="text-center py-12">
           <CardBody>
             <FiImage className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -105,7 +119,7 @@ const Media = ({
           } gap-4`}
         >
           {/* <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4"> */}
-          {mediaData.records.map((image) => (
+          {filteredRecords.map((image) => (
             <Card
               key={image.id}
               className="group relative overflow-hidden hover:shadow-lg transition-shadow duration-200 cursor-pointer border"
