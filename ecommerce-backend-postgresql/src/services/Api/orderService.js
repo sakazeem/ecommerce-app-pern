@@ -11,6 +11,7 @@ const ApiError = require('../../utils/ApiError');
 const { sendEmail } = require('../email.service');
 const { addOrUpdateAddress } = require('./appUserService');
 const config = require('../../config/config');
+const { imageService } = require('../index.js');
 
 async function confirmOrder(req) {
 	const { customer, billingAddress, items, summary, userId } = req.body;
@@ -122,9 +123,30 @@ async function confirmOrder(req) {
 
 		const orderId = createdOrder.tracking_id;
 
-		const receiptAttachment = receiptFile
-			? [{ filename: receiptFile.originalname, path: receiptFile.path }]
-			: [];
+		let receiptUrl = null;
+		const receiptAttachment = [];
+
+		if (receiptFile) {
+			try {
+				const result = await imageService.mediaUpload(receiptFile);
+				receiptUrl = result.url;
+			} catch (e) {
+				console.error('Receipt upload failed:', e.message);
+			}
+
+			// Use buffer instead of path — works reliably with all SMTP providers
+			receiptAttachment.push({
+				filename: receiptFile.originalname,
+				content: fs.readFileSync(receiptFile.path), // Buffer
+				contentType: receiptFile.mimetype,
+			});
+		}
+		console.log('Receipt file:', req.file?.originalname, req.file?.path);
+
+		if (receiptUrl) {
+			createdOrder.payment_receipt_url = receiptUrl;
+			await createdOrder.save({ transaction });
+		}
 
 		if (customer.email) {
 			await sendEmail({
@@ -166,17 +188,17 @@ async function confirmOrder(req) {
 
 		await transaction.commit();
 
-		if (receiptFile?.path) {
-			fs.unlink(receiptFile.path, () => {});
-		}
+		// if (receiptFile?.path) {
+		// 	fs.unlink(receiptFile.path, () => {});
+		// }
 
 		return createdOrder;
 	} catch (error) {
 		await transaction.rollback();
 
-		if (receiptFile?.path) {
-			fs.unlink(receiptFile.path, () => {});
-		}
+		// if (receiptFile?.path) {
+		// 	fs.unlink(receiptFile.path, () => {});
+		// }
 
 		console.log(error.message || error);
 

@@ -102,6 +102,8 @@ module.exports = (sequelize, DataTypes) => {
 				onDelete: 'SET NULL',
 				onUpdate: 'CASCADE',
 			},
+
+			payment_receipt_url: { type: DataTypes.STRING, allowNull: true },
 		},
 		{
 			/**
