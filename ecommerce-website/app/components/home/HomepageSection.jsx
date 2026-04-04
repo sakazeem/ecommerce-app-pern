@@ -39,7 +39,6 @@ export default function HomepageSection({ section }) {
               poster: s.poster
                 ? ENV_VARIABLES.IMAGE_BASE_URL + s.poster
                 : undefined,
-              categorySlug: s.categorySlug || s.categoryId || null,
             }))}
             autoplay={config.autoplay}
           />

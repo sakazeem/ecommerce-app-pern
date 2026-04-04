@@ -316,30 +316,102 @@ img {
   opacity: 1;
 }
 
-.video-slider .swiper-slide {
-  transition: all 0.35s ease;
-  transform: scale(0.9);
-  opacity: 0.75;
-}
-
-.video-slider .swiper-slide-active {
-  transform: scale(1);
-  opacity: 1;
-}
-
-.video-slider .swiper-pagination {
-  margin-top: 25px;
+.reel-slider-wrapper {
+  max-width: 1100px;
+  padding: 20px 10px;
+  margin: 0 60px 35px;
+  overflow: hidden;
   position: relative;
 }
 
-.video-slider .swiper-pagination-bullet {
-  width: 60px;
-  height: 3px;
-  border-radius: 0;
-  background: #bdbdbd;
-  opacity: 1;
+.reel-slider-wrapper .swiper-slide {
+  background: #ccc;
+  display: flex;
+  height: auto;
+  flex-direction: column;
+  border-radius: 20px;
+  box-shadow: 0 10px 10px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+  overflow: hidden;
+  cursor: pointer;
 }
 
-.video-slider .swiper-pagination-bullet-active {
-  background: #000;
+.reel-slider-wrapper .swiper-slide:hover {
+  transform: translateY(-10px);
+}
+
+.reel-video {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+}
+
+.reel-swiper-pagination {
+  text-align: center;
+  margin-top: 12px;
+}
+
+.reel-swiper-pagination .swiper-pagination-bullet {
+  height: 15px;
+  width: 15px;
+  opacity: 1;
+  overflow: hidden;
+  position: relative;
+  background: #b1b3f8;
+}
+
+.reel-swiper-pagination .swiper-pagination-bullet-active {
+  background: #a4a7fd;
+}
+
+.reel-swiper-pagination .swiper-pagination-bullet-active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: #6366f1;
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation: reel-autoplay-loading 5s linear forwards;
+}
+
+.reel-slider-section:hover
+  .reel-swiper-pagination
+  .swiper-pagination-bullet-active::before {
+  animation-play-state: paused;
+}
+
+@keyframes reel-autoplay-loading {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+.reel-swiper-slide-button {
+  color: #6366f1 !important;
+  transition: color 0.3s ease;
+}
+
+.reel-swiper-slide-button::after {
+  font-size: 20px !important;
+}
+
+.reel-swiper-slide-button:hover {
+  color: #8b5cf6 !important;
+}
+
+@media (max-width: 768px) {
+  .reel-slider-wrapper {
+    margin: 0 10px 25px;
+  }
+  .reel-swiper-slide-button {
+    display: none !important;
+  }
 }
