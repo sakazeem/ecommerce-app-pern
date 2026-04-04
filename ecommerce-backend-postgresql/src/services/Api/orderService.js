@@ -49,6 +49,17 @@ async function confirmOrder(req) {
 
 	if (userId) {
 		data.app_user_id = userId;
+		await db.app_user.update(
+			{
+				name: customer.name,
+				phone: customer.phone,
+			},
+			{
+				where: {
+					id: userId,
+				},
+			}
+		);
 		await addOrUpdateAddress(
 			{
 				address: customer.address,
