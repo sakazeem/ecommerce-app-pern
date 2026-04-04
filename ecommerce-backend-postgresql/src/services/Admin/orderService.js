@@ -342,6 +342,28 @@ async function createCCLBooking(data) {
 	} = data;
 
 	try {
+		console.log(
+			{
+				clients: config.cclCourier.clients, //Client ID to be Provided by Admin - MANDATORY
+				token: config.cclCourier.apiKey,
+				name, //Customer Name - MANDATORY
+				email, //Customer Email if any
+				mobile: phone, //Customer Mobile Number - MANDATORY
+				city: cityId, //City ID - MANDATORY -- API
+				address, //Customer Address - MANDATORY
+				instructions, //Order Instructions if Any
+				details: productDetails, //Product Details
+				qty: quantity, //Product Quantity eg. 1 or 2 or 3 - MANDATORY
+				weight, //Shipment Weight eg. 0.5 or 1 or 2 - MANDATORY
+				total, //COD Amount - MANDATORY
+				open_allow: '1', //Open Allowed Valuies 1 & 0 - Optional
+				shipment_services: shipmentService, //1 for TCS, 21 for TRAX, 3 for LEO, 17 for POSTEX, RIDER, CALL
+				client_order_id: tracking_id, //Your Internal Order ID,
+				shopify_order_id: '', //Shopify Order ID: [gid://shopify/Order/1234567890]
+				client_store_id: 1049, //Client Store ID: [Eg: 12345| Find in Stores Section in Portal] - Optional
+			},
+			'ccl booking data'
+		);
 		const booking = await axios.post('https://oyeah.pk/bookingapi', {
 			clients: config.cclCourier.clients, //Client ID to be Provided by Admin - MANDATORY
 			token: config.cclCourier.apiKey,
@@ -361,8 +383,13 @@ async function createCCLBooking(data) {
 			shopify_order_id: '', //Shopify Order ID: [gid://shopify/Order/1234567890]
 			client_store_id: 1049, //Client Store ID: [Eg: 12345| Find in Stores Section in Portal] - Optional
 		});
+
+		console.log(booking.data, 'ccl booking response');
+
 		return booking.data.data;
 	} catch (error) {
+		console.log(error.message || error, 'error createing ccl booking');
+
 		throw new ApiError(
 			httpStatus.INTERNAL_SERVER_ERROR,
 			error.message || 'error creating CCL booking'
