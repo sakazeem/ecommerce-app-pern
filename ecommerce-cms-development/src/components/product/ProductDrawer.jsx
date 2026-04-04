@@ -445,7 +445,7 @@ const ProductDrawer = ({ id, data }) => {
 		UspServices.getAllUspsForOptions().then((data) => {
 			setUsps(data?.records);
 		});
-		CategoryServices.getAllCategoriesForOptions().then((data) => {
+		CategoryServices.getAllCategoriesForCmsOptions().then((data) => {
 			setCategories(data?.records);
 		});
 		VendorServices.getAllVendorsForOptions().then((data) => {
