@@ -227,7 +227,10 @@ export default function CheckoutPage() {
 			[name]: type === "checkbox" ? checked : value,
 		}));
 	};
-
+	const validatePhone = (phone) => {
+		const regex = /^\+?\d{10,15}$/;
+		return regex.test(phone);
+	};
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 

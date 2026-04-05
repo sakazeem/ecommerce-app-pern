@@ -148,7 +148,11 @@ const Footer = ({ showOnMobile = true }) => {
 												link.text.includes("@") ? "lowercase" : "capitalize"
 											}`}>
 											{link.link ? (
-												<BaseLink href={link.link}>{link.text}</BaseLink>
+												<BaseLink
+													href={link.link}
+													target={link.target || "_self"}>
+													{link.text}
+												</BaseLink>
 											) : (
 												link.text
 											)}
