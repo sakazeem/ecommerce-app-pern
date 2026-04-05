@@ -6,6 +6,10 @@ const { getOffset } = require('../../utils/query');
 const { Op, where } = require('sequelize');
 const ExcelJS = require('exceljs');
 const { default: axios } = require('axios');
+const { sendEmail } = require('../email.service');
+const {
+	orderInProcessCustomerTemplate,
+} = require('../../config/emailTemplates/orderInprocessUser');
 
 async function getOrderById(req) {
 	const { orderId } = req.params;
@@ -198,6 +202,11 @@ async function updateOrderStatus(req) {
 				transaction,
 			});
 		}
+		order.order_item = await db.order_item.findAll({
+			where: { order_id: orderId },
+			transaction,
+		});
+
 		const oldStatus = order.status;
 
 		// 2️⃣ Deduct stock ONLY when pending → in_progress
@@ -300,6 +309,7 @@ async function updateOrderStatus(req) {
 				bookingId: booking.id,
 				trackingId: booking.tracking_number,
 			});
+			await sendInprocessEmailToUser(order, booking.tracking_number);
 		}
 
 		// 3️⃣ Update order status
@@ -342,34 +352,12 @@ async function createCCLBooking(data) {
 	} = data;
 
 	try {
-		console.log(
-			{
-				clients: config.cclCourier.clients, //Client ID to be Provided by Admin - MANDATORY
-				token: config.cclCourier.apiKey,
-				name, //Customer Name - MANDATORY
-				email, //Customer Email if any
-				mobile: phone, //Customer Mobile Number - MANDATORY
-				city: cityId, //City ID - MANDATORY -- API
-				address, //Customer Address - MANDATORY
-				instructions, //Order Instructions if Any
-				details: productDetails, //Product Details
-				qty: quantity, //Product Quantity eg. 1 or 2 or 3 - MANDATORY
-				weight, //Shipment Weight eg. 0.5 or 1 or 2 - MANDATORY
-				total, //COD Amount - MANDATORY
-				open_allow: '1', //Open Allowed Valuies 1 & 0 - Optional
-				shipment_services: shipmentService, //1 for TCS, 21 for TRAX, 3 for LEO, 17 for POSTEX, RIDER, CALL
-				client_order_id: tracking_id, //Your Internal Order ID,
-				shopify_order_id: '', //Shopify Order ID: [gid://shopify/Order/1234567890]
-				client_store_id: 1049, //Client Store ID: [Eg: 12345| Find in Stores Section in Portal] - Optional
-			},
-			'ccl booking data'
-		);
 		const booking = await axios.post('https://oyeah.pk/bookingapi', {
 			clients: config.cclCourier.clients, //Client ID to be Provided by Admin - MANDATORY
 			token: config.cclCourier.apiKey,
 			name, //Customer Name - MANDATORY
 			email, //Customer Email if any
-			mobile: phone, //Customer Mobile Number - MANDATORY
+			mobile: phone || '03111111111', //Customer Mobile Number - MANDATORY
 			city: cityId, //City ID - MANDATORY -- API
 			address, //Customer Address - MANDATORY
 			instructions, //Order Instructions if Any
@@ -388,13 +376,60 @@ async function createCCLBooking(data) {
 
 		return booking.data.data;
 	} catch (error) {
-		console.log(error.message || error, 'error createing ccl booking');
+		let message = 'Error creating CCL booking';
 
+		if (error.response) {
+			const apiMessage = error.response.data?.message;
+			const apiErrors = error.response.data?.errors;
+
+			message = apiMessage;
+
+			if (Array.isArray(apiErrors) && apiErrors.length > 0) {
+				message += `: ${apiErrors.join(', ')}`;
+			}
+		} else {
+			message = error.message;
+		}
+
+		throw new ApiError(httpStatus[error?.response?.status || 500], message);
 		throw new ApiError(
 			httpStatus.INTERNAL_SERVER_ERROR,
 			error.message || 'error creating CCL booking'
 		);
 	}
+}
+
+async function sendInprocessEmailToUser(order, courierTrackingId) {
+	const { app_user_id, guest_email, order_item } = order;
+
+	const email = app_user_id ? order.app_user?.email : guest_email || null;
+
+	await sendEmail({
+		// to: 'annasahmed1609@gmail.com',
+		to: email,
+		subject: `Order #${order.tracking_id} is in Process`,
+		html: orderInProcessCustomerTemplate({
+			orderId: order.tracking_id,
+			customerName: order.app_user_id
+				? order.app_user?.name
+				: `${order.guest_first_name || ''} ${
+						order.guest_last_name || ''
+				  }`.trim() || 'Customer',
+			items: order_item.map((item) => ({
+				title: item.product_title,
+				sku: item.sku,
+				quantity: item.quantity,
+				finalPrice: item.price,
+			})),
+			subtotal: order.order_amount,
+			shipping: order.shipping,
+			total: order.total,
+			tracking_id: courierTrackingId,
+		}),
+		attachments: [],
+	});
+
+	return true;
 }
 
 async function exportOrders(req, res) {

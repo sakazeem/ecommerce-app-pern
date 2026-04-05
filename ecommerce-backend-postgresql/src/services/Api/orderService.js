@@ -141,7 +141,6 @@ async function confirmOrder(req) {
 				contentType: receiptFile.mimetype,
 			});
 		}
-		console.log('Receipt file:', req.file?.originalname, req.file?.path);
 
 		if (receiptUrl) {
 			createdOrder.payment_receipt_url = receiptUrl;
