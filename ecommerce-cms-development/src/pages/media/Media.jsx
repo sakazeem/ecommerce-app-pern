@@ -129,9 +129,9 @@ const Media = ({
 
             return (
               <Card
-                key={image.id}
+                key={item.id}
                 className="group relative overflow-hidden hover:shadow-lg transition-shadow duration-200 cursor-pointer border"
-                onMouseEnter={() => setHoveredImage(image.id)}
+                onMouseEnter={() => setHoveredImage(item.id)}
                 onMouseLeave={() => setHoveredImage(null)}
                 onClick={() => {
                   if (!isSelectImage) return;

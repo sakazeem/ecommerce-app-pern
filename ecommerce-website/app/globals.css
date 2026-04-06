@@ -334,6 +334,8 @@ img {
   transition: transform 0.3s ease;
   overflow: hidden;
   cursor: pointer;
+  margin-bottom: 2.5rem !important;
+  margin-top: 1rem !important;
 }
 
 .reel-slider-wrapper .swiper-slide:hover {
@@ -346,37 +348,6 @@ img {
   height: 100%;
   aspect-ratio: 9 / 16;
   object-fit: cover;
-}
-
-.reel-swiper-pagination {
-  text-align: center;
-  margin-top: 12px;
-}
-
-.reel-swiper-pagination .swiper-pagination-bullet {
-  height: 15px;
-  width: 15px;
-  opacity: 1;
-  overflow: hidden;
-  position: relative;
-  background: #b1b3f8;
-}
-
-.reel-swiper-pagination .swiper-pagination-bullet-active {
-  background: #a4a7fd;
-}
-
-.reel-swiper-pagination .swiper-pagination-bullet-active::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  background: #6366f1;
-  transform-origin: left center;
-  transform: scaleX(0);
-  animation: reel-autoplay-loading 5s linear forwards;
 }
 
 .reel-slider-section:hover
@@ -414,4 +385,41 @@ img {
   .reel-swiper-slide-button {
     display: none !important;
   }
+}
+
+.reel-slider-wrapper .swiper-button-prev,
+.reel-slider-wrapper .swiper-button-next {
+  background: #fff !important;
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 100% !important;
+  border: 1px solid #d3d3d3 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  box-shadow: 0 0 0.5 #ccc;
+}
+
+.reel-slider-wrapper .swiper-button-prev:after,
+.reel-slider-wrapper .swiper-button-next:after {
+  color: #2e2e2e !important;
+  font-size: 15px !important;
+  text-shadow: 0px 0px 10px rgba(49, 48, 48, 0.53) !important;
+}
+
+.reel-slider-wrapper .swiper-pagination-bullet .swiper-pagination-bullet-active,
+.reel-slider-wrapper .swiper-pagination-bullet-active {
+  background: #8b5cf6 !important;
+}
+
+
+.reel-slider-wrapper .swiper-slide {
+  transform: scale(0.925) !important;
+  transition: all 0.3s ease !important;
+  border: 1px solid #d3d3d3 !important;
+}
+
+.reel-slider-wrapper .swiper-slide-active {
+  transform: scale(1) !important;
+  opacity: 1 !important;
 }

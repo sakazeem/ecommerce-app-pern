@@ -114,13 +114,13 @@
     // ─── Sync video slider to parent ─────────────────────────────────────────────
     useEffect(() => {
       if (section.type === "video_slider") {
-        const slides = (selectedVideo || []).map((vidId) => ({
+        let slides = (selectedVideo || []).map((vidId) => ({
           videoId: vidId,
         }));
 
         // ✅ validation
-        if ((selectedVideo || []).length < 4) {
-          setVideoError("Minimum 4 videos are required");
+        if ((selectedVideo || []).length < 3) {
+          setVideoError("Minimum 3 videos are required");
         } else {
           setVideoError("");
         }

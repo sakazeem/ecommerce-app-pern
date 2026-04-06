@@ -18,12 +18,18 @@ const Uploader = ({ setImageUrl, imageUrl, product, mediaType }) => {
   const { setIsUpdate } = useContext(SidebarContext);
 
   const isVideo = mediaType === "video";
+  const isAny = !mediaType;
   const { getRootProps, getInputProps, fileRejections } = useDropzone({
-    accept: isVideo
-      ? { "video/*": [".mp4", ".mov", ".webm", ".avi", ".mkv"] }
-      : { "image/*": [".jpeg", ".jpg", ".png", ".webp"] },
+    accept: isAny
+      ? {
+          "image/*": [".jpeg", ".jpg", ".png", ".webp"],
+          "video/*": [".mp4", ".mov", ".webm", ".avi", ".mkv"],
+        }
+      : isVideo
+        ? { "video/*": [".mp4", ".mov", ".webm", ".avi", ".mkv"] }
+        : { "image/*": [".jpeg", ".jpg", ".png", ".webp"] },
     multiple: product ? true : isVideo ? true : false,
-    maxSize: isVideo ? 100 * 1024 * 1024 : 5242880, // 100MB for video, 5MB for images
+    maxSize: 100 * 1024 * 1024,
     maxFiles: isVideo ? 20 : globalSetting?.number_of_image_per_product || 2,
     onDrop: async (acceptedFiles) => {
       setFiles(
@@ -117,7 +123,11 @@ const Uploader = ({ setImageUrl, imageUrl, product, mediaType }) => {
             : t("DragYourImage")}
         </p>
         <em className="text-xs text-customGray-400">
-          {isVideo ? "MP4, MOV, WEBM up to 100MB" : t("imageFormat")}
+          {isAny
+            ? "Images (JPEG, PNG, WEBP) or Videos (MP4, MOV, WEBM) up to 100MB"
+            : isVideo
+              ? "MP4, MOV, WEBM up to 100MB"
+              : t("imageFormat")}
         </em>
       </div>
 

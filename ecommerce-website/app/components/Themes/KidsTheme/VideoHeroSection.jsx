@@ -1,7 +1,7 @@
 "use client";
 import { Fancybox } from "@fancyapps/ui";
 import "@fancyapps/ui/dist/fancybox/fancybox.css";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -13,6 +13,13 @@ export default function VideoHeroSection({
   autoplay = false,
   title = "",
 }) {
+  const processedSlides = useMemo(() => {
+    if (slides.length === 3) {
+      return [...slides, ...slides]; // duplicate
+    }
+    return slides;
+  }, [slides]);
+
   useEffect(() => {
     Fancybox.bind("[data-fancybox='reel-gallery']", {
       Html: {
@@ -27,7 +34,7 @@ export default function VideoHeroSection({
       },
     });
     return () => Fancybox.unbind("[data-fancybox='reel-gallery']");
-  }, [slides]);
+  }, [processedSlides]);
 
   return (
     <section className="py-10 px-4 w-full max-w-6xl mx-auto reel-slider-section">
@@ -40,9 +47,10 @@ export default function VideoHeroSection({
       <div className="reel-slider-wrapper">
         <Swiper
           modules={[Navigation, Pagination, Autoplay]}
-          slidesPerView={1}
-          spaceBetween={30}
-          loop={slides.length > 1}
+          slidesPerView={2}
+          spaceBetween={15}
+          centeredSlides={true}
+          loop={processedSlides.length > 1}
           speed={600}
           navigation={true}
           pagination={true}
@@ -56,23 +64,15 @@ export default function VideoHeroSection({
               : false
           }
           breakpoints={{
-            768: { slidesPerView: 2, spaceBetween: 30 },
-            1024: { slidesPerView: 3, spaceBetween: 30 },
+            768: { slidesPerView: 3, spaceBetween: 30 },
           }}
         >
-          {slides.map((slide, idx) => (
-            <SwiperSlide key={idx}>
+          {processedSlides.map((slide, idx) => (
+            <SwiperSlide style={{ marginBottom: "2rem !important" }} key={idx}>
               <VideoCard slide={slide} idx={idx} />
             </SwiperSlide>
           ))}
         </Swiper>
-
-        {/* Pagination */}
-        <div className="reel-swiper-pagination" />
-
-        {/* Nav buttons */}
-        <div className="reel-swiper-button-prev reel-swiper-slide-button" />
-        <div className="reel-swiper-button-next reel-swiper-slide-button" />
       </div>
     </section>
   );
