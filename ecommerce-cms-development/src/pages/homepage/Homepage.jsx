@@ -105,7 +105,7 @@ const DraggableSection = ({
 					<div
 						className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-base font-medium ${getSectionBadgeColor()}`}>
 						{getSectionIcon()}
-						<span className="uppercase">{section.type}</span>
+						<span className="uppercase">{section.type?.replace("_"," ")}</span>
 					</div>
 				</div>
 
@@ -204,30 +204,41 @@ const Homepage = () => {
 	};
 
 	const handleSave = async () => {
-		setLoading(true);
-		try {
-			await Promise.all(
-				sections.map((sec) => {
-					if (sec.title && typeof sec.title === "string") {
-						sec.title = { en: sec.title };
-					}
+    const invalidVideoSection = sections.find(
+      (sec) =>
+        sec.type === "video_slider" &&
+        (!sec.config?.slides || sec.config.slides.length < 4),
+    );
 
-					if (`${sec.id}`.includes("_uuid4")) {
-						const { id, ...payload } = sec;
-						return HomepageSectionsServices.addHomepageSection(payload);
-					}
-					return HomepageSectionsServices.updateHomepageSection(sec.id, sec);
-				}),
-			);
+    if (invalidVideoSection) {
+      toast.error("Each Video Slider must have at least 4 videos");
+      return;
+    }
 
-			toast.success("Homepage sections saved!");
-			setRefreshKey((prev) => !prev);
-		} catch (err) {
-			console.error(err);
-		} finally {
-			setLoading(false);
-		}
-	};
+    setLoading(true);
+    try {
+      await Promise.all(
+        sections.map((sec) => {
+          if (sec.title && typeof sec.title === "string") {
+            sec.title = { en: sec.title };
+          }
+
+          if (`${sec.id}`.includes("_uuid4")) {
+            const { id, ...payload } = sec;
+            return HomepageSectionsServices.addHomepageSection(payload);
+          }
+          return HomepageSectionsServices.updateHomepageSection(sec.id, sec);
+        }),
+      );
+
+      toast.success("Homepage sections saved!");
+      setRefreshKey((prev) => !prev);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 	return (
     <DndProvider backend={HTML5Backend}>

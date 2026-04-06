@@ -28,6 +28,7 @@
     } = useForm();
 
     const [categories, setCategories] = useState([]);
+    const [videoError, setVideoError] = useState("");
     const { showingTranslateValue, showSelectedLanguageTranslation } =
       useUtilsFunction();
 
@@ -115,8 +116,15 @@
       if (section.type === "video_slider") {
         const slides = (selectedVideo || []).map((vidId) => ({
           videoId: vidId,
-          // categoryId: slideVideoCategories[vidId] || "",
         }));
+
+        // ✅ validation
+        if ((selectedVideo || []).length < 4) {
+          setVideoError("Minimum 4 videos are required");
+        } else {
+          setVideoError("");
+        }
+
         onUpdate({ ...section, config: { ...section.config, slides } });
       }
     }, [selectedVideo]);
@@ -221,10 +229,11 @@
               <h3
                 className={`text-sm font-bold ${sectionConfig.textColor} uppercase tracking-wide`}
               >
-                {section.type} Configuration
+                {section.type?.replace("_", " ")} Configuration
               </h3>
               <p className="text-xs text-gray-500 mt-0.5">
-                Configure your {section.type} section settings
+                Configure your {section.type?.replace("_", " ")} section
+                settings
               </p>
             </div>
           </div>
@@ -268,6 +277,11 @@
                   isVertical
                   imageDimensions={`w-96`}
                 />
+                {videoError && (
+                  <p className="text-sm text-red-600 mt-2 font-medium">
+                    {videoError}
+                  </p>
+                )}
                 {(selectedImage || []).length > 0 && (
                   <div className="mt-4 space-y-3">
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
@@ -432,7 +446,10 @@
                         onChange={(e) =>
                           onUpdate({
                             ...section,
-                            config: { ...section.config, layout: e.target.value },
+                            config: {
+                              ...section.config,
+                              layout: e.target.value,
+                            },
                           })
                         }
                       >
@@ -458,7 +475,10 @@
                         onChange={(e) =>
                           onUpdate({
                             ...section,
-                            config: { ...section.config, design: e.target.value },
+                            config: {
+                              ...section.config,
+                              design: e.target.value,
+                            },
                           })
                         }
                       >
@@ -510,7 +530,10 @@
                         onChange={(e) =>
                           onUpdate({
                             ...section,
-                            config: { ...section.config, color: e.target.value },
+                            config: {
+                              ...section.config,
+                              color: e.target.value,
+                            },
                           })
                         }
                         className="h-10 w-20 rounded-lg border-2 border-gray-200 cursor-pointer"
@@ -594,7 +617,10 @@
                   onChange={(e) =>
                     onUpdate({
                       ...section,
-                      config: { ...section.config, category_id: e.target.value },
+                      config: {
+                        ...section.config,
+                        category_id: e.target.value,
+                      },
                     })
                   }
                 >
