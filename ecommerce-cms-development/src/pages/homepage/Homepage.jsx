@@ -105,7 +105,7 @@ const DraggableSection = ({
 					<div
 						className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-base font-medium ${getSectionBadgeColor()}`}>
 						{getSectionIcon()}
-						<span className="uppercase">{section.type}</span>
+						<span className="uppercase">{section.type?.replace("_"," ")}</span>
 					</div>
 				</div>
 
@@ -204,193 +204,214 @@ const Homepage = () => {
 	};
 
 	const handleSave = async () => {
-		setLoading(true);
-		try {
-			await Promise.all(
-				sections.map((sec) => {
-					if (sec.title && typeof sec.title === "string") {
-						sec.title = { en: sec.title };
-					}
+    const invalidVideoSection = sections.find(
+      (sec) =>
+        sec.type === "video_slider" &&
+        (!sec.config?.slides || sec.config.slides.length < 4),
+    );
 
-					if (`${sec.id}`.includes("_uuid4")) {
-						const { id, ...payload } = sec;
-						return HomepageSectionsServices.addHomepageSection(payload);
-					}
-					return HomepageSectionsServices.updateHomepageSection(sec.id, sec);
-				}),
-			);
+    if (invalidVideoSection) {
+      toast.error("Each Video Slider must have at least 4 videos");
+      return;
+    }
 
-			toast.success("Homepage sections saved!");
-			setRefreshKey((prev) => !prev);
-		} catch (err) {
-			console.error(err);
-		} finally {
-			setLoading(false);
-		}
-	};
+    setLoading(true);
+    try {
+      await Promise.all(
+        sections.map((sec) => {
+          if (sec.title && typeof sec.title === "string") {
+            sec.title = { en: sec.title };
+          }
+
+          if (`${sec.id}`.includes("_uuid4")) {
+            const { id, ...payload } = sec;
+            return HomepageSectionsServices.addHomepageSection(payload);
+          }
+          return HomepageSectionsServices.updateHomepageSection(sec.id, sec);
+        }),
+      );
+
+      toast.success("Homepage sections saved!");
+      setRefreshKey((prev) => !prev);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
 	return (
-		<DndProvider backend={HTML5Backend}>
-			<div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-				<div className=" mx-auto px-4/ py-8">
-					{/* Header */}
-					<div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 mb-8">
-						<div className="flex flex-wrap gap-4 justify-between items-center">
-							<div className="flex items-center gap-4">
-								<div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl shadow-lg">
-									<LayoutDashboard size={28} />
-								</div>
-								<div>
-									<h1 className="text-3xl font-bold text-gray-900">
-										Homepage Builder
-									</h1>
-									<p className="text-sm text-gray-500 mt-1">
-										Design and manage your homepage sections
-									</p>
-								</div>
-							</div>
+    <DndProvider backend={HTML5Backend}>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className=" mx-auto px-4/ py-8">
+          {/* Header */}
+          <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 mb-8">
+            <div className="flex flex-wrap gap-4 justify-between items-center">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl shadow-lg">
+                  <LayoutDashboard size={28} />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    Homepage Builder
+                  </h1>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Design and manage your homepage sections
+                  </p>
+                </div>
+              </div>
 
-							<div className="flex gap-3 flex-wrap">
-								<select
-									onChange={(e) => {
-										if (!e.target.value) return;
-										handleAdd(e.target.value);
-										e.target.value = "";
-									}}
-									className="border-2 border-gray-200 rounded-xl px-4 py-2.5 bg-white hover:border-blue-400 focus:border-blue-500 focus:outline-none transition-all cursor-pointer font-medium text-gray-700">
-									<option value="">➕ Add Section</option>
-									<option value="slider">🎠 Slider</option>
-									<option value="banner">🖼️ Banner</option>
-									<option value="categories">📁 Categories</option>
-									<option value="products">📦 Products</option>
-									<option value="tab">📑 Tabs</option>
-								</select>
+              <div className="flex gap-3 flex-wrap">
+                <select
+                  onChange={(e) => {
+                    if (!e.target.value) return;
+                    handleAdd(e.target.value);
+                    e.target.value = "";
+                  }}
+                  className="border-2 border-gray-200 rounded-xl px-4 py-2.5 bg-white hover:border-blue-400 focus:border-blue-500 focus:outline-none transition-all cursor-pointer font-medium text-gray-700"
+                >
+                  <option value="">➕ Add Section</option>
+                  <option value="slider">🎠 Slider</option>
+                  <option value="video_slider">▶️ Video Slider</option>
+                  <option value="banner">🖼️ Banner</option>
+                  <option value="categories">📁 Categories</option>
+                  <option value="products">📦 Products</option>
+                  <option value="tab">📑 Tabs</option>
+                </select>
 
-								{orderChanged && (
-									<button
-										onClick={handleUpdateOrder}
-										className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-5 py-2.5 rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg font-medium">
-										<GripVertical size={18} />
-										Update Order
-									</button>
-								)}
+                {orderChanged && (
+                  <button
+                    onClick={handleUpdateOrder}
+                    className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-5 py-2.5 rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg font-medium"
+                  >
+                    <GripVertical size={18} />
+                    Update Order
+                  </button>
+                )}
 
-								<button
-									onClick={handleSave}
-									disabled={loading}
-									className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2.5 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed">
-									<Save size={18} />
-									{loading ? "Saving..." : "Save All"}
-								</button>
-							</div>
-						</div>
-					</div>
+                <button
+                  onClick={handleSave}
+                  disabled={loading}
+                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2.5 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Save size={18} />
+                  {loading ? "Saving..." : "Save All"}
+                </button>
+              </div>
+            </div>
+          </div>
 
-					{/* Content */}
-					{loading && (
-						<div className="text-center py-20">
-							<div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
-							<p className="text-gray-600 mt-4 font-medium">
-								Loading homepage sections...
-							</p>
-						</div>
-					)}
+          {/* Content */}
+          {loading && (
+            <div className="text-center py-20">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+              <p className="text-gray-600 mt-4 font-medium">
+                Loading homepage sections...
+              </p>
+            </div>
+          )}
 
-					{!loading && sections.length === 0 && (
-						<div className="text-center py-24 bg-white border-2 border-dashed border-gray-300 rounded-2xl">
-							<div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-								<Plus className="text-blue-600" size={40} />
-							</div>
-							<h3 className="text-xl font-semibold text-gray-900 mb-2">
-								No sections yet
-							</h3>
-							<p className="text-gray-500 mb-6">
-								Start building your homepage by adding your first section
-							</p>
-							<button
-								onClick={() => handleAdd("slider")}
-								className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-medium">
-								<Plus size={20} />
-								Add Your First Section
-							</button>
-						</div>
-					)}
+          {!loading && sections.length === 0 && (
+            <div className="text-center py-24 bg-white border-2 border-dashed border-gray-300 rounded-2xl">
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Plus className="text-blue-600" size={40} />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                No sections yet
+              </h3>
+              <p className="text-gray-500 mb-6">
+                Start building your homepage by adding your first section
+              </p>
+              <button
+                onClick={() => handleAdd("slider")}
+                className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition-all shadow-md hover:shadow-lg font-medium"
+              >
+                <Plus size={20} />
+                Add Your First Section
+              </button>
+            </div>
+          )}
 
-					{!loading && sections.length > 0 && (
-						<div className="space-y-4">
-							<div className="flex items-center justify-between mb-4">
-								<p className="text-sm font-medium text-gray-600">
-									Total Sections:{" "}
-									<span className="text-blue-600 font-bold">
-										{sections.length}
-									</span>
-								</p>
-								<p className="text-xs text-gray-500">
-									💡 Drag sections to reorder
-								</p>
-							</div>
+          {!loading && sections.length > 0 && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm font-medium text-gray-600">
+                  Total Sections:{" "}
+                  <span className="text-blue-600 font-bold">
+                    {sections.length}
+                  </span>
+                </p>
+                <p className="text-xs text-gray-500">
+                  💡 Drag sections to reorder
+                </p>
+              </div>
 
-							{sections.map((section, index) => (
-								<DraggableSection
-									key={section.id}
-									section={section}
-									index={index}
-									moveSection={moveSection}
-									onUpdate={handleUpdate}
-									onDelete={handleDelete}
-								/>
-							))}
-						</div>
-					)}
-				</div>
-				<div
-					className={`group relative rounded-xl border-2 bg-white transition-all duration-200 mb-4 ${"border-gray-200 shadow-sm hover:shadow-lg hover:border-gray-300"}`}>
-					{/* Drag Handle */}
-					<div className="absolute left-0 top-0 bottom-0 flex items-center px-3 cursor-grab active:cursor-grabbing"></div>
+              {sections.map((section, index) => (
+                <DraggableSection
+                  key={section.id}
+                  section={section}
+                  index={index}
+                  moveSection={moveSection}
+                  onUpdate={handleUpdate}
+                  onDelete={handleDelete}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+        <div
+          className={`group relative rounded-xl border-2 bg-white transition-all duration-200 mb-4 ${"border-gray-200 shadow-sm hover:shadow-lg hover:border-gray-300"}`}
+        >
+          {/* Drag Handle */}
+          <div className="absolute left-0 top-0 bottom-0 flex items-center px-3 cursor-grab active:cursor-grabbing"></div>
 
-					<div className="pl-14 pr-4 py-6">
-						<div className="flex gap-3 flex-wrap">
-							<select
-								onChange={(e) => {
-									if (!e.target.value) return;
-									handleAdd(e.target.value);
-									e.target.value = "";
-								}}
-								className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-2.5 bg-white hover:border-blue-400 focus:border-blue-500 focus:outline-none transition-all cursor-pointer font-medium text-gray-700">
-								<option value="">➕ Add Section</option>
-								<option value="slider">🎠 Slider</option>
-								<option value="banner">🖼️ Banner</option>
-								<option value="categories">📁 Categories</option>
-								<option value="products">📦 Products</option>
-								<option value="tab">📑 Tabs</option>
-							</select>
+          <div className="pl-14 pr-4 py-6">
+            <div className="flex gap-3 flex-wrap">
+              <select
+                onChange={(e) => {
+                  if (!e.target.value) return;
+                  handleAdd(e.target.value);
+                  e.target.value = "";
+                }}
+                className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-2.5 bg-white hover:border-blue-400 focus:border-blue-500 focus:outline-none transition-all cursor-pointer font-medium text-gray-700"
+              >
+                <option value="">➕ Add Section</option>
+                <option value="slider">🎠 Slider</option>
+                <option value="video_slider">▶️ Video Slider</option>
+                <option value="banner">🖼️ Banner</option>
+                <option value="categories">📁 Categories</option>
+                <option value="products">📦 Products</option>
+                <option value="tab">📑 Tabs</option>
+              </select>
 
-							{orderChanged && (
-								<button
-									onClick={handleUpdateOrder}
-									className="flex flex-1 items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-5 py-2.5 rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg font-medium">
-									<GripVertical size={18} />
-									Update Order
-								</button>
-							)}
+              {orderChanged && (
+                <button
+                  onClick={handleUpdateOrder}
+                  className="flex flex-1 items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-5 py-2.5 rounded-xl hover:from-orange-600 hover:to-orange-700 transition-all shadow-md hover:shadow-lg font-medium"
+                >
+                  <GripVertical size={18} />
+                  Update Order
+                </button>
+              )}
 
-							<button
-								onClick={handleSave}
-								disabled={loading}
-								className="flex flex-1 items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2.5 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed">
-								<Save size={18} />
-								{loading ? "Saving..." : "Save All"}
-							</button>
-						</div>
-					</div>
-				</div>
-				<br />
-				<br />
-				<br />
-				<br />
-			</div>
-		</DndProvider>
-	);
+              <button
+                onClick={handleSave}
+                disabled={loading}
+                className="flex flex-1 items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2.5 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Save size={18} />
+                {loading ? "Saving..." : "Save All"}
+              </button>
+            </div>
+          </div>
+        </div>
+        <br />
+        <br />
+        <br />
+        <br />
+      </div>
+    </DndProvider>
+  );
 };
 
 export default Homepage;

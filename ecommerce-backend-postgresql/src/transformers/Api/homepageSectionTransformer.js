@@ -32,6 +32,12 @@ function transformHomepageSection(product, lang) {
 		});
 	} else if (product.config.image) {
 		product.config.image = product.config.image.url;
+	} else if (product.config.slides) {
+		// video_slider
+		product.config.slides = product.config.slides.map((slide) => ({
+			videoUrl: slide.videoUrl,
+			poster: slide.poster || null,
+		}));
 	}
 
 	if (product.title) {

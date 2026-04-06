@@ -15,6 +15,7 @@ const mediaService = createBaseService(db.media, {
 		url: data.url,
 		title: data.title,
 		size: data.size,
+		...(data.media_type && { media_type: data.media_type }),
 	}),
 });
 
@@ -22,11 +23,15 @@ const mediaService = createBaseService(db.media, {
 async function createMedia(req) {
 	const media = await imageService.mediaUpload(req.file);
 	const userId = commonUtils.getUserId(req);
+	console.log("REQ FILE", req.file);
+	const isVideo = req.file.mimetype.startsWith('video/');
+	console.log('isVideo', isVideo);
 	return mediaService.create(
 		{
 			url: media.url,
 			title: media.title,
 			size: media.size,
+			media_type: isVideo ? 'video' : 'image',
 		},
 		userId
 	);
@@ -91,6 +96,7 @@ async function bulkUploadMedia(req) {
 	const results = [];
 
 	for (const file of files) {
+		const isVideo = file.mimetype.startsWith('video/');
 		// 1️⃣ Prepare media
 		const mediaData = await imageService.mediaUpload(file);
 
@@ -113,6 +119,7 @@ async function bulkUploadMedia(req) {
 					url: mediaData.url,
 					title: mediaData.title,
 					size: mediaData.size,
+					media_type: isVideo ? 'video' : 'image',
 				},
 				userId
 			);
@@ -260,7 +267,12 @@ async function deleteAllProductsMedia(req) {
 
 const getMedias = async (req) => {
 	const { page: defaultPage, limit: defaultLimit } = config.pagination;
-	const { page = defaultPage, limit = defaultLimit, id } = req.query;
+	const {
+		page = defaultPage,
+		limit = defaultLimit,
+		id,
+		media_type,
+	} = req.query;
 
 	const offset = getOffset(page, limit);
 	const finalSort = [['id', 'DESC']];
@@ -270,12 +282,15 @@ const getMedias = async (req) => {
 
 	if (id) {
 		const idsArray = Array.isArray(id) ? id : [id];
-
-		whereCondition.id = {
-			[Op.in]: idsArray,
-		};
+		whereCondition.id = { [Op.in]: idsArray };
 	}
 
+	if (media_type) {
+		whereCondition.media_type = media_type;
+	}
+
+	console.log('whereCondition', whereCondition);
+	
 	const data = await db.media.findAndCountAll({
 		where: { ...whereCondition, deleted_at: null },
 		offset,
@@ -284,6 +299,7 @@ const getMedias = async (req) => {
 		distinct: true,
 		col: 'id',
 	});
+	console.log('data', data);
 
 	return {
 		total: data.count,

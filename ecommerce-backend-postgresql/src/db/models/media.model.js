@@ -19,6 +19,11 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: true,
 			},
+			media_type: {
+				type: DataTypes.ENUM('image', 'video'),
+				allowNull: false,
+				defaultValue: 'image',
+			},
 			size: {
 				type: DataTypes.FLOAT,
 				allowNull: true,
