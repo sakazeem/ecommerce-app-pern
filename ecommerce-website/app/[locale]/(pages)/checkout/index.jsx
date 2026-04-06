@@ -97,22 +97,21 @@ export default function CheckoutPage() {
 	const [voucher, setVoucher] = useState("");
 	const [orderSuccess, setOrderSuccess] = useState(false);
 	const [orderSummary, setOrderSummary] = useState(null);
+
 	const savedAddress = useMemo(() => {
-		if (user?.addresses?.length > 0) {
-			const shipping =
-				user.addresses.find(
-					(a) => a.type === "shipping" || a.type === "general",
-				) || user.addresses[0];
+		if (!user?.addresses?.length) return null;
 
-			const billing =
-				user.addresses.find(
-					(a) => a.type === "billing" || a.type === "general",
-				) || null;
+		const shipping =
+			user.addresses.find((a) => a.type === "shipping" && a.is_default) ||
+			user.addresses.find((a) => a.type === "shipping") ||
+			user.addresses[0];
 
-			return { shipping, billing };
-		}
-		return null;
-	}, [user]);
+		const billing =
+			user.addresses.find((a) => a.type === "billing" && a.is_default) ||
+			user.addresses.find((a) => a.type === "billing");
+
+		return { shipping, billing };
+	}, [user?.addresses]);
 	const [formData, setFormData] = useState({
 		email: user?.email || "",
 		name: user?.name || "",
@@ -228,7 +227,10 @@ export default function CheckoutPage() {
 			[name]: type === "checkbox" ? checked : value,
 		}));
 	};
-
+	const validatePhone = (phone) => {
+		const regex = /^\+?\d{10,15}$/;
+		return regex.test(phone);
+	};
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 
@@ -237,6 +239,30 @@ export default function CheckoutPage() {
 			return;
 		}
 
+		if (formData.paymentMethod === "ibft" && !ibftReceipt) {
+			toast.error(
+				"Please upload your payment receipt to complete the IBFT order.",
+			);
+			return;
+		}
+
+		if (!validatePhone(formData.phone)) {
+			toast.error(
+				"Phone number must be between 10 to 15 digits and may start with +",
+			);
+			return;
+		}
+
+		if (
+			!formData.billingSameAsShipping &&
+			billingAddress.phone &&
+			!validatePhone(billingAddress.phone)
+		) {
+			toast.error(
+				"Billing phone number must be between 10 to 15 digits and may start with +",
+			);
+			return;
+		}
 		if (formData.paymentMethod === "ibft" && !ibftReceipt) {
 			toast.error(
 				"Please upload your payment receipt to complete the IBFT order.",
@@ -458,10 +484,21 @@ export default function CheckoutPage() {
 								<input
 									name="phone"
 									placeholder="Phone"
+									// placeholder="+00000000000"
 									className="w-full border rounded-md p-3"
 									required
 									value={formData.phone}
-									onChange={handleChange}
+									onChange={(e) => {
+										const value = e.target.value;
+
+										// Allow only digits and optional + at start
+										if (/^\+?\d*$/.test(value)) {
+											setFormData((prev) => ({
+												...prev,
+												phone: value,
+											}));
+										}
+									}}
 								/>
 							</section>
 

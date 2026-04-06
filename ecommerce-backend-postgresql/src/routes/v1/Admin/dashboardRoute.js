@@ -7,7 +7,7 @@ const router = express.Router();
 router
 	.route('/')
 	.get(
-		checkPermission('view_dashboard'),
+		// checkPermission('view_dashboard'),
 		adminDashboardController.getDashboardData
 	);
 

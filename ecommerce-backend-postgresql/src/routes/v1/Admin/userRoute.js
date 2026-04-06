@@ -12,7 +12,7 @@ router
 router
 	.route('/:userId')
 	.get(checkPermission('view_user'), adminUserController.getUser)
-	.patch(checkPermission('update_user'), adminUserController.updateUser)
+	.patch(checkPermission('edit_user'), adminUserController.updateUser)
 	.delete(checkPermission('delete_user'), adminUserController.deleteUser);
 router
 	.route('/permanent/:user')

@@ -103,6 +103,15 @@ export default function Addresses() {
     }
   };
 
+  const handleSetDefault = async (id) => {
+    try {
+      await ProfileServices.setDefaultAddress(id);
+      await fetchUser();
+    } catch (err) {
+      toast.error(err.message || "Failed to set default");
+    }
+  };
+
   const inputClass =
     "w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-secondary";
 
@@ -136,7 +145,7 @@ export default function Addresses() {
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-1 gap-3">
-              {/* <div>
+              <div>
                 <input
                   name="title"
                   value={form.title}
@@ -144,7 +153,7 @@ export default function Addresses() {
                   placeholder="e.g. Home, Office"
                   className={inputClass}
                 />
-              </div> */}
+              </div>
 
               <div>
                 <label className="text-xs text-gray-500 mb-1 block">Type</label>
@@ -286,16 +295,28 @@ export default function Addresses() {
                   <span className="bg-secondary/10 text-secondary text-xs px-2 py-0.5 rounded-full capitalize">
                     {addr.type}
                   </span>
+                  {addr.is_default && (
+                    <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full font-medium">
+                      Default
+                    </span>
+                  )}
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                  {!addr.is_default && (
+                    <button
+                      onClick={() => handleSetDefault(addr.id)}
+                      className="text-xs text-gray-400 hover:text-secondary underline transition-colors"
+                    >
+                      Set default
+                    </button>
+                  )}
                   <button
                     onClick={() => openEdit(addr)}
                     className="text-gray-400 hover:text-secondary transition-colors"
                   >
                     <Pencil size={15} />
                   </button>
-
                   <button
                     onClick={() => handleDelete(addr.id)}
                     className="text-gray-400 hover:text-red-500 transition-colors"

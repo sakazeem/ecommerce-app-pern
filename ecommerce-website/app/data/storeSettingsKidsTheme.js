@@ -122,7 +122,8 @@ export const storeSettingsKidsTheme = {
 						},
 						{
 							text: "track order",
-							link: "/order-tracking",
+							link: "https://cclpak.com/tracking",
+							target: "_blank",
 						},
 						{
 							text: "payment methods",

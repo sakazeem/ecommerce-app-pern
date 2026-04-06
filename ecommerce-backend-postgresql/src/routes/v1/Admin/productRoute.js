@@ -23,9 +23,18 @@ router.route('/only-titles').get(adminProductController.getProductTitlesOnly);
 
 router
 	.route('/import-products')
-	.post(adminProductController.importProductsFromSheet);
 
-router.route('/export-products').get(adminProductController.exportProducts);
+	.post(
+		checkPermission('create_product'),
+		adminProductController.importProductsFromSheet
+	);
+
+router
+	.route('/export-products')
+	.get(
+		checkPermission('view_product'),
+		adminProductController.exportProducts
+	);
 router
 	.route('/clean-description-products')
 	.get(adminProductController.cleanDescriptionProducts);
@@ -38,7 +47,7 @@ router
 		adminProductController.getProductById
 	)
 	.patch(
-		checkPermission('update_product'),
+		checkPermission('edit_product'),
 		// validate(adminProductValidation.updateProduct),
 		adminProductController.updateProduct
 	)

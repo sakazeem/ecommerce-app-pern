@@ -77,7 +77,7 @@ const ProductInfoForm = ({
 	}, []);
 
 	useEffect(() => {
-		AttributeServices.getAllAttributes().then((v) => setAttribtes(v.records));
+		AttributeServices.getAllAttributesForOptions().then((v) => setAttribtes(v.records));
 	}, []);
 
 	useEffect(() => {

@@ -36,6 +36,9 @@ const Media = ({
   const [previewImage, setPreviewImage] = useState(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [hoveredImage, setHoveredImage] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  console.log(variantImages, "chkking variantImages");
 
   const {
     data: mediaData,
@@ -73,6 +76,12 @@ const Media = ({
       <span className="text-center mx-auto text-customRed-500">{error}</span>
     );
 
+  console.log(isSelectImage, "chkking selectedImage111");
+
+  const filteredRecords = mediaData.records.filter((img) =>
+    img.title?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
   return (
     <div
       className={`${isUnderModal ? "max-h-[60vh] overflow-y-auto" : ""} pr-2 scrollbar-thin scrollbar-thumb-gray-300`}
@@ -82,8 +91,17 @@ const Media = ({
       <div className="my-8">
         <Uploader mediaType={mediaType} />
       </div>
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search by image title..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-customGray-700 dark:border-customGray-600 dark:text-white"
+        />
+      </div>
 
-      {mediaData.records.length === 0 ? (
+{filteredRecords.length === 0 ? (
         <Card className="text-center py-12">
           <CardBody>
             <FiImage className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -103,25 +121,28 @@ const Media = ({
             isSelectImage ? "xl:grid-cols-4" : "xl:grid-cols-6"
           } gap-4`}
         >
-          {mediaData.records.map((item) => {
+          {/* <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4"> */}
+            {filteredRecords.map((item) => {
             const isVideo = item.media_type === "video";
             const fileUrl = import.meta.env.VITE_APP_CLOUDINARY_URL + item.url;
             const isSelected = selectedImage?.includes(item.id);
 
             return (
               <Card
-                key={item.id}
+                key={image.id}
                 className="group relative overflow-hidden hover:shadow-lg transition-shadow duration-200 cursor-pointer border"
-                onMouseEnter={() => setHoveredImage(item.id)}
+                onMouseEnter={() => setHoveredImage(image.id)}
                 onMouseLeave={() => setHoveredImage(null)}
                 onClick={() => {
                   if (!isSelectImage) return;
+
                   if (isMultipleSelect) {
                     setSelectedImage((prev) =>
                       prev.includes(item.id)
                         ? prev.filter((id) => id !== item.id)
                         : [...prev, item.id],
                     );
+
                     setSelectedImageUrl((prev) =>
                       prev.includes(fileUrl)
                         ? prev.filter((u) => u !== fileUrl)
@@ -135,7 +156,7 @@ const Media = ({
                 }}
               >
                 <CardBody className="p-0">
-                  <div className="relative aspect-square overflow-hidden bg-gray-100">
+                  <div className="relative aspect-square overflow-hidden">
                     {isVideo ? (
                       <video
                         src={fileUrl}
@@ -150,7 +171,7 @@ const Media = ({
                         className="w-full h-full object-contain transition-transform duration-200 group-hover:scale-105"
                       />
                     )}
-
+                    
                     {/* Video badge */}
                     {isVideo && (
                       <div className="absolute top-1 left-1 bg-violet-600 text-white rounded px-1.5 py-0.5 flex items-center gap-1">

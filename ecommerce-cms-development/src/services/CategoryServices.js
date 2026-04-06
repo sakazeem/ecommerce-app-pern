@@ -5,6 +5,11 @@ const CategoryServices = {
 		return requests.get(`/category${query ? `?${query}` : ""}`);
 	},
 
+	getAllCategoriesForCmsOptions: async (excludeId) => {
+		return requests.get(
+			`/category/cms-options`,
+		);
+	},
 	getAllCategoriesForOptions: async (excludeId) => {
 		return requests.get(
 			`/category/options${excludeId ? `?excludeId=${excludeId}` : ""}`,

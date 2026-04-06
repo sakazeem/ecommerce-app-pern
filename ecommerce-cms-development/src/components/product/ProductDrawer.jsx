@@ -442,13 +442,13 @@ const ProductDrawer = ({ id, data }) => {
 	}, [id, setValue, clearErrors, data]);
 
 	useEffect(() => {
-		UspServices.getAllUsps().then((data) => {
+		UspServices.getAllUspsForOptions().then((data) => {
 			setUsps(data?.records);
 		});
-		CategoryServices.getAllCategories().then((data) => {
+		CategoryServices.getAllCategoriesForCmsOptions().then((data) => {
 			setCategories(data?.records);
 		});
-		VendorServices.getAllVendors().then((data) => {
+		VendorServices.getAllVendorsForOptions().then((data) => {
 			setVendors(data?.records);
 		});
 		BranchServices.getAllBranches().then((data) => {

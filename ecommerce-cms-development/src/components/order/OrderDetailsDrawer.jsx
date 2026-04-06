@@ -8,176 +8,181 @@ import DrawerHeader from "../newComponents/DrawerHeader";
 import CCLDetailsFeilds from "./CCLDetailsFeilds";
 
 const OrderDetailsDrawer = ({ id, data }) => {
-	const [orderDetails, setOrderDetails] = useState({});
-	const [loading, setLoading] = useState(true);
-	const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-	const [showStatusDropdown, setShowStatusDropdown] = useState(false);
-	const orderStatuses = ["pending", "in_progress", "cancelled", "delivered"];
-	const [showShippingFields, setShowShippingFields] = useState(false);
-	const [shippingCity, setShippingCity] = useState("");
-	const [shippingService, setShippingService] = useState("");
-	const [shippingWeight, setShippingWeight] = useState("");
-	const [courierTrackingId, setCourierTrackingId] = useState();
+  const [orderDetails, setOrderDetails] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const orderStatuses = ["pending", "in_progress", "cancelled", "delivered"];
+  const [showShippingFields, setShowShippingFields] = useState(false);
+  const [shippingCity, setShippingCity] = useState("");
+  const [shippingService, setShippingService] = useState("");
+  const [shippingWeight, setShippingWeight] = useState("");
+  const [courierTrackingId, setCourierTrackingId] = useState();
 
-	const getOrderDetails = async () => {
-		if (!id) return;
-		try {
-			setLoading(true);
-			const res = await OrderServices.getOrderById(id);
-			if (res) {
-				setOrderDetails(res);
-				if (res.courier_details) {
-					const details = JSON.parse(res.courier_details);
-					setShippingCity(details.city);
-					setShippingService(details.service);
-					setShippingWeight(details.weight);
-					setCourierTrackingId(details.trackingId);
-				}
-			}
-		} catch (err) {
-			notifyError(err ? err.response?.data?.message : err.message);
-		} finally {
-			setLoading(false);
-		}
-	};
+  const getOrderDetails = async () => {
+    if (!id) return;
+    try {
+      setLoading(true);
+      const res = await OrderServices.getOrderById(id);
+      if (res) {
+        setOrderDetails(res);
+        if (res.courier_details) {
+          const details = JSON.parse(res.courier_details);
+          setShippingCity(details.city);
+          setShippingService(details.service);
+          setShippingWeight(details.weight);
+          setCourierTrackingId(details.trackingId);
+        }
+      }
+    } catch (err) {
+      notifyError(err ? err.response?.data?.message : err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-	useEffect(() => {
-		getOrderDetails();
-	}, [id]);
+  useEffect(() => {
+    getOrderDetails();
+  }, [id]);
 
-	const handleStatusUpdate = async (newStatus) => {
-		// if (newStatus === "in_progress") {
-		// 	setShowStatusDropdown(false);
-		// 	setShowShippingFields(true);
-		// 	return;
-		// }
+  const handleStatusUpdate = async (newStatus) => {
+    // if (newStatus === "in_progress") {
+    // 	setShowStatusDropdown(false);
+    // 	setShowShippingFields(true);
+    // 	return;
+    // }
 
-		try {
-			setIsUpdatingStatus(true);
-			setShowStatusDropdown(false);
+    try {
+      setIsUpdatingStatus(true);
+      setShowStatusDropdown(false);
 
-			await OrderServices.updateOrderStatus(id, { status: newStatus });
+      await OrderServices.updateOrderStatus(id, { status: newStatus });
 
-			setOrderDetails((prev) => ({ ...prev, status: newStatus }));
+      setOrderDetails((prev) => ({ ...prev, status: newStatus }));
 
-			notifySuccess(`Order status updated to ${newStatus}`);
-		} catch (err) {
-			notifyError(err ? err.response?.data?.message : err.message);
-		} finally {
-			setIsUpdatingStatus(false);
-		}
-	};
-	const submitShippingDetails = async () => {
-		if (!shippingCity || !shippingService || !shippingWeight) {
-			notifyError("Please fill all shipping details");
-			return;
-		}
-		try {
-			await OrderServices.updateOrder(id, {
-				courier_details: JSON.stringify({
-					city: shippingCity,
-					service: shippingService,
-					weight: shippingWeight,
-				}),
-			});
-			notifySuccess("Shipping details saved");
-		} catch (err) {
-			notifyError(err ? err.response?.data?.message : err.message);
-		}
-	};
+      notifySuccess(`Order status updated to ${newStatus}`);
+    } catch (err) {
+      notifyError(err ? err.response?.data?.message : err.message);
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+  const submitShippingDetails = async () => {
+    if (!shippingCity || !shippingService || !shippingWeight) {
+      notifyError("Please fill all shipping details");
+      return;
+    }
+    try {
+      await OrderServices.updateOrder(id, {
+        courier_details: JSON.stringify({
+          city: shippingCity,
+          service: shippingService,
+          weight: shippingWeight,
+        }),
+      });
+      notifySuccess("Shipping details saved");
+    } catch (err) {
+      notifyError(err ? err.response?.data?.message : err.message);
+    }
+  };
 
-	const getStatusBadge = (status) => {
-		const statusConfig = {
-			pending: {
-				bg: "bg-amber-50 dark:bg-amber-900/20",
-				text: "text-amber-700 dark:text-amber-400",
-				border: "border-amber-200 dark:border-amber-800",
-				icon: (
-					<svg
-						className="w-3 h-3 mr-1.5"
-						fill="currentColor"
-						viewBox="0 0 20 20">
-						<path
-							fillRule="evenodd"
-							d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-							clipRule="evenodd"
-						/>
-					</svg>
-				),
-			},
-			in_progress: {
-				bg: "bg-blue-50 dark:bg-blue-900/20",
-				text: "text-blue-700 dark:text-blue-400",
-				border: "border-blue-200 dark:border-blue-800",
-				icon: (
-					<svg
-						className="w-3 h-3 mr-1.5"
-						fill="currentColor"
-						viewBox="0 0 20 20">
-						<path
-							fillRule="evenodd"
-							d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-							clipRule="evenodd"
-						/>
-					</svg>
-				),
-			},
-			cancelled: {
-				bg: "bg-red-50 dark:bg-red-900/20",
-				text: "text-red-700 dark:text-red-400",
-				border: "border-red-200 dark:border-red-800",
-				icon: (
-					<svg
-						className="w-3 h-3 mr-1.5"
-						fill="currentColor"
-						viewBox="0 0 20 20">
-						<path
-							fillRule="evenodd"
-							d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-							clipRule="evenodd"
-						/>
-					</svg>
-				),
-			},
-			delivered: {
-				bg: "bg-emerald-50 dark:bg-emerald-900/20",
-				text: "text-emerald-700 dark:text-emerald-400",
-				border: "border-emerald-200 dark:border-emerald-800",
-				icon: (
-					<svg
-						className="w-3 h-3 mr-1.5"
-						fill="currentColor"
-						viewBox="0 0 20 20">
-						<path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-						<path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z" />
-					</svg>
-				),
-			},
-		};
+  const getStatusBadge = (status) => {
+    const statusConfig = {
+      pending: {
+        bg: "bg-amber-50 dark:bg-amber-900/20",
+        text: "text-amber-700 dark:text-amber-400",
+        border: "border-amber-200 dark:border-amber-800",
+        icon: (
+          <svg
+            className="w-3 h-3 mr-1.5"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+              clipRule="evenodd"
+            />
+          </svg>
+        ),
+      },
+      in_progress: {
+        bg: "bg-blue-50 dark:bg-blue-900/20",
+        text: "text-blue-700 dark:text-blue-400",
+        border: "border-blue-200 dark:border-blue-800",
+        icon: (
+          <svg
+            className="w-3 h-3 mr-1.5"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+              clipRule="evenodd"
+            />
+          </svg>
+        ),
+      },
+      cancelled: {
+        bg: "bg-red-50 dark:bg-red-900/20",
+        text: "text-red-700 dark:text-red-400",
+        border: "border-red-200 dark:border-red-800",
+        icon: (
+          <svg
+            className="w-3 h-3 mr-1.5"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+              clipRule="evenodd"
+            />
+          </svg>
+        ),
+      },
+      delivered: {
+        bg: "bg-emerald-50 dark:bg-emerald-900/20",
+        text: "text-emerald-700 dark:text-emerald-400",
+        border: "border-emerald-200 dark:border-emerald-800",
+        icon: (
+          <svg
+            className="w-3 h-3 mr-1.5"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+            <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z" />
+          </svg>
+        ),
+      },
+    };
 
-		const config = statusConfig[status] || statusConfig.pending;
+    const config = statusConfig[status] || statusConfig.pending;
 
-		return (
-			<span
-				className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold uppercase border ${config.bg} ${config.text} ${config.border}`}>
-				{config.icon}
-				{status}
-			</span>
-		);
-	};
+    return (
+      <span
+        className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold uppercase border ${config.bg} ${config.text} ${config.border}`}
+      >
+        {config.icon}
+        {status}
+      </span>
+    );
+  };
 
-	if (loading) {
-		return (
-			<>
-				<DrawerHeader id={id} updateTitle={"Order Details"} />
-				<div className="flex items-center justify-center h-96">
-					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100"></div>
-				</div>
-			</>
-		);
-	}
+  if (loading) {
+    return (
+      <>
+        <DrawerHeader id={id} updateTitle={"Order Details"} />
+        <div className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 dark:border-gray-100"></div>
+        </div>
+      </>
+    );
+  }
 
-	return (
+  return (
     <>
       <DrawerHeader id={id} updateTitle={"Order Details"} />
 
@@ -272,25 +277,25 @@ const OrderDetailsDrawer = ({ id, data }) => {
               </div>
             </div>
 
-						{/* Close dropdown when clicking outside */}
-						{showStatusDropdown && (
-							<div
-								className="fixed inset-0 z-40"
-								onClick={() => setShowStatusDropdown(false)}
-							/>
-						)}
-					</div>
-					<CCLDetailsFeilds
-						shippingCity={shippingCity}
-						shippingService={shippingService}
-						shippingWeight={shippingWeight}
-						setShippingCity={setShippingCity}
-						setShippingService={setShippingService}
-						setShippingWeight={setShippingWeight}
-						setShowShippingFields={setShowShippingFields}
-						submitShippingDetails={submitShippingDetails}
-						courierTrackingId={courierTrackingId}
-					/>
+            {/* Close dropdown when clicking outside */}
+            {showStatusDropdown && (
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowStatusDropdown(false)}
+              />
+            )}
+          </div>
+          <CCLDetailsFeilds
+            shippingCity={shippingCity}
+            shippingService={shippingService}
+            shippingWeight={shippingWeight}
+            setShippingCity={setShippingCity}
+            setShippingService={setShippingService}
+            setShippingWeight={setShippingWeight}
+            setShowShippingFields={setShowShippingFields}
+            submitShippingDetails={submitShippingDetails}
+            courierTrackingId={courierTrackingId}
+          />
 
           {/* Customer Information */}
           <div className="bg-white dark:bg-customGray-800 rounded-xl p-5 border border-gray-200 dark:border-customGray-600 shadow-sm">
@@ -534,6 +539,26 @@ const OrderDetailsDrawer = ({ id, data }) => {
                   </span>
                 </div>
               </div>
+
+              {orderDetails?.payment_method === "ibft" &&
+                orderDetails?.payment_receipt_url && (
+                  <div className="mt-3">
+                    <p className="text-sm font-semibold mb-1">
+                      Payment Receipt
+                    </p>
+                    <a
+                      href={import.meta.env.VITE_APP_CLOUDINARY_URL + orderDetails.payment_receipt_url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <img
+                        src={import.meta.env.VITE_APP_CLOUDINARY_URL + orderDetails.payment_receipt_url}
+                        alt="Payment Receipt"
+                        className="max-h-64 rounded border cursor-pointer hover:opacity-80 transition"
+                      />
+                    </a>
+                  </div>
+                )}
             </div>
           </div>
         </div>

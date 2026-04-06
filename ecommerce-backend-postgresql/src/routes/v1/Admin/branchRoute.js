@@ -9,12 +9,12 @@ const router = express.Router();
 router
 	.route('/')
 	.get(
-		checkPermission('view_branch'),
+		// checkPermission('view_branch'),
 		validate(adminBranchValidation.getBranches),
 		adminBranchController.getBranches
 	)
 	.post(
-		checkPermission('create_branch'),
+		// checkPermission('create_branch'),
 		validate(adminBranchValidation.createBranch),
 		adminBranchController.createBranch
 	);
@@ -22,26 +22,24 @@ router
 router
 	.route('/:branchId')
 	.get(
-		checkPermission('view_branch'),
+		// checkPermission('view_branch'),
 		validate(adminBranchValidation.getBranch),
 		adminBranchController.getBranchById
 	)
 	.patch(
-		checkPermission('update_branch'),
+		// checkPermission('edit_branch'),
 		validate(adminBranchValidation.updateBranch),
 		adminBranchController.updateBranch
 	)
 	.delete(
-		checkPermission('delete_branch'),
+		// checkPermission('delete_branch'),
 		validate(adminBranchValidation.deleteBranch),
 		adminBranchController.softDeleteBranch
 	);
-router
-	.route('/permanent/:branch')
-	.delete(
-		checkPermission('delete_branch'),
-		validate(adminBranchValidation.deleteBranch),
-		adminBranchController.permanentDeleteBranch
-	);
+router.route('/permanent/:branch').delete(
+	// checkPermission('delete_branch'),
+	validate(adminBranchValidation.deleteBranch),
+	adminBranchController.permanentDeleteBranch
+);
 
 module.exports = router;

@@ -9,12 +9,12 @@ const router = express.Router();
 router
 	.route('/')
 	.get(
-		checkPermission('view_sizeChart'),
+		// checkPermission('view_sizeChart'),
 		validate(adminSizeChartValidation.getSizeCharts),
 		adminSizeChartController.getSizeCharts
 	)
 	.post(
-		checkPermission('create_sizeChart'),
+		// checkPermission('create_sizeChart'),
 		validate(adminSizeChartValidation.createSizeChart),
 		adminSizeChartController.createSizeChart
 	);
@@ -22,26 +22,24 @@ router
 router
 	.route('/:sizeChartId')
 	.get(
-		checkPermission('view_sizeChart'),
+		// checkPermission('view_sizeChart'),
 		validate(adminSizeChartValidation.getSizeChart),
 		adminSizeChartController.getSizeChartById
 	)
 	.patch(
-		checkPermission('update_sizeChart'),
+		// checkPermission('edit_sizeChart'),
 		validate(adminSizeChartValidation.updateSizeChart),
 		adminSizeChartController.updateSizeChart
 	)
 	.delete(
-		checkPermission('delete_sizeChart'),
+		// checkPermission('delete_sizeChart'),
 		validate(adminSizeChartValidation.deleteSizeChart),
 		adminSizeChartController.softDeleteSizeChart
 	);
-router
-	.route('/permanent/:sizeChart')
-	.delete(
-		checkPermission('delete_sizeChart'),
-		validate(adminSizeChartValidation.deleteSizeChart),
-		adminSizeChartController.permanentDeleteSizeChart
-	);
+router.route('/permanent/:sizeChart').delete(
+	// checkPermission('delete_sizeChart'),
+	validate(adminSizeChartValidation.deleteSizeChart),
+	adminSizeChartController.permanentDeleteSizeChart
+);
 
 module.exports = router;

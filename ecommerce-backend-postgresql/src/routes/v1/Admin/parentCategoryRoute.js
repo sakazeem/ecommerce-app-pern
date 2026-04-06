@@ -9,12 +9,12 @@ const router = express.Router();
 router
 	.route('/')
 	.get(
-		checkPermission('view_parentCategory'),
+		// checkPermission('view_parentCategory'),
 		validate(adminParentCategoryValidation.getParentCategories),
 		adminParentCategoryController.getParentCategories
 	)
 	.post(
-		checkPermission('create_parentCategory'),
+		// checkPermission('create_parentCategory'),
 		validate(adminParentCategoryValidation.createParentCategory),
 		adminParentCategoryController.createParentCategory
 	);
@@ -22,26 +22,24 @@ router
 router
 	.route('/:parentCategoryId')
 	.get(
-		checkPermission('view_parentCategory'),
+		// checkPermission('view_parentCategory'),
 		validate(adminParentCategoryValidation.getParentCategory),
 		adminParentCategoryController.getParentCategoryById
 	)
 	.patch(
-		checkPermission('update_parentCategory'),
+		// checkPermission('edit_parentCategory'),
 		validate(adminParentCategoryValidation.updateParentCategory),
 		adminParentCategoryController.updateParentCategory
 	)
 	.delete(
-		checkPermission('delete_parentCategory'),
+		// checkPermission('delete_parentCategory'),
 		validate(adminParentCategoryValidation.deleteParentCategory),
 		adminParentCategoryController.softDeleteParentCategory
 	);
-router
-	.route('/permanent/:parentCategory')
-	.delete(
-		checkPermission('delete_parentCategory'),
-		validate(adminParentCategoryValidation.deleteParentCategory),
-		adminParentCategoryController.permanentDeleteParentCategory
-	);
+router.route('/permanent/:parentCategory').delete(
+	// checkPermission('delete_parentCategory'),
+	validate(adminParentCategoryValidation.deleteParentCategory),
+	adminParentCategoryController.permanentDeleteParentCategory
+);
 
 module.exports = router;

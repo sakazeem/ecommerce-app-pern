@@ -85,7 +85,7 @@ const Footer = ({ showOnMobile = true }) => {
 								{[
 									{
 										icon: MapPin,
-										className: "w-6 h-6",
+										// className: "w-6 h-6",
 										label: "Address",
 										value: "Karachi, Pakistan",
 										// value:
@@ -148,7 +148,11 @@ const Footer = ({ showOnMobile = true }) => {
 												link.text.includes("@") ? "lowercase" : "capitalize"
 											}`}>
 											{link.link ? (
-												<BaseLink href={link.link}>{link.text}</BaseLink>
+												<BaseLink
+													href={link.link}
+													target={link.target || "_self"}>
+													{link.text}
+												</BaseLink>
 											) : (
 												link.text
 											)}
@@ -203,7 +207,7 @@ const Footer = ({ showOnMobile = true }) => {
 						All rights reserved All rights reserved
 					</p>
 					<p className="p4 text-sm md:text-base text-light/80">
-						Design and Developed by:{" "}
+						Powered by:{" "}
 						<Link
 							href={"https://bananastudios.digital"}
 							target="_blank"

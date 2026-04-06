@@ -22,7 +22,7 @@ router
 		adminPermissionController.getPermissionById
 	)
 	.patch(
-		// checkPermission('update_permission'),
+		// checkPermission('edit_permission'),
 		adminPermissionController.updatePermission
 	)
 	.delete(

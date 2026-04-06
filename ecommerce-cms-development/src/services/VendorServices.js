@@ -4,6 +4,9 @@ const VendorServices = {
 	getAllVendors: async () => {
 		return requests.get("/brand");
 	},
+	getAllVendorsForOptions: async () => {
+		return requests.get("/brand/options");
+	},
 
 	getVendorById: async (id) => {
 		return requests.get(`/brand/${id}`);

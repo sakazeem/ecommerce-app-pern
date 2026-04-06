@@ -15,6 +15,7 @@ const MainDrawer = ({ children, product, setIsUpdate = () => {} }) => {
 
 	useEffect(() => {
 		if (
+			location.pathname === "/roles" ||
 			location.pathname === "/products" ||
 			location.pathname === "/size-chart"
 		) {
@@ -34,7 +35,7 @@ const MainDrawer = ({ children, product, setIsUpdate = () => {} }) => {
 			level={null}
 			placement={"right"}
 			width={`${
-				windowDimension <= 575 ? "100%" : product || isProduct ? "75%" : "50%"
+				windowDimension <= 575 ? "100%" : product || isProduct ? "80%" : "50%"
 			}`}>
 			<button
 				onClick={toggleDrawer}

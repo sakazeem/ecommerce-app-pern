@@ -37,12 +37,14 @@ async function softDeletePermissionById(req) {
 }
 
 async function registerPermissionsService(req) {
-	await registerPermissions(req.body.moduleName, req.body.actions);
+	await registerPermissions(
+		req.body.moduleName,
+		req.body.actions,
+		req.body.show
+	);
 	return true;
 }
 async function unregisterPermissionsService(req) {
-	console.log(req.body.moduleName);
-
 	await unregisterPermissions(req.body.moduleName, req.body.actions);
 	return true;
 }
