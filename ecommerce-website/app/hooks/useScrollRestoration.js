@@ -1,50 +1,43 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
-/**
- * useScrollRestoration
- *
- * Saves the window scroll position before leaving a page and restores it when
- * returning to the same URL (pathname + search params).
- *
- * Usage:
- *   useScrollRestoration();          // auto key = current URL
- *   useScrollRestoration("products") // explicit stable key
- */
 export function useScrollRestoration(key) {
-	const pathname = usePathname();
-	const searchParams = useSearchParams();
-	const scrollKey = key ?? pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : "");
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const scrollKey =
+    key ??
+    pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : "");
 
-	// Track whether we've already restored on this mount
-	const restored = useRef(false);
+  const saveTargetProduct = (productId) => {
+    sessionStorage.setItem(`target-product:${scrollKey}`, String(productId));
+  };
 
-	// On mount: restore saved position (after React has painted the list)
-	useEffect(() => {
-		if (restored.current) return;
-		restored.current = true;
+  const getTargetProduct = () =>
+    sessionStorage.getItem(`target-product:${scrollKey}`);
 
-		const saved = sessionStorage.getItem(`scroll:${scrollKey}`);
-		if (!saved) return;
+  const clearTargetProduct = () =>
+    sessionStorage.removeItem(`target-product:${scrollKey}`);
 
-		const y = parseInt(saved, 10);
-		if (!Number.isFinite(y) || y <= 0) return;
+  // Retries every 50ms until the element appears in DOM, then scrolls to it
+  const scrollToProduct = (productId, onDone) => {
+    let attempts = 0;
+    const tryScroll = () => {
+      const el = document.querySelector(`[data-product-id="${productId}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: "instant", block: "center" });
+        onDone?.();
+        return;
+      }
+      if (attempts++ < 40) setTimeout(tryScroll, 50); // retry for ~2s
+    };
+    requestAnimationFrame(tryScroll);
+  };
 
-		// requestAnimationFrame gives the browser one paint cycle to render
-		// the list content before we jump — avoids snapping to 0.
-		const raf = requestAnimationFrame(() => {
-			window.scrollTo({ top: y, behavior: "instant" });
-		});
-
-		return () => cancelAnimationFrame(raf);
-	}, [scrollKey]);
-
-	// On unmount (navigating away): save current position
-	useEffect(() => {
-		return () => {
-			sessionStorage.setItem(`scroll:${scrollKey}`, String(Math.round(window.scrollY)));
-		};
-	}, [scrollKey]);
+  return {
+    saveTargetProduct,
+    getTargetProduct,
+    clearTargetProduct,
+    scrollToProduct,
+  };
 }
