@@ -207,11 +207,11 @@ const Homepage = () => {
     const invalidVideoSection = sections.find(
       (sec) =>
         sec.type === "video_slider" &&
-        (!sec.config?.slides || sec.config.slides.length < 4),
+        (!sec.config?.slides || sec.config.slides.length < 3),
     );
 
     if (invalidVideoSection) {
-      toast.error("Each Video Slider must have at least 4 videos");
+      toast.error("Each Video Slider must have at least 3 videos");
       return;
     }
 
