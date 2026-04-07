@@ -10,7 +10,7 @@ import useUtilsFunction from "@/hooks/useUtilsFunction";
 
 const SelectCategory = ({ setCategory }) => {
 	const { t } = useTranslation();
-	const { data } = useAsync(CategoryServices.getAllCategories);
+	const { data } = useAsync(CategoryServices.getAllCategoriesForCmsOptions);
 	const { showingTranslateValue } = useUtilsFunction();
 
 	return (
