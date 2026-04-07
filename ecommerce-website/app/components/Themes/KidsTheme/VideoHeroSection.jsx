@@ -96,7 +96,8 @@ function VideoCard({ slide, idx }) {
         muted
         loop
         playsInline
-        preload="metadata"
+        webkit-playsinline="true"
+        preload="auto"
         autoPlay
         className="reel-video"
       />
