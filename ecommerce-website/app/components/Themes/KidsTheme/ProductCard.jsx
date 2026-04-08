@@ -35,7 +35,7 @@ const ProductCard = ({ product }) => {
   const { isAuthenticated } = useAuth();
   const { addToCart, toggleFavourite, favourites } = useCartStore();
   const { openCartDrawer } = useAuthUIStore();
-  const { saveTargetProduct } = useScrollRestoration();
+  // const { saveTargetProduct } = useScrollRestoration();
 
   const randomRating = useMemo(() => {
     return Math.floor(Math.random() * 9 + 2) / 2;
@@ -60,7 +60,7 @@ const ProductCard = ({ product }) => {
         : product.image || null;
 
   const navigateToProduct = () => {
-    saveTargetProduct(product.id); // 👈 save before navigating
+    // saveTargetProduct(product.id); // 👈 save before navigating
     router.push(`/product/${product.slug || product.id}`);
   };
 

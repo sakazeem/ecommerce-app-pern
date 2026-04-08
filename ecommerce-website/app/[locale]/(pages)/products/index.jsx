@@ -24,8 +24,7 @@ const ProductsPage = () => {
   const store = useStore();
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [resolvedCategory, setResolvedCategory] = useState(null);
-  const { getTargetProduct, clearTargetProduct, scrollToProduct } =
-    useScrollRestoration();
+  useScrollRestoration();
   const { Footer } = loadThemeComponents(store.themeName);
 
   const [selectedFilters, setSelectedFilters] = useState({
@@ -41,8 +40,6 @@ const ProductsPage = () => {
   const category = paramsCategory || "";
   const brand = paramsBrand || "";
   const search = paramsSearch || "";
-
-  const scrollAttempted = useRef(false);
 
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useInfiniteQuery({
@@ -75,28 +72,7 @@ const ProductsPage = () => {
   const products = data?.pages.flatMap((page) => page.records) ?? [];
 
   useEffect(() => {
-    if (scrollAttempted.current) return;
-    if (!data || defaultFilters === null || isLoading) return;
-
-    const targetId = getTargetProduct();
-    if (!targetId) return;
-
-    const isLoaded = products.some((p) => String(p.id) === String(targetId));
-
-    if (isLoaded) {
-      scrollAttempted.current = true;
-      scrollToProduct(targetId, clearTargetProduct);
-    } else if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    } else if (!hasNextPage) {
-      scrollAttempted.current = true;
-      clearTargetProduct();
-    }
-  }, [data?.pages.length, defaultFilters, isLoading, isFetchingNextPage]);
-
-  useEffect(() => {
     if (!loaderRef.current || isFetchingNextPage || !hasNextPage) return;
-    if (!scrollAttempted.current && getTargetProduct()) return; // wait for restore
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -106,7 +82,7 @@ const ProductsPage = () => {
     );
     observer.observe(loaderRef.current);
     return () => observer.disconnect();
-  }, [isFetchingNextPage, hasNextPage, fetchNextPage, scrollAttempted.current]);
+  }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
 
   return (
     <>

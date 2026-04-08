@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 export function useScrollRestoration(key) {
@@ -8,36 +9,27 @@ export function useScrollRestoration(key) {
   const scrollKey =
     key ??
     pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : "");
-
-  const saveTargetProduct = (productId) => {
-    sessionStorage.setItem(`target-product:${scrollKey}`, String(productId));
-  };
-
-  const getTargetProduct = () =>
-    sessionStorage.getItem(`target-product:${scrollKey}`);
-
-  const clearTargetProduct = () =>
-    sessionStorage.removeItem(`target-product:${scrollKey}`);
-
-  // Retries every 50ms until the element appears in DOM, then scrolls to it
-  const scrollToProduct = (productId, onDone) => {
-    let attempts = 0;
-    const tryScroll = () => {
-      const el = document.querySelector(`[data-product-id="${productId}"]`);
-      if (el) {
-        el.scrollIntoView({ behavior: "instant", block: "center" });
-        onDone?.();
-        return;
-      }
-      if (attempts++ < 40) setTimeout(tryScroll, 50); // retry for ~2s
+  const restored = useRef(false);
+  
+  useEffect(() => {
+    if (restored.current) return;
+    restored.current = true;
+    const saved = sessionStorage.getItem(`scroll:${scrollKey}`);
+    if (!saved) return;
+    const y = parseInt(saved, 10);
+    if (!Number.isFinite(y) || y <= 0) return;
+    const raf = requestAnimationFrame(() => {
+      window.scrollTo({ top: y, behavior: "instant" });
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [scrollKey]);
+  
+  useEffect(() => {
+    return () => {
+      sessionStorage.setItem(
+        `scroll:${scrollKey}`,
+        String(Math.round(window.scrollY)),
+      );
     };
-    requestAnimationFrame(tryScroll);
-  };
-
-  return {
-    saveTargetProduct,
-    getTargetProduct,
-    clearTargetProduct,
-    scrollToProduct,
-  };
+  }, [scrollKey]);
 }
