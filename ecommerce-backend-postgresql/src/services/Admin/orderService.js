@@ -163,7 +163,6 @@ async function getAllOrders(req) {
 
 async function updateOrderId(req) {
 	const { orderId } = req.params;
-	console.log(req.body, 'chkking body');
 
 	const updatedOrder = await db.order.update(
 		{
@@ -372,7 +371,6 @@ async function createCCLBooking(data) {
 			client_store_id: 1049, //Client Store ID: [Eg: 12345| Find in Stores Section in Portal] - Optional
 		});
 
-		console.log(booking.data, 'ccl booking response');
 
 		return booking.data.data;
 	} catch (error) {

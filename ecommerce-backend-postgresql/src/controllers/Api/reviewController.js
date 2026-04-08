@@ -28,7 +28,6 @@ const createReview = catchAsync(async (req, res) => {
 		payload = await verifyToken(accessToken);
 	}
 
-	console.log(payload.userId, req.body);
 	await apiReviewService.createReview(req, payload.userId);
 
 	res.send({ success: true });

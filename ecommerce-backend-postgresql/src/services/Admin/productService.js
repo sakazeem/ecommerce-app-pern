@@ -1330,14 +1330,12 @@ async function cleanDescriptionProducts(req) {
 			transaction,
 		});
 
-		console.log(`Found ${products.length} products`);
 
 		for (const product of products) {
 			const cleaned = cleanKeyFeaturesText(product.description);
 
 			if (cleaned !== product.description) {
 				await product.update({ description: cleaned }, { transaction });
-				console.log(`Updated Product ID: ${product.id}`);
 			}
 		}
 

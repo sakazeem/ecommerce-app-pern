@@ -23,9 +23,7 @@ const mediaService = createBaseService(db.media, {
 async function createMedia(req) {
 	const media = await imageService.mediaUpload(req.file);
 	const userId = commonUtils.getUserId(req);
-	console.log("REQ FILE", req.file);
 	const isVideo = req.file.mimetype.startsWith('video/');
-	console.log('isVideo', isVideo);
 	return mediaService.create(
 		{
 			url: media.url,
@@ -272,6 +270,7 @@ const getMedias = async (req) => {
 		limit = defaultLimit,
 		id,
 		media_type,
+		search,
 	} = req.query;
 
 	const offset = getOffset(page, limit);
@@ -289,8 +288,10 @@ const getMedias = async (req) => {
 		whereCondition.media_type = media_type;
 	}
 
-	console.log('whereCondition', whereCondition);
-	
+	if (search) {
+		whereCondition.title = { [Op.iLike]: `%${search}%` };
+	}
+
 	const data = await db.media.findAndCountAll({
 		where: { ...whereCondition, deleted_at: null },
 		offset,
@@ -299,7 +300,6 @@ const getMedias = async (req) => {
 		distinct: true,
 		col: 'id',
 	});
-	console.log('data', data);
 
 	return {
 		total: data.count,

@@ -60,8 +60,6 @@ function createBaseService(model, options = {}) {
 		},
 
 		async update(id, data, userId) {
-			console.log(id, data, userId);
-
 			const toUpdate = formatUpdateData(data);
 			toUpdate.user_id = userId;
 			await validations(data);
