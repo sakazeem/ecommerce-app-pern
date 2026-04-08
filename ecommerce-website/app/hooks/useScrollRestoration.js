@@ -25,7 +25,7 @@ export function useScrollRestoration(key) {
     const tryScroll = () => {
       const el = document.querySelector(`[data-product-id="${productId}"]`);
       if (el) {
-        el.scrollIntoView({ behavior: "instant", block: "center" });
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
         onDone?.();
         return;
       }

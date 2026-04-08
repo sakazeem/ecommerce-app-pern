@@ -27,6 +27,18 @@ const ProductsPage = () => {
   const { getTargetProduct, clearTargetProduct, scrollToProduct } =
     useScrollRestoration();
   const { Footer } = loadThemeComponents(store.themeName);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const [selectedFilters, setSelectedFilters] = useState({
     categories: [],
@@ -217,7 +229,7 @@ const ProductsPage = () => {
 			</section> */}
       </main>
 
-      {!isLoading && <Footer />}
+      {!isLoading && isMobile && <Footer />}
     </>
   );
 };
