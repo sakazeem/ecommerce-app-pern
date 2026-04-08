@@ -7,7 +7,7 @@ import {
 	ModalFooter,
 	ModalHeader,
 } from "@windmill/react-ui";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Uploader from "@/components/image-uploader/Uploader";
 import DeleteModal from "@/components/modal/DeleteModal";
 import Loading from "@/components/preloader/Loading";
@@ -18,8 +18,6 @@ import MediaServices from "@/services/MediaServices";
 import { formatDate } from "@/utils/globals";
 import { useTranslation } from "react-i18next";
 import { FiCheck, FiEye, FiImage, FiTrash2, FiVideo } from "react-icons/fi";
-
-const LIMIT = 50;
 
 const Media = ({
 	isSelectImage = true,
@@ -38,123 +36,26 @@ const Media = ({
 	const [previewImage, setPreviewImage] = useState(null);
 	const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 	const [hoveredImage, setHoveredImage] = useState(null);
-	const [media, setMedia] = useState([]);
 	const [searchQuery, setSearchQuery] = useState("");
-	const [page, setPage] = useState(1);
-	const [hasMore, setHasMore] = useState(true);
-	const [loading, setLoading] = useState(false);
-	const [debouncedSearch, setDebouncedSearch] = useState("");
-	const observer = useRef();
-	const requestIdRef = useRef(0);
 
-	// 🔁 Debounce search
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			setDebouncedSearch(searchQuery);
-			setPage(1);
-			if (searchQuery !== "") {
-				setMedia([]);
-			}
-			setHasMore(true);
-		}, 500);
+	console.log(variantImages, "chkking variantImages");
 
-		return () => clearTimeout(timer);
-	}, [searchQuery]);
-	useEffect(() => {
-		return () => {
-			if (observer.current) observer.current.disconnect();
-		};
-	}, []);
-	useEffect(() => {
-		window.scrollTo({ top: 0 });
-	}, [debouncedSearch]);
-	// 📡 Fetch media
-	const fetchMedia = async () => {
-		if (loading || !hasMore) return;
-		const requestId = ++requestIdRef.current;
-
-		setLoading(true);
-		let query = "";
+	const {
+		data: mediaData,
+		loading,
+		error,
+	} = useAsync(() => {
 		if (isVariantImage) {
-			if (!variantImages?.length) {
-				setMedia([]);
-				setHasMore(false);
-				setLoading(false);
-				return;
+			if (!variantImages || variantImages.length === 0) {
+				return Promise.resolve({ records: [] });
 			}
-
-			query = variantImages.map((id) => `id=${id}`).join("&");
+			const query = variantImages.map((id) => `id=${id}`).join("&");
+			return MediaServices.getAllMedia(query);
 		}
-
-		// 🚫 ignore outdated responses
-		// if (isVariantImage) {
-		// 	if (!variantImages || variantImages.length === 0) {
-		// 		return Promise.resolve({ records: [] });
-		// 	}
-		// 	query = variantImages.map((id) => `id=${id}`).join("&");
-		// }
-		try {
-			const res = await MediaServices.getAllMedia({
-				page,
-				limit: LIMIT,
-				search: debouncedSearch,
-				mediaType,
-				variantImages: query,
-			});
-
-			if (requestId !== requestIdRef.current) return;
-
-			const newData = res.records || [];
-
-			setMedia((prev) => (page == 1 ? newData : [...prev, ...newData]));
-
-			const totalPages = Math.ceil(res.total / LIMIT);
-
-			setHasMore(page < totalPages);
-		} catch (err) {
-			console.error(err);
-		}
-
-		setLoading(false);
-	};
-
-	useEffect(() => {
-		fetchMedia();
-	}, [page, debouncedSearch, mediaType]);
-
-	// 👀 Infinite Scroll Observer
-	const lastItemRef = useCallback(
-		(node) => {
-			if (loading) return;
-
-			if (observer.current) observer.current.disconnect();
-
-			observer.current = new IntersectionObserver((entries) => {
-				if (entries[0].isIntersecting && hasMore) {
-					setPage((prev) => prev + 1);
-				}
-			});
-
-			if (node) observer.current.observe(node);
-		},
-		[loading, hasMore],
-	);
-	// const {
-	// 	data: mediaData,
-	// 	loading,
-	// 	error,
-	// } = useAsync(() => {
-	// 	if (isVariantImage) {
-	// 		if (!variantImages || variantImages.length === 0) {
-	// 			return Promise.resolve({ records: [] });
-	// 		}
-	// 		const query = variantImages.map((id) => `id=${id}`).join("&");
-	// 		return MediaServices.getAllMedia(query);
-	// 	}
-	// 	// Filter by mediaType if provided
-	// 	const query = mediaType ? `media_type=${mediaType}` : "";
-	// 	return MediaServices.getAllMedia(query);
-	// }, [mediaType]);
+		// Filter by mediaType if provided
+		const query = mediaType ? `media_type=${mediaType}` : "";
+		return MediaServices.getAllMedia(query);
+	}, [mediaType]);
 
 	const { t } = useTranslation();
 
@@ -163,19 +64,25 @@ const Media = ({
 		setIsPreviewOpen(true);
 	};
 
+	useEffect(() => {
+		(console.log("mediaData", mediaData), [mediaData]);
+	});
+
 	const handleDelete = async (imageId) => {
 		handleModalOpen(imageId, title);
 	};
 
-	if (loading && page === 1) return <Loading />;
-	// if (error)
-	// 	return (
-	// 		<span className="text-center mx-auto text-customRed-500">{error}</span>
-	// 	);
+	if (loading) return <Loading />;
+	if (error)
+		return (
+			<span className="text-center mx-auto text-customRed-500">{error}</span>
+		);
 
-	// const filteredRecords = mediaData.records.filter((img) =>
-	// 	img.title?.toLowerCase().includes(searchQuery.toLowerCase()),
-	// );
+	console.log(isSelectImage, "chkking selectedImage111");
+
+	const filteredRecords = mediaData.records.filter((img) =>
+		img.title?.toLowerCase().includes(searchQuery.toLowerCase()),
+	);
 
 	return (
 		<div
@@ -195,7 +102,7 @@ const Media = ({
 				/>
 			</div>
 
-			{media.length === 0 ? (
+			{filteredRecords.length === 0 ? (
 				<Card className="text-center py-12">
 					<CardBody>
 						<FiImage className="mx-auto h-12 w-12 text-gray-400 mb-4" />
@@ -215,16 +122,16 @@ const Media = ({
 						isSelectImage ? "xl:grid-cols-4" : "xl:grid-cols-6"
 					} gap-4`}>
 					{/* <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4"> */}
-					{media.map((item, index) => {
+					{filteredRecords.map((item) => {
 						const isVideo = item.media_type === "video";
 						const fileUrl = import.meta.env.VITE_APP_CLOUDINARY_URL + item.url;
-						const isSelected = selectedImage?.includes(item.id);
-						const isLast = media.length === index + 1;
+						const isSelected = Array.isArray(selectedImage)
+							? selectedImage.includes(item.id)
+							: selectedImage === item.id;
 
 						return (
 							<Card
 								key={item.id}
-								ref={isLast ? lastItemRef : null}
 								className="group relative overflow-hidden hover:shadow-lg transition-shadow duration-200 cursor-pointer border"
 								onMouseEnter={() => setHoveredImage(item.id)}
 								onMouseLeave={() => setHoveredImage(null)}
@@ -244,7 +151,7 @@ const Media = ({
 												: [...prev, fileUrl],
 										);
 									} else {
-										setSelectedImage(item.id);
+										setSelectedImage([item.id]);
 										setSelectedImageUrl(fileUrl);
 										onClose();
 									}
@@ -321,10 +228,6 @@ const Media = ({
 							</Card>
 						);
 					})}
-					{/* Loader bottom */}
-					{loading && page > 1 && (
-						<div className="text-center py-4">Loading more...</div>
-					)}
 				</div>
 			)}
 

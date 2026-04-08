@@ -26,7 +26,7 @@ const Product = () => {
 	const [filters, setFilters] = useState({});
 	const [exportLoading, setExportLoading] = useState(false);
 	const [stockSortOrder, setStockSortOrder] = useState(null);
-	const limit = 10;
+	const limit = 8;
 	const {
 		data: productsData,
 		loading,
