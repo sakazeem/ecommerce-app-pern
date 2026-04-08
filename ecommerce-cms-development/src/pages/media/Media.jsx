@@ -175,7 +175,7 @@ const Media = ({
 	// const filteredRecords = mediaData.records.filter((img) =>
 	// 	img.title?.toLowerCase().includes(searchQuery.toLowerCase()),
 	// );
-
+	console.log(selectedImage, "chkking selected image media");
 	return (
 		<div
 			className={`${isUnderModal ? "max-h-[60vh] overflow-y-auto" : ""} pr-2 scrollbar-thin scrollbar-thumb-gray-300`}>
@@ -217,7 +217,9 @@ const Media = ({
 					{media.map((item, index) => {
 						const isVideo = item.media_type === "video";
 						const fileUrl = import.meta.env.VITE_APP_CLOUDINARY_URL + item.url;
-						const isSelected = selectedImage?.includes(item.id);
+						const isSelected = isMultipleSelect
+							? selectedImage?.includes(item.id)
+							: selectedImage == item.id;
 						const isLast = media.length === index + 1;
 
 						return (
