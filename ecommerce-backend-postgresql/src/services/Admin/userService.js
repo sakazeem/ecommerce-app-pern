@@ -124,6 +124,7 @@ async function permanentDeleteUserById(userId) {
 
 async function updateUser(req) {
 	const { password, email } = req.body;
+	const userId = req.params.userId || req.body.id;
 
 	if (password) {
 		const hashedPassword = await encryptData(password);
@@ -136,12 +137,14 @@ async function updateUser(req) {
 		}
 
 		req.body.password = hashedPassword;
+	} else {
+		delete req.body.password;
 	}
 
 	if (email) {
 		const existedUser = await getUserByEmail(email);
 
-		if (existedUser) {
+		if (existedUser && String(existedUser.id) !== String(userId)) {
 			throw new ApiError(
 				httpStatus.CONFLICT,
 				'This email is already exist'
@@ -153,7 +156,7 @@ async function updateUser(req) {
 		.update(
 			{ ...req.body },
 			{
-				where: { id: req.params.userId || req.body.id },
+				where: { id: userId },
 				returning: true,
 				plain: true,
 			}

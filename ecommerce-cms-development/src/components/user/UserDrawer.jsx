@@ -150,7 +150,6 @@ const UserDrawer = ({ id, data }) => {
 						/>
 						<InputAreaField
 							label={t("Password")}
-							required={true}
 							register={register}
 							inputLabel="password"
 							inputName="password"
