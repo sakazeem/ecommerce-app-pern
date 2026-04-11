@@ -13,15 +13,17 @@ export const useFetchReactQuery = (
 	options = {},
 ) => {
 	return useQuery({
-		queryKey: [queryKey],
+		queryKey: Array.isArray(queryKey) ? queryKey : [queryKey],
 		queryFn: fetctDataFunction,
 		retry: false,
-		
+
 		staleTime: 1000 * 60 * 30,
 		gcTime: 1000 * 60 * 60,
 		refetchOnWindowFocus: false,
 		refetchOnMount: false, // 🔥 key fix
-		placeholderData: (prev) => prev,
+		refetchOnReconnect: false,
+		// placeholderData: (prev) => prev,
+		keepPreviousData: true,
 		...options,
 		// enabled: false,
 	});

@@ -61,16 +61,14 @@ export default function ProductDetailsPage() {
   // Fetch product
   const { data: product, isLoading } = useFetchReactQuery(
     () => ProductServices.getProductBySlug(store.themeName, slug),
-    ["productBySlug", store.themeName, slug],
-    { enabled: !!store.themeName },
+    ["productBySlug", slug],
   );
 
   // Fetch latest products (optional)
   const { data: latestProducts, isLoading: latestProductsLoading } =
     useFetchReactQuery(
       () => ProductServices.getLatestProducts(store.themeName, 10),
-      ["latestProducts", store.themeName],
-      { enabled: !!store.themeName },
+      ["latestProducts"],
     );
 
   // Build attribute options when product loads
