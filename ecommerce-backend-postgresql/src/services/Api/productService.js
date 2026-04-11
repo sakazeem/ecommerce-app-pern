@@ -174,7 +174,117 @@ const getProductsSuggestions = async (req) => {
 };
 const getProducts = async (req) => {
 	const { page: defaultPage, limit: defaultLimit } = config.pagination;
-	const { page = defaultPage, limit = defaultLimit, filterQuery } = req.query;
+	const {
+		page = defaultPage,
+		limit = defaultLimit,
+		filterQuery = false,
+	} = req.query;
+	const offset = getOffset(page, limit);
+
+	const products = await db.product
+		.scope(
+			{ method: ['active'] } // active scope with params
+		)
+		.findAndCountAll({
+			offset,
+			limit,
+			order: filterQuery ? db.sequelize.random() : [['id', 'DESC']],
+			attributes: [
+				'id',
+				'sku',
+				'base_price',
+				'base_discount_percentage',
+				'is_featured',
+			],
+			include: [
+				// {
+				// 	model: db.category.scope('active'),
+				// 	attributes: ['id'],
+				// 	required: false,
+				// 	include: [
+				// 		{
+				// 			model: db.category_translation,
+				// 			as: 'translations',
+				// 			attributes: ['title'],
+				// 			include: [translationInclude(req)],
+				// 		},
+				// 	],
+				// },
+				// --- PRODUCT VARIANTS & ATTRIBUTE FILTER ---
+				{
+					model: db.product_variant,
+					// required: false,
+					required: false,
+					attributes: ['id', 'sku'],
+					include: [
+						// {
+						// 	model: db.product_variant_to_attribute,
+						// 	as: 'product_variant_to_attributes', // must match the alias above
+						// 	required: false,
+						// 	attributes: ['id', 'attribute_id', 'value'],
+						// 	include: [
+						// 		{
+						// 			model: db.attribute,
+						// 			required: false,
+						// 			attributes: ['name'],
+						// 		},
+						// 	],
+						// },
+						{
+							model: db.branch,
+							required: false,
+							through: {
+								as: 'pvb',
+							},
+							attributes: [
+								'stock',
+								'sale_price',
+								'discount_percentage',
+							],
+						},
+					],
+				},
+
+				{
+					model: db.media,
+					required: false,
+					as: 'images',
+					attributes: ['url'],
+				},
+				{
+					model: db.media,
+					required: false,
+					as: 'thumbnailImage',
+					attributes: ['url'],
+				},
+				{
+					model: db.product_translation,
+					required: true,
+					attributes: ['title', 'excerpt', 'slug'],
+					where: { language_id: 1 },
+				},
+			],
+			unique: true,
+			distinct: true, // to fix count
+			col: 'id', // to fix count
+		});
+
+	return {
+		total: products.count,
+		records: products.rows,
+		limit: limit,
+		page: page,
+	};
+
+	return products;
+};
+const getProductsForFilterPage = async (req) => {
+	const { page: defaultPage, limit: defaultLimit } = config.pagination;
+	const {
+		page = defaultPage,
+		limit = defaultLimit,
+		filterQuery = false,
+	} = req.query;
 	const offset = getOffset(page, limit);
 
 	const {
@@ -216,42 +326,22 @@ const getProducts = async (req) => {
 					include: [
 						{
 							model: db.category_translation,
-							separate: true,
 							as: 'translations',
-							attributes: ['title'],
-
-							include: [translationInclude(req)],
-						},
-					],
-				},
-				{
-					model: db.usp.scope('active'),
-					attributes: ['id'],
-					required: false,
-					include: [
-						{
-							model: db.usp_translation,
-							as: 'translations',
-							separate: true,
 							attributes: ['title'],
 							include: [translationInclude(req)],
 						},
 					],
 				},
 				// {
-				// 	model: db.brand.scope('active'),
+				// 	model: db.usp.scope('active'),
 				// 	attributes: ['id'],
-				// 	required: Boolean(brandIds.length),
-				// 	where: brandIds.length
-				// 		? { id: { [Op.in]: brandIds } }
-				// 		: undefined,
+				// 	required: false,
 				// 	include: [
 				// 		{
-				// 			model: db.brand_translation,
-				// 			separate: true,
+				// 			model: db.usp_translation,
 				// 			as: 'translations',
-				// 			attributes: ['title'],
 
+				// 			attributes: ['title'],
 				// 			include: [translationInclude(req)],
 				// 		},
 				// 	],
@@ -261,11 +351,13 @@ const getProducts = async (req) => {
 					model: db.product_variant,
 					// required: false,
 					required: variantAttributeFilter.length > 0,
+					attributes: ['id', 'sku'],
 					include: [
 						{
 							model: db.product_variant_to_attribute,
 							as: 'product_variant_to_attributes', // must match the alias above
 							required: false,
+							attributes: ['id', 'attribute_id', 'value'],
 							where:
 								variantAttributeFilter.length > 0
 									? { [Op.and]: variantAttributeFilter }
@@ -284,79 +376,32 @@ const getProducts = async (req) => {
 							through: {
 								as: 'pvb',
 							},
+							attributes: [
+								'stock',
+								'sale_price',
+								'discount_percentage',
+							],
 						},
 					],
 				},
-				// {
-				// 	model: db.product_variant,
-				// 	required: variantAttributeFilter.length > 0,
-				// 	include: [
-				// 		{
-				// 			model: db.product_variant_to_attribute,
-				// 			as: 'pva', // make sure this matches your alias in association
-				// 			required: true, // only include variants that match
-				// 			include: [
-				// 				{
-				// 					model: db.attribute,
-				// 					required: true,
-				// 					attributes: ['id', 'name'],
-				// 				},
-				// 			],
-				// 			where:
-				// 				variantAttributeFilter.length > 0
-				// 					? { [Op.or]: variantAttributeFilter }
-				// 					: undefined,
-				// 		},
-				// 	],
-				// },
-				// {
-				// 	model: db.product_variant,
-				// 	required: variantAttributeFilter.length > 0,
 
-				// 	include: [
-				// 		// { model: db.media, required: false },
-				// 		{
-				// 			model: db.attribute,
-				// 			required: false,
-				// 			through: {
-				// 				as: 'pva',
-				// 			},
-				// 			attributes: ['id', 'name'],
-				// 		},
-				// 		// {
-				// 		// 	model: db.branch,
-				// 		// 	required: false,
-				// 		// 	through: {
-				// 		// 		as: 'pvb',
-				// 		// 	},
-				// 		// },
-				// 	],
-				// },
 				{
 					model: db.media,
 					required: false,
 					as: 'images',
-					attributes: ['url', 'title'],
+					attributes: ['url'],
 				},
 				{
 					model: db.media,
 					required: false,
 					as: 'thumbnailImage',
-					attributes: ['url', 'title'],
+					attributes: ['url'],
 				},
 				{
 					model: db.product_translation,
 					required: true,
 					attributes: ['title', 'excerpt', 'slug'],
 					where: { ...(searchCondition || {}), language_id: 1 },
-					// include: [
-					// 	{
-					// 		model: db.language,
-					// 		attributes: [],
-					// 		where: { code: getLang(req) }, // "en" or "ur",
-					// 		required: true,
-					// 	},
-					// ],
 				},
 			],
 
@@ -384,6 +429,7 @@ module.exports = {
 		);
 	},
 	getProducts,
+	getProductsForFilterPage,
 	getProductsSuggestions,
 	// getProducts: (req) => {
 	// 	return productService.list(
@@ -404,28 +450,28 @@ const getProductsIncludes = (req, includeSlugCond = false) => [
 		include: [
 			{
 				model: db.category_translation,
-				separate: true,
+
 				as: 'translations',
-				attributes: ['title', 'description', 'slug'],
+				attributes: ['title', 'slug'],
 
 				include: [translationInclude(req)],
 			},
 		],
 	},
-	{
-		model: db.usp.scope('active'),
-		attributes: ['id'],
-		required: false,
-		include: [
-			{
-				model: db.usp_translation,
-				as: 'translations',
-				separate: true,
-				attributes: ['title', 'description', 'slug'],
-				include: [translationInclude(req)],
-			},
-		],
-	},
+	// {
+	// 	model: db.usp.scope('active'),
+	// 	attributes: ['id'],
+	// 	required: false,
+	// 	include: [
+	// 		{
+	// 			model: db.usp_translation,
+	// 			as: 'translations',
+
+	// 			attributes: ['title', 'description', 'slug'],
+	// 			include: [translationInclude(req)],
+	// 		},
+	// 	],
+	// },
 	{
 		model: db.brand.scope('active'),
 		attributes: ['id'],
@@ -434,8 +480,8 @@ const getProductsIncludes = (req, includeSlugCond = false) => [
 			{
 				model: db.brand_translation,
 				as: 'translations',
-				separate: true,
-				attributes: ['title', 'description', 'slug'],
+
+				attributes: ['title', 'slug'],
 				include: [translationInclude(req)],
 			},
 		],
@@ -450,7 +496,7 @@ const getProductsIncludes = (req, includeSlugCond = false) => [
 				model: db.media,
 				required: false,
 				as: 'thumbnailImage',
-				attributes: ['url', 'title', 'size'],
+				attributes: ['url'],
 			},
 			{
 				model: db.product_translation,
@@ -503,13 +549,13 @@ const getProductsIncludes = (req, includeSlugCond = false) => [
 		model: db.media,
 		required: false,
 		as: 'images',
-		attributes: ['url', 'title', 'size'],
+		attributes: ['url'],
 	},
 	{
 		model: db.media,
 		required: false,
 		as: 'thumbnailImage',
-		attributes: ['url', 'title', 'size'],
+		attributes: ['url'],
 	},
 	{
 		model: db.product_translation,
@@ -561,7 +607,7 @@ const getProductsIncludes = (req, includeSlugCond = false) => [
 	{
 		model: db.review,
 		required: false,
-		separate: true,
+
 		// where: { status: 'APPROVED' }, // removed this condition for now
 		attributes: ['id', 'rating', 'guest_name', 'comment'],
 		include: [

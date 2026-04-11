@@ -95,7 +95,7 @@ const ProductServices = {
 		if (filterQuery) params.filterQuery = filterQuery;
 
 		try {
-			const data = await requests.get(`/product`, {
+			const data = await requests.get(`/product/filter`, {
 				params,
 			});
 			if (data) return data;

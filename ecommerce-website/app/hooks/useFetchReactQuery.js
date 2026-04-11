@@ -15,9 +15,13 @@ export const useFetchReactQuery = (
 	return useQuery({
 		queryKey: [queryKey],
 		queryFn: fetctDataFunction,
-		staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-		refetchOnWindowFocus: false,
 		retry: false,
+		
+		staleTime: 1000 * 60 * 30,
+		gcTime: 1000 * 60 * 60,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false, // 🔥 key fix
+		placeholderData: (prev) => prev,
 		...options,
 		// enabled: false,
 	});

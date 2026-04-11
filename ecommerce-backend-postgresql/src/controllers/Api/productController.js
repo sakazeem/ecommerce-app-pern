@@ -12,6 +12,10 @@ const getProducts = catchAsync(async (req, res) => {
 	const products = await apiProductService.getProducts(req);
 	res.send(transformProductsResponse(products, getLang(req)));
 });
+const getProductsForFilterPage = catchAsync(async (req, res) => {
+	const products = await apiProductService.getProductsForFilterPage(req);
+	res.send(transformProductsResponse(products, getLang(req)));
+});
 const getProductsSuggestions = catchAsync(async (req, res) => {
 	const products = await apiProductService.getProductsSuggestions(req);
 	// res.send(products);
@@ -24,6 +28,7 @@ const getProductBySlug = catchAsync(async (req, res) => {
 
 module.exports = {
 	getProducts,
+	getProductsForFilterPage,
 	getProductBySlug,
 	getProductsSuggestions,
 };

@@ -113,7 +113,8 @@ function transformProduct(product, lang, multipleProducts = false) {
 			transformCategory(cat, lang)
 		),
 
-		usps: (product.usps || []).map((u) => transformUSP(u, lang)),
+		// usps: (product.usps || []).map((u) => transformUSP(u, lang)),
+		usps: [],
 
 		vendors: (product.vendors || []).map((v) => transformVendor(v, lang)),
 
