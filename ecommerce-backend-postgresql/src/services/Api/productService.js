@@ -236,11 +236,11 @@ const getProducts = async (req) => {
 							through: {
 								as: 'pvb',
 							},
-							attributes: [
-								'stock',
-								'sale_price',
-								'discount_percentage',
-							],
+							// attributes: [
+							// 	'stock',
+							// 	'sale_price',
+							// 	'discount_percentage',
+							// ],
 						},
 					],
 				},
@@ -376,11 +376,11 @@ const getProductsForFilterPage = async (req) => {
 							through: {
 								as: 'pvb',
 							},
-							attributes: [
-								'stock',
-								'sale_price',
-								'discount_percentage',
-							],
+							// attributes: [
+							// 	'stock',
+							// 	'sale_price',
+							// 	'discount_percentage',
+							// ],
 						},
 					],
 				},

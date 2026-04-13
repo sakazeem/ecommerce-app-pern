@@ -1,7 +1,7 @@
 "use client";
 import { Fancybox } from "@fancyapps/ui";
 import "@fancyapps/ui/dist/fancybox/fancybox.css";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
@@ -80,6 +80,7 @@ export default function VideoHeroSection({
 
 function VideoCard({ slide, idx }) {
   const videoRef = useRef(null);
+  const [loaded, setLoaded] = useState(false);
 
   return (
     <a
@@ -88,19 +89,26 @@ function VideoCard({ slide, idx }) {
       data-type="html5video"
       href={slide.videoUrl}
       onClick={(e) => e.preventDefault()}
+      className="relative block w-full"
+      style={{ aspectRatio: "9 / 16" }}
     >
+      {!loaded && (
+        <div className="absolute inset-0 rounded-[20px] bg-gray-200 animate-pulse"></div>
+      )}
       <video
         ref={videoRef}
-        src={slide.videoUrl}
         poster={slide.poster}
         muted
         loop
         playsInline
-        webkit-playsinline="true"
-        preload="auto"
         autoPlay
+        preload="metadata"
+        onCanPlay={() => setLoaded(true)}
         className="reel-video"
-      />
+        style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.3s ease" }}
+      >
+        <source src={slide.videoUrl} type="video/mp4" />
+      </video>
     </a>
   );
 }
