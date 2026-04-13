@@ -43,6 +43,8 @@ const nextConfig = {
 				search: "",
 			},
 		],
+		formats: ["image/avif", "image/webp"],
+		minimumCacheTTL: 60 * 60 * 24 * 30,
 	},
 };
 
