@@ -28,7 +28,7 @@ const ProductsSlider = ({
 			: "";
 	const { data: products, isLoading } = useFetchReactQuery(
 		() =>
-			ProductServices.getFilteredProducts({
+			ProductServices.getCategoryFilteredProducts({
 				page: 1,
 				limit: limit || 10,
 				...(categoryId

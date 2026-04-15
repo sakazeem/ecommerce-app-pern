@@ -5,6 +5,9 @@ const router = express.Router();
 
 router.route('/').get(apiProductController.getProducts);
 router.route('/filter').get(apiProductController.getProductsForFilterPage);
+router
+	.route('/category-filter')
+	.get(apiProductController.getCategoryFilterProducts);
 router.route('/suggestions').get(apiProductController.getProductsSuggestions);
 router.route('/:slug').get(apiProductController.getProductBySlug);
 

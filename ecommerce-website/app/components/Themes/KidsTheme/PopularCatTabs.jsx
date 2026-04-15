@@ -18,9 +18,10 @@ const PopularCatTabs = ({ title, tabs, productsPerTab }) => {
 
 	const { data, isLoading } = useFetchReactQuery(
 		() =>
-			ProductServices.getProducts({
-				categoryId: activeTab?.id,
+			ProductServices.getCategoryFilteredProducts({
+				...(activeTab?.id ? { filters: { categories: [activeTab.id] } } : {}),
 				limit: productsPerTab || 10,
+				page: 1,
 			}),
 		["popularCatProducts", activeTab?.id || "", productsPerTab],
 		{ enabled: !!activeTab?.id },

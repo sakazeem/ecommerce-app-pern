@@ -75,6 +75,39 @@ const ProductServices = {
 	// 	size: "18-24m",
 	// 	color: "brown"
 	// 	}
+	getCategoryFilteredProducts: async ({
+		themeName = "KidsTheme",
+		filters,
+		defaultFilters,
+		search,
+		filterQuery,
+		page,
+		limit,
+	}) => {
+		const params = {
+			sort: "latest",
+			...buildFilterParams(filters, defaultFilters),
+		};
+
+		if (limit) params.limit = limit;
+		if (page) params.page = page;
+		if (search) params.search = search;
+		if (filterQuery) params.filterQuery = filterQuery;
+
+		try {
+			const data = await requests.get(`/product/category-filter`, {
+				params,
+			});
+			if (data) return data;
+		} catch (err) {
+			console.error("API error:", err);
+		}
+
+		const dataModule = await import(`../data/${themeName}/data`);
+		// const dataModule  = await import(`./${themeName}/data.js`);
+		return dataModule.latestProducts;
+	},
+
 	getFilteredProducts: async ({
 		themeName = "KidsTheme",
 		filters,
