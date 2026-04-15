@@ -106,7 +106,7 @@
           loop
           playsInline
           webkit-playsinline="true"
-          preload="auto"
+          preload="metadata"
           className="reel-video"
         />
       </a>
