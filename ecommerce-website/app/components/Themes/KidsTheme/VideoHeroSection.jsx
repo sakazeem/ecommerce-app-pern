@@ -14,8 +14,10 @@
     title = "",
   }) {
     const processedSlides = useMemo(() => {
-      if (slides.length === 3) {
-        return [...slides, ...slides]; // duplicate
+      if (slides.length < 6) {
+        const repeated = [];
+        while (repeated.length < 9) repeated.push(...slides);
+        return repeated;
       }
       return slides;
     }, [slides]);
@@ -50,7 +52,8 @@
             slidesPerView={2}
             spaceBetween={15}
             centeredSlides={true}
-            loop={processedSlides.length > 1}
+            loop={true}
+            loopAdditionalSlides={3}
             speed={600}
             navigation={true}
             pagination={true}
@@ -68,7 +71,10 @@
             }}
           >
             {processedSlides.map((slide, idx) => (
-              <SwiperSlide style={{ marginBottom: "2rem !important" }} key={idx}>
+              <SwiperSlide
+                style={{ marginBottom: "2rem !important" }}
+                key={`${slide.videoUrl}-${idx}`}
+              >
                 <VideoCard slide={slide} idx={idx} />
               </SwiperSlide>
             ))}

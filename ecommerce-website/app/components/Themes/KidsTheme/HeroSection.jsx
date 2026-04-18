@@ -21,14 +21,16 @@ const HeroSection = ({ slides = [], autoplay = false }) => {
           showNavigation: true,
         },
       }}
-      renderSlide={(slide, idx) => {
-        const img = (
-          <BaseImage
-            src={slide.src}
-            key={idx}
-            className="w-full h-auto max-md:min-h-[25vh] max-md:object-cover"
-          />
-        );
+        renderSlide={(slide, idx) => {
+          const img = (
+            <BaseImage
+              src={slide.src}
+              key={idx}
+              className="w-full h-auto max-md:min-h-[25vh] max-md:object-cover"
+              priority={idx === 0}
+              loading={idx === 0 ? "eager" : "lazy"}
+            />
+          );
 
         if (slide.categorySlug) {
           return (
