@@ -2,6 +2,7 @@
 import BaseImage from "../../BaseComponents/BaseImage";
 import BaseSlider from "../../BaseComponents/BaseSlider";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const HeroSection = ({ slides = [], autoplay = false }) => {
   const router = useRouter();
@@ -23,10 +24,20 @@ const HeroSection = ({ slides = [], autoplay = false }) => {
       }}
       renderSlide={(slide, idx) => {
         const img = (
-          <BaseImage
-            src={slide.src}
+          // <BaseImage
+          //   src={slide.src}
+          //   key={idx}
+          //   className="w-full h-auto max-md:min-h-[25vh] max-md:object-cover"
+          // />
+
+          <Image
             key={idx}
+            src={slide.src}
+            width={600}
+            height={600}
             className="w-full h-auto max-md:min-h-[25vh] max-md:object-cover"
+            alt={""}
+            unoptimized
           />
         );
 
