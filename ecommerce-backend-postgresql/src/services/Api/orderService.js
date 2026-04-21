@@ -237,19 +237,18 @@ async function trackOrderByTrackingId(req) {
 	}
 
 	if (order && order.courier_details) {
-		const courier_details = JSON.parse(order.courier_details);
-		if (courier_details.bookingId && courier_details.trackingId) {
-			const booking = await axios.post('https://oyeah.pk/bookingapi', {
-				clients: config.cclCourier.clients, //Client ID to be Provided by Admin - MANDATORY
-				token: config.cclCourier.apiKey,
-				id: '770162614', //Order ID - MANDATORY
-				shipped_ref: 'KI7529011510', //Tracking ID - MANDATORY
-				// id: courier_details.bookingId, //Order ID - MANDATORY
-				// shipped_ref: courier_details.trackingId, //Tracking ID - MANDATORY
-			});
-
-			console.log('CCL Booking Response:', booking.data);
-		}
+		// const courier_details = JSON.parse(order.courier_details);
+		// if (courier_details.bookingId && courier_details.trackingId) {
+		// 	const booking = await axios.post('https://oyeah.pk/bookingapi', {
+		// 		clients: config.cclCourier.clients, //Client ID to be Provided by Admin - MANDATORY
+		// 		token: config.cclCourier.apiKey,
+		// 		id: '770162614', //Order ID - MANDATORY
+		// 		shipped_ref: 'KI7529011510', //Tracking ID - MANDATORY
+		// 		// id: courier_details.bookingId, //Order ID - MANDATORY
+		// 		// shipped_ref: courier_details.trackingId, //Tracking ID - MANDATORY
+		// 	});
+		// 	console.log('CCL Booking Response:', booking.data);
+		// }
 	}
 
 	if (!order) {
