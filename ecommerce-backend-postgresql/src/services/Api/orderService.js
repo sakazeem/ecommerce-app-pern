@@ -211,7 +211,7 @@ async function confirmOrder(req) {
 
 async function trackOrderByTrackingId(req) {
 	const { trackingId } = req.params;
-	const order = await db.order.findOne({
+	const rawOrder = await db.order.findOne({
 		where: {
 			tracking_id: trackingId,
 		},
@@ -222,40 +222,33 @@ async function trackOrderByTrackingId(req) {
 			},
 		],
 	});
-	console.log('tracking1111');
-	try {
-		const booking = await axios.post('https://oyeah.pk/trackingapi', {
-			clients: '905',
-			token: 'PXQ13WQ962T77NOO6BQCQ2I7AGW0GLB2JMZNHDT7WFWWW24WFAXMHP2D91IEPXTEY87AZM4PXJ0NOKI7LI9CP32T59BXY4TMWU31',
-			id: '770162614', //Order ID - MANDATORY
-			shipped_ref: 'KI7529011510', //Tracking ID - MANDATORY
-		});
-		order.trackingStatus = booking.data;
-		console.log('CCL Booking Response:', booking.data);
-	} catch (e) {
-		console.log('CCL Booking API Error:', e.message);
-	}
-
-	if (order && order.courier_details) {
-		// const courier_details = JSON.parse(order.courier_details);
-		// if (courier_details.bookingId && courier_details.trackingId) {
-		// 	const booking = await axios.post('https://oyeah.pk/trackingapi', {
-		// 		clients: config.cclCourier.clients, //Client ID to be Provided by Admin - MANDATORY
-		// 		token: config.cclCourier.apiKey,
-		// 		id: '770162614', //Order ID - MANDATORY
-		// 		shipped_ref: 'KI7529011510', //Tracking ID - MANDATORY
-		// 		// id: courier_details.bookingId, //Order ID - MANDATORY
-		// 		// shipped_ref: courier_details.trackingId, //Tracking ID - MANDATORY
-		// 	});
-		// 	console.log('CCL Booking Response:', booking.data);
-		// }
-	}
-
-	if (!order) {
+	if (!rawOrder) {
 		throw new ApiError(
 			httpStatus.NOT_FOUND,
 			'Order not found with this tracking ID'
 		);
+	}
+	const order = rawOrder.get({ plain: true });
+	if (order && order.courier_details) {
+		const courier_details = JSON.parse(order.courier_details);
+		if (courier_details.bookingId && courier_details.trackingId) {
+			try {
+				const booking = await axios.post(
+					'https://oyeah.pk/trackingapi',
+					{
+						clients: config.cclCourier.clients, //Client ID to be Provided by Admin - MANDATORY
+						token: config.cclCourier.apiKey,
+						// id: '770162614', //Order ID - MANDATORY
+						// shipped_ref: 'KI7529011510', //Tracking ID - MANDATORY
+						id: courier_details.bookingId, //Order ID - MANDATORY
+						shipped_ref: courier_details.trackingId, //Tracking ID - MANDATORY
+					}
+				);
+				order.trackingStatus = booking.data;
+			} catch (e) {
+				console.log('CCL Booking API Error:', e.message);
+			}
+		}
 	}
 
 	return order;
