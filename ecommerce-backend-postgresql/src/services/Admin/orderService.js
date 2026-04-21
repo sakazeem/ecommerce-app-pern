@@ -371,11 +371,9 @@ async function createCCLBooking(data) {
 			client_store_id: 1049, //Client Store ID: [Eg: 12345| Find in Stores Section in Portal] - Optional
 		});
 
-
 		return booking.data.data;
 	} catch (error) {
 		let message = 'Error creating CCL booking';
-
 		if (error.response) {
 			const apiMessage = error.response.data?.message;
 			const apiErrors = error.response.data?.errors;

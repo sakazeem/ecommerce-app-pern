@@ -12,6 +12,7 @@ const { sendEmail } = require('../email.service');
 const { addOrUpdateAddress } = require('./appUserService');
 const config = require('../../config/config');
 const { imageService } = require('../index.js');
+const { default: axios } = require('axios');
 
 async function confirmOrder(req) {
 	const { customer, billingAddress, items, summary, userId } = req.body;
@@ -209,6 +210,58 @@ async function confirmOrder(req) {
 }
 
 async function trackOrderByTrackingId(req) {
+	const { trackingId } = req.params;
+	const order = await db.order.findOne({
+		where: {
+			tracking_id: trackingId,
+		},
+		include: [
+			{
+				model: db.order_item,
+				required: false,
+			},
+		],
+	});
+	console.log('tracking1111');
+	try {
+		const booking = await axios.post('https://oyeah.pk/bookingapi', {
+			clients: '905',
+			token: 'PXQ13WQ962T77NOO6BQCQ2I7AGW0GLB2JMZNHDT7WFWWW24WFAXMHP2D91IEPXTEY87AZM4PXJ0NOKI7LI9CP32T59BXY4TMWU31',
+			id: '770162614', //Order ID - MANDATORY
+			shipped_ref: 'KI7529011510', //Tracking ID - MANDATORY
+		});
+		order.trackingStatus = booking.data;
+		console.log('CCL Booking Response:', booking.data);
+	} catch (e) {
+		console.log('CCL Booking API Error:', e.message);
+	}
+
+	if (order && order.courier_details) {
+		const courier_details = JSON.parse(order.courier_details);
+		if (courier_details.bookingId && courier_details.trackingId) {
+			const booking = await axios.post('https://oyeah.pk/bookingapi', {
+				clients: config.cclCourier.clients, //Client ID to be Provided by Admin - MANDATORY
+				token: config.cclCourier.apiKey,
+				id: '770162614', //Order ID - MANDATORY
+				shipped_ref: 'KI7529011510', //Tracking ID - MANDATORY
+				// id: courier_details.bookingId, //Order ID - MANDATORY
+				// shipped_ref: courier_details.trackingId, //Tracking ID - MANDATORY
+			});
+
+			console.log('CCL Booking Response:', booking.data);
+		}
+	}
+
+	if (!order) {
+		throw new ApiError(
+			httpStatus.NOT_FOUND,
+			'Order not found with this tracking ID'
+		);
+	}
+
+	return order;
+}
+async function trackOrderByTrackingIdOld(req) {
 	const { trackingId } = req.params;
 	const order = await db.order.findOne({
 		where: {
