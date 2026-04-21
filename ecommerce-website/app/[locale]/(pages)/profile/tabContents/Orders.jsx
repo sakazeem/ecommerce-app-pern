@@ -160,13 +160,11 @@ const Orders = ({ setSearchQuery, searchQuery }) => {
 											<div className="font-normal text-base flex items-center gap-2">
 												Tracking Id #{" "}
 												<span className="text-sm font-mono font-semibold text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-customGray-700 px-3 py-2 rounded-lg border border-gray-200 dark:border-customGray-600">
-													{orderCourierDetails?.trackingId}
+													{order.trackingId}
 												</span>
 												<button
 													onClick={() => {
-														navigator.clipboard.writeText(
-															orderCourierDetails?.trackingId,
-														);
+														navigator.clipboard.writeText(order.trackingId);
 														toast.success("Tracking ID copied to clipboard");
 													}}
 													className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
@@ -298,16 +296,11 @@ const Orders = ({ setSearchQuery, searchQuery }) => {
 									disabled={!orderCourierDetails?.trackingId}>
 									{orderCourierDetails?.trackingId ? (
 										<Link
-											href={`https://cclpak.com/tracking?trackingno=${orderCourierDetails.trackingId}`}
-											target="_blank"
-											// href={`/order-tracking?id=${order.trackingId}`}
+											// href={`https://cclpak.com/tracking?trackingno=${orderCourierDetails.trackingId}`}
+											// target="_blank"
+											href={`/order-tracking?id=${order.trackingId}`}
 											className="">
-											Track{" "}
-											{orderCourierDetails?.trackingId && (
-												<span className="text-sm italic">
-													({orderCourierDetails?.trackingId})
-												</span>
-											)}
+											Track
 										</Link>
 									) : (
 										<p>Track</p>
