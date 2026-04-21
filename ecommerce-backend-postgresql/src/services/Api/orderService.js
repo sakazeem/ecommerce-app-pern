@@ -224,7 +224,7 @@ async function trackOrderByTrackingId(req) {
 	});
 	console.log('tracking1111');
 	try {
-		const booking = await axios.post('https://oyeah.pk/bookingapi', {
+		const booking = await axios.post('https://oyeah.pk/trackingapi', {
 			clients: '905',
 			token: 'PXQ13WQ962T77NOO6BQCQ2I7AGW0GLB2JMZNHDT7WFWWW24WFAXMHP2D91IEPXTEY87AZM4PXJ0NOKI7LI9CP32T59BXY4TMWU31',
 			id: '770162614', //Order ID - MANDATORY
@@ -239,7 +239,7 @@ async function trackOrderByTrackingId(req) {
 	if (order && order.courier_details) {
 		// const courier_details = JSON.parse(order.courier_details);
 		// if (courier_details.bookingId && courier_details.trackingId) {
-		// 	const booking = await axios.post('https://oyeah.pk/bookingapi', {
+		// 	const booking = await axios.post('https://oyeah.pk/trackingapi', {
 		// 		clients: config.cclCourier.clients, //Client ID to be Provided by Admin - MANDATORY
 		// 		token: config.cclCourier.apiKey,
 		// 		id: '770162614', //Order ID - MANDATORY
