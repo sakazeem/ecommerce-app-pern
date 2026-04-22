@@ -65,7 +65,7 @@ export default function TrackOrderPage() {
 				className="flex flex-col md:flex-row gap-3 mb-8 justify-center items-center relative">
 				<input
 					type="text"
-					placeholder="Enter your tracking ID"
+					placeholder="ORD-1775391111174-00"
 					value={trackingId}
 					onChange={(e) => setTrackingId(e.target.value)}
 					className="w-full border border-gray-300 p-3 rounded-lg flex-1 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
