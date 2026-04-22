@@ -98,7 +98,7 @@ const orderInProcessCustomerTemplate = ({
 					<!-- CTA -->
 					<tr>
 						<td align="center" style="padding:30px 0;">
-							<a href="https://cclpak.com/tracking?trackingno=${tracking_id}" target="_blank"
+							<a href="https://babiesnbaba.com/order-tracking?id=${orderId}" target="_blank"
 								style="background:#5DABEA; color:#ffffff; text-decoration:none; padding:12px 24px; border-radius:6px; display:inline-block; font-weight:bold;">
 								Track Your Order
 							</a>

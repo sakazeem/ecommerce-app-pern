@@ -100,9 +100,13 @@ module.exports = {
 		dialect: envVars.SQL_DIALECT,
 		// logging: console.warn,
 		pool: {
-			max: envVars.SQL_MAX_POOL,
-			min: envVars.SQL_MIN_POOL,
-			idle: envVars.SQL_IDLE,
+			// max: envVars.SQL_MAX_POOL,
+			// min: envVars.SQL_MIN_POOL,
+			// idle: envVars.SQL_IDLE,
+			max: 5,
+			min: 0,
+			acquire: 30000,
+			idle: 10000,
 		},
 		define: {
 			/**
