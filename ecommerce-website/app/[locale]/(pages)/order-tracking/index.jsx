@@ -19,7 +19,7 @@ export default function TrackOrderPage() {
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		setLoading(true);
+		// setLoading(true);
 		setError("");
 		setOrder(null);
 		if (window.location.href.includes(`id=${trackingId}`)) {
