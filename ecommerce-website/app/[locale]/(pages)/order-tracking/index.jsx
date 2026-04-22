@@ -12,7 +12,7 @@ export default function TrackOrderPage() {
 	const paramsTrackingId = searchParams.get("id");
 	const [trackingId, setTrackingId] = useState(paramsTrackingId || "");
 	const [order, setOrder] = useState(null);
-	const [loading, setLoading] = useState(true);
+	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 	const [courierTrackingStatus, setCourierTrackingStatus] = useState(null);
 	const router = useRouter();
