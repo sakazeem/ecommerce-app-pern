@@ -3,7 +3,7 @@ import { storeSettingsKidsTheme } from "../data/storeSettingsKidsTheme";
 
 // return storeSettingsSportsTheme;
 export async function getTheme() {
-	await new Promise((resolve) => setTimeout(resolve, 5000)); // wait 5 sec
+	// await new Promise((resolve) => setTimeout(resolve, 5000)); // wait 5 sec
 	return storeSettingsKidsTheme;
 	return;
 	const domain = headers().get("host");

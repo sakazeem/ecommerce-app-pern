@@ -82,7 +82,8 @@ const ProductCard = ({ product }) => {
   const handleClick = () => {
     if (isMobile) {
       setIsHoverActive(true);
-      navTimer.current = setTimeout(navigateToProduct, 400);
+      navigateToProduct();
+      // navTimer.current = setTimeout(navigateToProduct, 400);
     } else {
       navigateToProduct();
     }
