@@ -1,3 +1,4 @@
+const redisClient = require('../../config/redis.js');
 const db = require('../../db/models/index.js');
 const createAppBaseService = require('../../utils/appBaseService.js');
 const { translationInclude } = require('../../utils/includeHelpers.js');
@@ -7,6 +8,9 @@ const categoryService = createAppBaseService(db.category, {
 });
 
 async function getAllDescendantCategoryIds(categoryId, includeOwnId = true) {
+	// 🔥 cache key must include both inputs
+	const cacheKey = `category_descendants:${categoryId}:${includeOwnId}`;
+
 	const [rows] = await db.sequelize.query(
 		`
 		WITH RECURSIVE category_tree AS (
@@ -26,6 +30,17 @@ async function getAllDescendantCategoryIds(categoryId, includeOwnId = true) {
 		{ replacements: { categoryId } }
 	);
 
+	const result = rows.map((r) => r.id);
+
+	// 3. Store in Redis (long TTL recommended)
+	await redisClient.set(
+		cacheKey,
+		JSON.stringify(result),
+		'EX',
+		60 * 60 * 24 // 24 hours (safe because category tree rarely changes)
+	);
+
+	return result;
 	return rows.map((r) => r.id);
 }
 

@@ -182,6 +182,15 @@ const getProducts = async (req) => {
 	} = req.query;
 	const offset = getOffset(page, limit);
 
+	// 🔥 SAFE cache key (avoid full query explosion)
+	const cacheKey = `products:base:${page}:${limit}:${filterQuery}`;
+
+	// 1. Check cache
+	const cached = await redisClient.get(cacheKey);
+	if (cached) {
+		return JSON.parse(cached);
+	}
+
 	const products = await db.product
 		.scope(
 			{ method: ['active'] } // active scope with params
@@ -270,12 +279,22 @@ const getProducts = async (req) => {
 			col: 'id', // to fix count
 		});
 
-	return {
+	const result = {
 		total: products.count,
 		records: products.rows,
-		limit: limit,
-		page: page,
+		limit,
+		page,
 	};
+
+	// 2. Store in Redis (SHORT TTL because data changes often)
+	await redisClient.set(
+		cacheKey,
+		JSON.stringify(result),
+		'EX',
+		60 * 3 // 🔥 3 minutes only (important)
+	);
+
+	return result;
 
 	return products;
 };
@@ -288,6 +307,17 @@ const getCategoryFilterProducts = async (req) => {
 	} = req.query;
 	const offset = getOffset(page, limit);
 	const { categoryIds } = await productFilterConditions(req);
+
+	// 🔥 Cache key (keep it stable + small, not full req.query JSON)
+	const cacheKey = `category_products:${page}:${limit}:${filterQuery}:${
+		categoryIds?.join(',') || 'all'
+	}`;
+
+	// 1. Check cache
+	const cached = await redisClient.get(cacheKey);
+	if (cached) {
+		return JSON.parse(cached);
+	}
 
 	const products = await db.product
 		.scope(
@@ -381,6 +411,21 @@ const getCategoryFilterProducts = async (req) => {
 			col: 'id', // to fix count
 		});
 
+	const result = {
+		total: products.count,
+		records: products.rows,
+		limit,
+		page,
+	};
+
+	// 2. Store in Redis (short TTL recommended)
+	await redisClient.set(
+		cacheKey,
+		JSON.stringify(result),
+		'EX',
+		60 * 30 // 5 minutes
+	);
+	return result;
 	return {
 		total: products.count,
 		records: products.rows,
@@ -544,7 +589,7 @@ const getProductsForFilterPage = async (req) => {
 		cacheKey,
 		JSON.stringify(result),
 		'EX',
-		60 * 5 // 5 minutes only (because filters change often)
+		60 * 30 // 30 minutes (because filters change often)
 	);
 	return result;
 	return {
