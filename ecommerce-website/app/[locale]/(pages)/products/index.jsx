@@ -14,7 +14,7 @@ import { useScrollRestoration } from "@/app/hooks/useScrollRestoration";
 import { SlidersHorizontal } from "lucide-react";
 import { loadThemeComponents } from "@/app/components/Themes/autoLoader";
 
-const PRODUCTS_PER_PAGE = 12;
+const PRODUCTS_PER_PAGE = 8;
 
 const ProductsPage = () => {
 	const searchParams = useSearchParams();
