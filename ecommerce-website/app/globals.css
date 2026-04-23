@@ -424,7 +424,8 @@ img {
 	opacity: 1 !important;
 }
 
-body {
+body,
+.main-layout-container {
 	background-image: url("./assets/themes/kidsTheme/background-pattern.png");
 	background-repeat: repeat;
 	background-size: contain;

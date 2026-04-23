@@ -75,6 +75,7 @@ export default async function RootLayout({ children }) {
 
 	return (
 		<div
+			className="main-layout-container"
 			style={{
 				// need to define theme colors here and in app/globals.css in @theme <-- for new colors
 				["--color-header"]: colors.header,
