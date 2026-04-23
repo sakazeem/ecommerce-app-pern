@@ -6,17 +6,15 @@ import "@/app/styles/paragraphs.css";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { NextIntlClientProvider } from "next-intl";
 // Import some common Google Fonts (extend this list as needed)
 
-import { ToastContainer } from "react-toastify";
+import dynamic from "next/dynamic";
+const ToastContainer = dynamic(
+	() => import("react-toastify").then((mod) => mod.ToastContainer),
+	{ ssr: false },
+);
 
-import ReactQueryProvider from "@/app/providers/ReactQueryProvider";
-import { AuthProvider } from "@/app/providers/AuthProvider";
 import backgroundPattern from "@/app/assets/themes/kidsTheme/background-pattern.png";
-
-import localFont from "next/font/local";
-import AppProviders from "../providers/AppProviders";
 
 let cachedTheme = null;
 
@@ -92,15 +90,7 @@ export default async function RootLayout({ children }) {
 				backgroundSize: "contain",
 			}}>
 			<ToastContainer />
-			<ReactQueryProvider>
-				<NextIntlClientProvider>
-					<AppProviders>
-						<AuthProvider>
-							<StoreProvider value={store}>{children}</StoreProvider>
-						</AuthProvider>
-					</AppProviders>
-				</NextIntlClientProvider>
-			</ReactQueryProvider>
+			<StoreProvider value={store}>{children}</StoreProvider>
 		</div>
 	);
 }
