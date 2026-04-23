@@ -3,6 +3,7 @@ const app = require('./app');
 const models = require('./db/models');
 const config = require('./config/config');
 const logger = require('./config/logger');
+const redisClient = require('./config/redis');
 
 // sync database
 // models.sequelize.sync();
@@ -10,9 +11,19 @@ const logger = require('./config/logger');
 const server = http.Server(app);
 
 const port = config.port || 3000;
-server.listen(port, () => {
-	logger.info(`App is listening on port ${config.port}`);
-});
+// server.listen(port, () => {
+// 	logger.info(`App is listening on port ${config.port}`);
+// });
+
+(async () => {
+	await redisClient.connect();
+
+	console.log('Redis ready');
+
+	server.listen(port, () => {
+		logger.info(`App is listening on port ${config.port}`);
+	});
+})();
 
 const exitHandler = () => {
 	if (server) {

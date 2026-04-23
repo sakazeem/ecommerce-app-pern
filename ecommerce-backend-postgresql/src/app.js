@@ -25,10 +25,6 @@ if (config.env !== 'test') {
 	app.use(morgan.successHandler);
 	app.use(morgan.errorHandler);
 }
-app.use((req, _, next) => {
-	req.redisClient = redisClient;
-	next();
-});
 
 // use this middlware to show images
 // app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -122,6 +118,12 @@ app.use(setUserMiddleware); // Fetches user from DB & sets full `req.user`
 if (config.env === 'production') {
 	app.use('/v1/auth', authLimiter);
 }
+
+app.use((req, _, next) => {
+	req.redisClient = redisClient;
+	next();
+});
+
 // Apply the formatter middleware
 app.use(responseFormatter);
 

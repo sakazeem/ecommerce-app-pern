@@ -10,8 +10,11 @@ const redisClient = redis.createClient({
 	url: 'redis://127.0.0.1:6379',
 });
 
-redisClient.connect().catch((err) => {
-	console.error('Redis connection error:', err);
+// redisClient.connect().catch((err) => {
+// 	console.error('Redis connection error:', err);
+// });
+redisClient.on('error', (err) => {
+	console.error('Redis Error:', err);
 });
 
 redisClient.on('connect', () => {
