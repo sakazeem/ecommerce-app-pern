@@ -7,7 +7,7 @@ import DeleteModal from "@/components/modal/DeleteModal";
 import EditDeleteButton from "@/components/table/EditDeleteButton";
 import ShowHideButton from "@/components/table/ShowHideButton";
 import useUtilsFunction from "@/hooks/useUtilsFunction";
-import noImage from "@/assets/img/no-image.png";
+import noImage from "@/assets/img/no-image.webp";
 
 const ProductTable = ({
 	data,
