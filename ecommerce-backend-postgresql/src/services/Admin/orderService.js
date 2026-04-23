@@ -389,9 +389,7 @@ async function createCCLBooking(data) {
 
 		throw new ApiError(
 			httpStatus[error?.response?.status || 500],
-			message?.length > 0
-				? message
-				: 'The courier API is currently experiencing issues. Please check with the courier service provider'
+			'The courier API is currently experiencing issues. Please check with the courier service provider'
 		);
 		throw new ApiError(
 			httpStatus.INTERNAL_SERVER_ERROR,
