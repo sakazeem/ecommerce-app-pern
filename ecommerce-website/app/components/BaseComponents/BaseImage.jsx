@@ -21,7 +21,7 @@ const BaseImage = ({
 			sizes={sizes}
 			className={className}
 			alt={alt}
-			// unoptimized
+			unoptimized
 			{...props}
 		/>
 	) : (
