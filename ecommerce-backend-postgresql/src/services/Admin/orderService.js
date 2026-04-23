@@ -387,7 +387,12 @@ async function createCCLBooking(data) {
 			message = error.message;
 		}
 
-		throw new ApiError(httpStatus[error?.response?.status || 500], message);
+		throw new ApiError(
+			httpStatus[error?.response?.status || 500],
+			message?.length > 0
+				? message
+				: 'The courier API is currently experiencing issues. Please check with the courier service provider'
+		);
 		throw new ApiError(
 			httpStatus.INTERNAL_SERVER_ERROR,
 			error.message || 'error creating CCL booking'
