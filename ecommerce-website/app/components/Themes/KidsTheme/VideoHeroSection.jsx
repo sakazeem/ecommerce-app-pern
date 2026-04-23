@@ -108,7 +108,7 @@ function VideoCard({ slide, idx }) {
       >
         <video
           ref={videoRef}
-          // src={`${slide.videoUrl}#t=5`}
+          src={`${slide.videoUrl}#t=5`}
           poster={slide.poster}
           muted
           loop
@@ -116,10 +116,7 @@ function VideoCard({ slide, idx }) {
           webkit-playsinline="true"
           preload="metadata"
           className="reel-video"
-        >
-          <source src={`${slide.videoUrl}#t=5`} type="video/mp4/webm" />
-          Your browser does not support the video tag.
-        </video>
+        />
       </a>
     );
   }
