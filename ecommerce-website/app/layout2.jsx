@@ -1,24 +1,18 @@
-import { StoreProvider } from "./providers/StoreProvider";
-// Import some common Google Fonts (extend this list as needed)
-
-import { ToastContainer } from "react-toastify";
-
-import { AuthProvider } from "./providers/AuthProvider";
-import ReactQueryProvider from "./providers/ReactQueryProvider";
-
-import "./styles/headings.css";
-import "./styles/layout.css";
-import "./styles/paragraphs.css";
-import localFont from "next/font/local";
+import "@/app/styles/headings.css";
+import "@/app/styles/layout.css";
+import "@/app/styles/paragraphs.css";
+import { Geist, Inter, Roboto } from "next/font/google";
 import Script from "next/script";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "./globals.css";
-import AppProviders from "./providers/AppProviders";
 
-import { getTheme } from "./lib/getTheme";
+import localFont from "next/font/local";
 import RouteTrackerProvider from "./providers/RouteTrackerProvider";
+import Image from "next/image";
+import { getTheme } from "./lib/getTheme";
+import backgroundPattern from "@/app/assets/themes/kidsTheme/background-pattern.png";
 
 const champagne = localFont({
 	//changing font family its not champagne itlaic
@@ -116,9 +110,26 @@ const konnect = localFont({
 	display: "swap",
 });
 
+const geist = Geist({
+	subsets: ["latin"],
+	variable: "--font-geist",
+});
+
+const roboto = Roboto({
+	subsets: ["latin"],
+	variable: "--font-roboto",
+});
+
+const inter = Inter({
+	subsets: ["latin"],
+	variable: "--font-inter",
+});
+
+let cachedTheme = null;
+
 // to avoid duplicate API calls
 async function getCachedTheme() {
-	const cachedTheme = await getTheme();
+	if (!cachedTheme) cachedTheme = await getTheme();
 	return cachedTheme;
 }
 
@@ -141,7 +152,7 @@ export async function generateMetadata() {
 			title: meta.ogTitle || meta.title || defaultMetaTags.title,
 			description:
 				meta.ogDescription || meta.description || defaultMetaTags.description,
-			images: meta.ogImage ? [meta.ogImage] : [],
+			images: meta.ogImage ? [meta.ogImage] : [store.content.logo],
 		},
 		twitter: {
 			card: "summary_large_image",
@@ -150,7 +161,7 @@ export async function generateMetadata() {
 				meta.twitterDescription ||
 				meta.description ||
 				defaultMetaTags.description,
-			images: meta.twitterImage ? [meta.twitterImage] : [],
+			images: meta.twitterImage ? [meta.twitterImage] : [store.content.logo],
 		},
 		icons: {
 			icon: store.favicon || "/favicon.ico", // fallback
@@ -160,8 +171,10 @@ export async function generateMetadata() {
 
 export default async function RootLayout({ children }) {
 	const store = await getCachedTheme();
-
 	const fontMap = {
+		geist: geist.variable,
+		roboto: roboto.variable,
+		inter: inter.variable,
 		champagne: champagne.variable,
 		konnect: konnect.variable,
 	};
@@ -174,6 +187,8 @@ export default async function RootLayout({ children }) {
 		background: "#F9FAFB",
 		text: "#111827",
 	};
+	// const fontClasses =
+	// 	fontMap[store?.fontFamily?.toLowerCase()] || fontMap.inter;
 
 	return (
 		<html lang="en">
@@ -224,6 +239,9 @@ export default async function RootLayout({ children }) {
 					["--color-secondary"]: colors.secondary,
 					["--color-background"]: colors.background,
 					["--color-text"]: colors.text,
+					backgroundImage: `url(${backgroundPattern.src})`,
+					backgroundRepeat: "repeat",
+					backgroundSize: "contain",
 				}}>
 				{/* Meta Pixel noscript */}
 				{/* <noscript>
@@ -237,16 +255,7 @@ export default async function RootLayout({ children }) {
 				</noscript> */}
 				<RouteTrackerProvider />
 
-				{/* {children} */}
-
-				<ToastContainer />
-				<ReactQueryProvider>
-					<AppProviders>
-						<AuthProvider>
-							<StoreProvider value={store}>{children}</StoreProvider>
-						</AuthProvider>
-					</AppProviders>
-				</ReactQueryProvider>
+				{children}
 			</body>
 		</html>
 	);
