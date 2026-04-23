@@ -8,6 +8,7 @@ import { FaTiktok, FaPinterestP, FaWhatsapp, FaLink } from "react-icons/fa";
 import { useStore } from "@/app/providers/StoreProvider";
 import Link from "next/link";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import OverlayContainer from "../../Shared/OverlayContainer";
 
 const currentYear = new Date().getFullYear();
 
@@ -60,13 +61,14 @@ const Footer = ({ showOnMobile = true }) => {
 
 	return (
 		<footer
-			className={`bg-footer text-light bg-no-repeat bg-cover bg-center ${showOnMobile ? "" : "max-md:hidden"}`}
+			className={`relative bg-footer text-light bg-no-repeat bg-cover bg-center ${showOnMobile ? "" : "max-md:hidden"}`}
 			style={{
 				backgroundImage: footerContent.background
 					? `url('${footerContent.background.src}')`
 					: "none",
 			}}>
-			<div className="container-layout">
+			<OverlayContainer opacity={0.15} />
+			<div className="container-layout relative">
 				{/* Top Section */}
 				<section className="section-layout-top flex flex-wrap justify-between gap-10 md:gap-16 lg:flex-nowrap">
 					<div className="grid grid-cols-4 max-md:grid-cols-2 justify-between gap-10 max-md:gap-x-6 max-md:gap-y-8 w-full">
