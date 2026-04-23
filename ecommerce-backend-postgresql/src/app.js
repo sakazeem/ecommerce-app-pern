@@ -8,6 +8,7 @@ const httpStatus = require('http-status');
 const { postgres } = require('./config/postgres');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
+const redisClient = require('./config/redis');
 const jwt = require('./config/jwt');
 const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
@@ -24,6 +25,10 @@ if (config.env !== 'test') {
 	app.use(morgan.successHandler);
 	app.use(morgan.errorHandler);
 }
+app.use((req, _, next) => {
+	req.redisClient = redisClient;
+	next();
+});
 
 // use this middlware to show images
 // app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

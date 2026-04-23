@@ -1,6 +1,16 @@
+const redisClient = require('../../config/redis');
 const db = require('../../db/models');
 
 async function getHomepageSections() {
+	const lang = 'en'; // if translations added later
+	const cacheKey = `homepage_sections:${lang}`;
+
+	// 1. Check cache
+	const cachedData = await redisClient.get(cacheKey);
+	if (cachedData) {
+		return JSON.parse(cachedData);
+	}
+
 	// 1. Get active homepage sections
 	const sections = await db.homepage_sections.findAll({
 		where: { status: true },
@@ -187,6 +197,14 @@ async function getHomepageSections() {
 			config,
 		};
 	});
+
+	// 3. Store in Redis
+	await redisClient.set(
+		cacheKey,
+		JSON.stringify(hydratedSections),
+		'EX',
+		60 * 60 // 1 hour
+	);
 
 	return hydratedSections;
 }

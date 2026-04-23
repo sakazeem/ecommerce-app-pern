@@ -2,9 +2,18 @@ const { Op, json } = require('sequelize');
 const db = require('../../db/models');
 const { translationInclude } = require('../../utils/includeHelpers');
 const { getAllDescendantCategoryIds } = require('./categoryService');
+const redisClient = require('../../config/redis');
 
 async function getFiltersData(req) {
 	const { category, brand } = req.query; //get category and brand from slugs
+
+	const cacheKey = `filters:${category || 'all'}:${brand || 'all'}`;
+
+	// 1. Check cache
+	const cached = await redisClient.get(cacheKey);
+	if (cached) {
+		return JSON.parse(cached);
+	}
 
 	let selectedCategory = null;
 	let selectedBrand = null;
@@ -133,14 +142,19 @@ async function getFiltersData(req) {
 		return attr;
 	});
 
-	return {
+	const result = {
 		categories,
 		brands,
 		attributes: filteredAttributes,
 		selectedCategory,
 		selectedBrand,
 	};
+	// 2. Save cache (TTL: 30 min recommended)
+	await redisClient.set(cacheKey, JSON.stringify(result), 'EX', 60 * 30);
+
+	return result;
 }
+
 // async function getFiltersData(req) {
 // 	const { category, brand } = req.query; //get category and brand from slugs
 
@@ -257,6 +271,13 @@ async function getFiltersData(req) {
 // }
 
 async function getNavCategories(req) {
+	const lang = req?.headers?.lang || 'en';
+	const cacheKey = `nav_categories:${lang}`;
+	const cachedData = await redisClient.get(cacheKey);
+	if (cachedData) {
+		return JSON.parse(cachedData);
+	}
+
 	const categories = await db.category.scope('active').findAll({
 		where: {
 			parent_id: null,
@@ -323,11 +344,21 @@ async function getNavCategories(req) {
 		],
 		limit: 9,
 	});
-
+	// 3. Store in Redis (TTL: 1 hour)
+	await redisClient.set(cacheKey, JSON.stringify(categories), 'EX', 60 * 60);
 	return categories;
 }
 
 async function getBrands(req) {
+	const lang = req?.headers?.lang || 'en';
+	const cacheKey = `brands:${lang}`;
+
+	// 1. Check cache
+	const cachedData = await redisClient.get(cacheKey);
+	if (cachedData) {
+		return JSON.parse(cachedData);
+	}
+
 	const brands = await db.brand.scope('active').findAll({
 		where: {
 			id: { [Op.ne]: 1 },
@@ -344,8 +375,13 @@ async function getBrands(req) {
 		order: [['id', 'ASC']],
 		limit: 9,
 	});
+	// ⚠️ Convert Sequelize instance → plain JSON
+	const plainData = JSON.parse(JSON.stringify(brands));
 
-	return brands;
+	// 3. Store in Redis (TTL: 1 hour)
+	await redisClient.set(cacheKey, JSON.stringify(plainData), 'EX', 60 * 60);
+
+	return plainData;
 }
 
 module.exports = {

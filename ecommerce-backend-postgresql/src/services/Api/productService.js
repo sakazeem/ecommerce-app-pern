@@ -8,6 +8,7 @@ const { getOffset } = require('../../utils/query.js');
 const { getAllDescendantCategoryIds } = require('./categoryService.js');
 const ApiError = require('../../utils/ApiError.js');
 const httpStatus = require('http-status');
+const redisClient = require('../../config/redis.js');
 
 const productService = createAppBaseService(db.product, {
 	name: 'Product',
@@ -398,6 +399,17 @@ const getProductsForFilterPage = async (req) => {
 	} = req.query;
 	const offset = getOffset(page, limit);
 
+	// 🔥 include all dynamic inputs in cache key
+	const cacheKey = `products:filter:${page}:${limit}:${filterQuery}:${JSON.stringify(
+		req.query
+	)}`;
+
+	// 1. Check cache
+	const cached = await redisClient.get(cacheKey);
+	if (cached) {
+		return JSON.parse(cached);
+	}
+
 	const {
 		categoryIds,
 		brandCondition,
@@ -406,18 +418,6 @@ const getProductsForFilterPage = async (req) => {
 		searchCondition,
 		variantAttributeFilter,
 	} = await productFilterConditions(req);
-
-	console.log(
-		{
-			categoryIds,
-			brandCondition,
-			brandRequired,
-			priceCondition,
-			searchCondition,
-			variantAttributeFilter,
-		},
-		'chkking conditions'
-	);
 
 	const products = await db.product
 		.scope(
@@ -533,7 +533,20 @@ const getProductsForFilterPage = async (req) => {
 			distinct: true, // to fix count
 			col: 'id', // to fix count
 		});
-
+	const result = {
+		total: products.count,
+		records: products.rows,
+		limit,
+		page,
+	};
+	// 2. Store in cache (IMPORTANT: short TTL recommended)
+	await redisClient.set(
+		cacheKey,
+		JSON.stringify(result),
+		'EX',
+		60 * 5 // 5 minutes only (because filters change often)
+	);
+	return result;
 	return {
 		total: products.count,
 		records: products.rows,
