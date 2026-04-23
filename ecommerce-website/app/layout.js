@@ -1,7 +1,6 @@
 import "@/app/styles/headings.css";
 import "@/app/styles/layout.css";
 import "@/app/styles/paragraphs.css";
-// import { Geist, Inter, Roboto } from "next/font/google";
 import Script from "next/script";
 // import "swiper/css";
 // import "swiper/css/navigation";
@@ -9,10 +8,7 @@ import Script from "next/script";
 import "./globals.css";
 
 import localFont from "next/font/local";
-import RouteTrackerProvider from "./providers/RouteTrackerProvider";
-// import Image from "next/image";
 import { getTheme } from "./lib/getTheme";
-// import backgroundPattern from "@/app/assets/themes/kidsTheme/background-pattern.webp";
 
 const champagne = localFont({
 	//changing font family its not champagne itlaic
@@ -110,21 +106,6 @@ const konnect = localFont({
 	display: "swap",
 });
 
-// const geist = Geist({
-// 	subsets: ["latin"],
-// 	variable: "--font-geist",
-// });
-
-// const roboto = Roboto({
-// 	subsets: ["latin"],
-// 	variable: "--font-roboto",
-// });
-
-// const inter = Inter({
-// 	subsets: ["latin"],
-// 	variable: "--font-inter",
-// });
-
 let cachedTheme = null;
 
 // to avoid duplicate API calls
@@ -172,9 +153,6 @@ export async function generateMetadata() {
 export default async function RootLayout({ children }) {
 	const store = await getCachedTheme();
 	const fontMap = {
-		// geist: geist.variable,
-		// roboto: roboto.variable,
-		// inter: inter.variable,
 		champagne: champagne.variable,
 		konnect: konnect.variable,
 	};
@@ -199,9 +177,9 @@ export default async function RootLayout({ children }) {
 				/>
 				<Script
 					src="https://www.googletagmanager.com/gtag/js?id=G-V6M9W091WE"
-					strategy="afterInteractive"
+					strategy="lazyOnload"
 				/>
-				<Script id="google-analytics" strategy="afterInteractive">
+				<Script id="google-analytics" strategy="lazyOnload">
 					{`
 					window.dataLayer = window.dataLayer || [];
 					function gtag(){dataLayer.push(arguments);}
@@ -211,7 +189,7 @@ export default async function RootLayout({ children }) {
 				</Script>
 
 				{/* Meta Pixel */}
-				<Script id="meta-pixel" strategy="afterInteractive">
+				<Script id="meta-pixel" strategy="lazyOnload">
 					{`
             !function(f,b,e,v,n,t,s)
             {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -239,9 +217,6 @@ export default async function RootLayout({ children }) {
 					["--color-secondary"]: colors.secondary,
 					["--color-background"]: colors.background,
 					["--color-text"]: colors.text,
-					// backgroundImage: `url(${backgroundPattern.src})`,
-					// backgroundRepeat: "repeat",
-					// backgroundSize: "contain",
 				}}>
 				{/* Meta Pixel noscript */}
 				{/* <noscript>
@@ -253,7 +228,7 @@ export default async function RootLayout({ children }) {
 						src="https://www.facebook.com/tr?id=1371248501158222&ev=PageView&noscript=1"
 					/>
 				</noscript> */}
-				<RouteTrackerProvider />
+				{/* <RouteTrackerProvider /> */}
 
 				{children}
 			</body>

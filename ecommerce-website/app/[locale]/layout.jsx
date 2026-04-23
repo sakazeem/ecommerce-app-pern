@@ -6,17 +6,16 @@ import "@/app/styles/paragraphs.css";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
-import { NextIntlClientProvider } from "next-intl";
 // Import some common Google Fonts (extend this list as needed)
 
-import { ToastContainer } from "react-toastify";
+// import { ToastContainer } from "react-toastify";
 
-import ReactQueryProvider from "@/app/providers/ReactQueryProvider";
-import { AuthProvider } from "@/app/providers/AuthProvider";
+// import ReactQueryProvider from "@/app/providers/ReactQueryProvider";
+// import { AuthProvider } from "@/app/providers/AuthProvider";
 // import backgroundPattern from "@/app/assets/themes/kidsTheme/background-pattern.webp";
 
 // import localFont from "next/font/local";
-import AppProviders from "../providers/AppProviders";
+// import AppProviders from "../providers/AppProviders";
 
 let cachedTheme = null;
 
@@ -77,6 +76,7 @@ export default async function RootLayout({ children }) {
 
 	return (
 		<div
+			className="main-layout-container"
 			style={{
 				// need to define theme colors here and in app/globals.css in @theme <-- for new colors
 				["--color-header"]: colors.header,
@@ -91,16 +91,8 @@ export default async function RootLayout({ children }) {
 				// backgroundRepeat: "repeat",
 				// backgroundSize: "contain",
 			}}>
-			<ToastContainer />
-			<ReactQueryProvider>
-				<NextIntlClientProvider>
-					<AppProviders>
-						<AuthProvider>
-							<StoreProvider value={store}>{children}</StoreProvider>
-						</AuthProvider>
-					</AppProviders>
-				</NextIntlClientProvider>
-			</ReactQueryProvider>
+			<ToastContainerProvider />
+			<StoreProvider value={store}>{children}</StoreProvider>
 		</div>
 	);
 }

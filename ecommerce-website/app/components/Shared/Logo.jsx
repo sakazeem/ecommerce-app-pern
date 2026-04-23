@@ -4,7 +4,7 @@ import BaseImage from "../BaseComponents/BaseImage";
 
 const Logo = ({ src, className = "", width = 120, height = 60 }) => {
 	return (
-		<BaseLink href="/">
+		<BaseLink href="/" aria-label="Go to homepage">
 			<BaseImage
 				src={src}
 				alt="logo"
