@@ -13,7 +13,6 @@ const Layout = ({ children, withFooter = true }) => {
 	return (
 		<>
 			<ReactQueryProvider>
-				<NextIntlClientProvider>
 					<AppProviders>
 						<AuthProvider>
 							<Navbar />
@@ -24,7 +23,6 @@ const Layout = ({ children, withFooter = true }) => {
 							<Footer showOnMobile={withFooter} />
 						</AuthProvider>
 					</AppProviders>
-				</NextIntlClientProvider>
 			</ReactQueryProvider>
 		</>
 	);
