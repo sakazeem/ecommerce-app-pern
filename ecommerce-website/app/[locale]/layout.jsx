@@ -8,13 +8,8 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 // Import some common Google Fonts (extend this list as needed)
 
-import dynamic from "next/dynamic";
-const ToastContainer = dynamic(
-	() => import("react-toastify").then((mod) => mod.ToastContainer),
-	{ ssr: false },
-);
-
 import backgroundPattern from "@/app/assets/themes/kidsTheme/background-pattern.png";
+import { ToastContainerProvider } from "../providers/ToastContainer";
 
 let cachedTheme = null;
 
@@ -90,7 +85,7 @@ export default async function RootLayout({ children }) {
 				backgroundRepeat: "repeat",
 				backgroundSize: "contain",
 			}}>
-			<ToastContainer />
+			<ToastContainerProvider />
 			<StoreProvider value={store}>{children}</StoreProvider>
 		</div>
 	);
