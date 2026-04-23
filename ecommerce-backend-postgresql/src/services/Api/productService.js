@@ -291,7 +291,7 @@ const getProducts = async (req) => {
 		cacheKey,
 		JSON.stringify(result),
 		'EX',
-		60 * 3 // 🔥 3 minutes only (important)
+		60 * 30 // 🔥 30 minutes only (important)
 	);
 
 	return result;
@@ -423,7 +423,7 @@ const getCategoryFilterProducts = async (req) => {
 		cacheKey,
 		JSON.stringify(result),
 		'EX',
-		60 * 30 // 5 minutes
+		60 * 30 // 30 minutes
 	);
 	return result;
 	return {

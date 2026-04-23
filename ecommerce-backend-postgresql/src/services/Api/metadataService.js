@@ -150,7 +150,7 @@ async function getFiltersData(req) {
 		selectedBrand,
 	};
 	// 2. Save cache (TTL: 30 min recommended)
-	await redisClient.set(cacheKey, JSON.stringify(result), 'EX', 60 * 30);
+	await redisClient.set(cacheKey, JSON.stringify(result), 'EX', 60 * 60);
 
 	return result;
 }
