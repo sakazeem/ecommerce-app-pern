@@ -40,10 +40,10 @@ import p14 from "@/app/assets/themes/kidsTheme/products/p14.png";
 import p15 from "@/app/assets/themes/kidsTheme/products/p5.png";
 import p16 from "@/app/assets/themes/kidsTheme/products/p16.png";
 
-import returnFeatureIcon from "@/app/assets/themes/kidsTheme/return.png";
-import securePaymentFeatureIcon from "@/app/assets/themes/kidsTheme/secure-payment.png";
-import certifiedFeatureIcon from "@/app/assets/themes/kidsTheme/certified.png";
-import shippingFeatureIcon from "@/app/assets/themes/kidsTheme/fast-shipping.png";
+import returnFeatureIcon from "@/app/assets/themes/kidsTheme/return.webp";
+import securePaymentFeatureIcon from "@/app/assets/themes/kidsTheme/secure-payment.webp";
+import certifiedFeatureIcon from "@/app/assets/themes/kidsTheme/certified.webp";
+import shippingFeatureIcon from "@/app/assets/themes/kidsTheme/fast-shipping.webp";
 import trendingCategory from "@/app/assets/themes/kidsTheme/trending-category.png";
 import bestSellerCategory from "@/app/assets/themes/kidsTheme/best-seller-category.png";
 import comfortableClothesCategory from "@/app/assets/themes/kidsTheme/comfortable-clothes-category.png";

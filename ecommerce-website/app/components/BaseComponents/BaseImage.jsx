@@ -1,5 +1,5 @@
 import Image from "next/image";
-import noImage from "@/app/assets/no-image.png";
+import noImage from "@/app/assets/no-image.webp";
 
 const BaseImage = ({
 	src,

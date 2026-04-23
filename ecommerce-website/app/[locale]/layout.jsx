@@ -13,9 +13,9 @@ import { ToastContainer } from "react-toastify";
 
 import ReactQueryProvider from "@/app/providers/ReactQueryProvider";
 import { AuthProvider } from "@/app/providers/AuthProvider";
-import backgroundPattern from "@/app/assets/themes/kidsTheme/background-pattern.png";
+// import backgroundPattern from "@/app/assets/themes/kidsTheme/background-pattern.webp";
 
-import localFont from "next/font/local";
+// import localFont from "next/font/local";
 import AppProviders from "../providers/AppProviders";
 
 let cachedTheme = null;
@@ -87,9 +87,9 @@ export default async function RootLayout({ children }) {
 				["--color-secondary"]: colors.secondary,
 				["--color-background"]: colors.background,
 				["--color-text"]: colors.text,
-				backgroundImage: `url(${backgroundPattern.src})`,
-				backgroundRepeat: "repeat",
-				backgroundSize: "contain",
+				// backgroundImage: `url(${backgroundPattern.src})`,
+				// backgroundRepeat: "repeat",
+				// backgroundSize: "contain",
 			}}>
 			<ToastContainer />
 			<ReactQueryProvider>

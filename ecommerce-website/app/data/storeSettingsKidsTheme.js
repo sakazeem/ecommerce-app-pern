@@ -1,7 +1,7 @@
 import logo from "@/app/assets/themes/kidsTheme/logo/logo-bnb-color.svg";
 import logoWhite from "@/app/assets/themes/kidsTheme/logo/logo-bnb-white.svg";
 import logoBlack from "@/app/assets/themes/kidsTheme/logo/logo-bnb-black.svg";
-import footerBg from "@/app/assets/themes/kidsTheme/footer-bg.png";
+import footerBg from "@/app/assets/themes/kidsTheme/footer-bg.webp";
 import heroBanner from "@/app/assets/themes/furnitureTheme/hero-banner.png";
 
 // category images

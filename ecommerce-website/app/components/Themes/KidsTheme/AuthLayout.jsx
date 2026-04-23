@@ -1,5 +1,5 @@
 "use client";
-import authBgLayout from "@/app/assets/themes/kidsTheme/loginBg.png";
+import authBgLayout from "@/app/assets/themes/kidsTheme/loginBg.webp";
 import { useStore } from "@/app/providers/StoreProvider";
 import { useForm } from "react-hook-form";
 import BaseImage from "../../BaseComponents/BaseImage";

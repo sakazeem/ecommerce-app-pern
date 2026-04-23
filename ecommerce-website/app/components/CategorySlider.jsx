@@ -19,7 +19,7 @@ import BaseLink from "./BaseComponents/BaseLink";
 import BaseImage from "./BaseComponents/BaseImage";
 import { useStore } from "../providers/StoreProvider";
 import { ENV_VARIABLES } from "../constants/env_variables";
-import noImage from "../assets/no-image.png";
+import noImage from "../assets/no-image.webp";
 
 export default function CategorySlider({ data = [], isStoreData }) {
 	const store = useStore();

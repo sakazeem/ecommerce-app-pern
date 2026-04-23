@@ -1,18 +1,18 @@
 import "@/app/styles/headings.css";
 import "@/app/styles/layout.css";
 import "@/app/styles/paragraphs.css";
-import { Geist, Inter, Roboto } from "next/font/google";
+// import { Geist, Inter, Roboto } from "next/font/google";
 import Script from "next/script";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
+// import "swiper/css";
+// import "swiper/css/navigation";
+// import "swiper/css/pagination";
 import "./globals.css";
 
 import localFont from "next/font/local";
 import RouteTrackerProvider from "./providers/RouteTrackerProvider";
-import Image from "next/image";
+// import Image from "next/image";
 import { getTheme } from "./lib/getTheme";
-import backgroundPattern from "@/app/assets/themes/kidsTheme/background-pattern.png";
+// import backgroundPattern from "@/app/assets/themes/kidsTheme/background-pattern.webp";
 
 const champagne = localFont({
 	//changing font family its not champagne itlaic
@@ -110,20 +110,20 @@ const konnect = localFont({
 	display: "swap",
 });
 
-const geist = Geist({
-	subsets: ["latin"],
-	variable: "--font-geist",
-});
+// const geist = Geist({
+// 	subsets: ["latin"],
+// 	variable: "--font-geist",
+// });
 
-const roboto = Roboto({
-	subsets: ["latin"],
-	variable: "--font-roboto",
-});
+// const roboto = Roboto({
+// 	subsets: ["latin"],
+// 	variable: "--font-roboto",
+// });
 
-const inter = Inter({
-	subsets: ["latin"],
-	variable: "--font-inter",
-});
+// const inter = Inter({
+// 	subsets: ["latin"],
+// 	variable: "--font-inter",
+// });
 
 let cachedTheme = null;
 
@@ -172,9 +172,9 @@ export async function generateMetadata() {
 export default async function RootLayout({ children }) {
 	const store = await getCachedTheme();
 	const fontMap = {
-		geist: geist.variable,
-		roboto: roboto.variable,
-		inter: inter.variable,
+		// geist: geist.variable,
+		// roboto: roboto.variable,
+		// inter: inter.variable,
 		champagne: champagne.variable,
 		konnect: konnect.variable,
 	};
@@ -239,9 +239,9 @@ export default async function RootLayout({ children }) {
 					["--color-secondary"]: colors.secondary,
 					["--color-background"]: colors.background,
 					["--color-text"]: colors.text,
-					backgroundImage: `url(${backgroundPattern.src})`,
-					backgroundRepeat: "repeat",
-					backgroundSize: "contain",
+					// backgroundImage: `url(${backgroundPattern.src})`,
+					// backgroundRepeat: "repeat",
+					// backgroundSize: "contain",
 				}}>
 				{/* Meta Pixel noscript */}
 				{/* <noscript>

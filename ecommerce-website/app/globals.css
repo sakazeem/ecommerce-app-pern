@@ -53,6 +53,9 @@
 }
 
 body {
+  background-image: url('assets/themes/kidsTheme/background-pattern.webp');
+  background-repeat: repeat;
+  background-size: contain;
   font-family: var(--font-champagne);
   scroll-behavior: smooth;
 }
