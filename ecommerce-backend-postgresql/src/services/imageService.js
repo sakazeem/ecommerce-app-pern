@@ -110,100 +110,73 @@ async function updateMediaInDB(oldPath, newUrl) {
 		}
 	);
 }
+import pLimit from 'p-limit';
 
+const limit = pLimit(10);
+
+// helper function
+async function processFile(filePath) {
+	const oldDbPath =
+		'uploads/' + path.relative(UPLOAD_DIR, filePath).replace(/\\/g, '/');
+
+	try {
+		const ext = path.extname(filePath).toLowerCase();
+		const fileName = path.basename(filePath);
+
+		const relativePath = path
+			.relative(UPLOAD_DIR, path.dirname(filePath))
+			.replace(/\\/g, '/');
+
+		const mimeType = mime.lookup(filePath);
+
+		let finalBuffer;
+		let finalExt;
+		let contentType;
+
+		if (mimeType && mimeType.startsWith('video/')) {
+			finalBuffer = fs.readFileSync(filePath);
+			finalExt = ext.replace('.', '');
+			contentType = mimeType;
+
+			console.log(`🎥 Video detected: ${fileName}`);
+		} else if (mimeType && mimeType.startsWith('image/')) {
+			const processed = await processImage(filePath);
+
+			finalBuffer = processed.buffer;
+			finalExt = processed.ext;
+			contentType = processed.mime;
+
+			console.log(`🖼 Processed image: ${fileName}`);
+		} else {
+			console.log(`⏭ Skipped unsupported file: ${fileName}`);
+			return;
+		}
+
+		const newName = cleanFileName(fileName, finalExt);
+		const key = relativePath ? `${relativePath}/${newName}` : newName;
+
+		const url = await uploadToR2(finalBuffer, key, contentType);
+
+		console.log(`✅ Uploaded: ${url}`);
+		console.log('Processing:', oldDbPath);
+
+		await updateMediaInDB(oldDbPath, key);
+	} catch (err) {
+		console.error(`❌ Failed: ${filePath}`, err.message);
+	}
+}
 // 🔥 MAIN MIGRATION FUNCTION
 async function migrate() {
 	const files = getAllFiles(UPLOAD_DIR);
 
-	const targetFiles = [
-		'/uploads/bnr-something-tiny-is-on-the-way.webp',
-		'/uploads/bnr-store-opening-sale.webp',
-	];
-
 	console.log(`📦 Found ${files.length} files`);
-	// return;
 
-	for (const filePath of files) {
-		const oldDbPath = `/uploads/${
-			path.relative(UPLOAD_DIR, filePath)
-			// .replace(/\\/g, '/')
-		}`;
-		// 👇 ONLY process selected files
-		if (targetFiles.includes(oldDbPath)) {
-			console.log(oldDbPath, 'chkking filepath');
-		} else {
-			continue;
-		}
+	const tasks = files.map((filePath) => limit(() => processFile(filePath)));
 
-		// const existingMedia = await db.media.findOne({
-		// 	where: { url: oldDbPath },
-		// });
-		// if (!existingMedia) {
-		// 	console.log(`⏭ Skipping (not in DB): ${oldDbPath}`);
-		// 	continue;
-		// }
-		// continue; // TEMP: skip actual upload during testing
-		try {
-			const ext = path.extname(filePath).toLowerCase();
-			const fileName = path.basename(filePath);
-
-			// Get relative path for folder structure
-			const relativePath = path.relative(
-				UPLOAD_DIR,
-				path.dirname(filePath)
-			);
-			const folderPath = relativePath.replace(/\\/g, '/');
-
-			const mimeType = mime.lookup(filePath);
-
-			let finalBuffer;
-			let finalExt;
-			let contentType;
-
-			// 🎥 Handle videos (no processing)
-			if (mimeType && mimeType.startsWith('video/')) {
-				finalBuffer = fs.readFileSync(filePath);
-				finalExt = ext.replace('.', '');
-				contentType = mimeType;
-
-				console.log(`🎥 Video detected (no processing): ${fileName}`);
-			}
-			// 🖼 Handle images
-			else if (mimeType && mimeType.startsWith('image/')) {
-				const processed = await processImage(filePath);
-
-				finalBuffer = processed.buffer;
-				finalExt = processed.ext;
-				contentType = processed.mime;
-
-				console.log(`🖼 Processed image: ${fileName}`);
-			} else {
-				console.log(`⏭ Skipped unsupported file: ${fileName}`);
-				continue;
-			}
-
-			// Clean name
-			const newName = cleanFileName(fileName, finalExt);
-
-			const key = folderPath ? `${folderPath}/${newName}` : newName;
-
-			// Upload
-			const url = await uploadToR2(finalBuffer, key, contentType);
-
-			console.log(`✅ Uploaded: ${url}`);
-			const oldDbPath = `/uploads/${path
-				.relative(UPLOAD_DIR, filePath)
-				.replace(/\\/g, '/')}`;
-			console.log('Processing:', oldDbPath);
-			await updateMediaInDB(oldDbPath, key);
-		} catch (err) {
-			console.error(`❌ Failed: ${filePath}`, err.message);
-		}
-	}
+	await Promise.all(tasks);
 
 	console.log('🎉 Migration completed');
 }
-
 // RUN
 // migrate();
 
