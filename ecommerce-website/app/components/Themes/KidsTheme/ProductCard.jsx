@@ -184,7 +184,6 @@ const ProductCard = ({ product }) => {
           onTouchEnd={endPress}
           onTouchCancel={endPress}
         >
-          {/* Default image */}
           <BaseImage
             src={thumbnailImage}
             alt={product.title}
@@ -192,36 +191,38 @@ const ProductCard = ({ product }) => {
             height={600}
             onLoad={() => setImageLoaded(true)}
             className={`
-            absolute inset-0 w-full h-full object-cover rounded-t-md
-            transition-opacity duration-1000 ease-in-out
-            ${isLongPressed ? "opacity-0" : "opacity-100"}
-            md:group-hover:opacity-0
-            ${imageLoaded ? "opacity-100" : "opacity-0"}
-          `}
+    absolute inset-0 w-full h-full object-cover rounded-t-md
+    transition-opacity duration-700 ease-in-out
+    ${imageLoaded ? "opacity-100" : "opacity-0"}
+    ${isLongPressed ? "opacity-0" : ""}
+    md:group-hover:opacity-0
+  `}
           />
 
-          {/* Hover image (fade + zoom) */}
           <BaseImage
             src={hoverImage}
             alt={product.title}
             width={600}
             height={600}
             className={`
-						absolute inset-0 w-full h-full object-cover rounded-t-md
-						transition-all duration-1000 ease-in-out transform
-						${isLongPressed ? "opacity-100 scale-110" : "opacity-0 scale-100"}
-						md:group-hover:opacity-100 md:group-hover:scale-110
-					`}
+    absolute inset-0 w-full h-full object-cover rounded-t-md
+    transition-all duration-700 ease-in-out transform
+    ${isLongPressed ? "opacity-100 scale-110" : "opacity-0 scale-100"}
+    md:group-hover:opacity-100 md:group-hover:scale-110
+  `}
           />
 
-          {!imageLoaded && (
-            <img
-              src="/bnb-logo-loader.gif"
-              alt="loading"
-              className="absolute inset-0 w-full h-full object-contain p-8 bg-white"
-            />
-          )}
-
+          <img
+            src="/bnb-logo-loader.gif"
+            alt="loading"
+            className={`
+            absolute inset-0 m-auto
+            w-16 h-16
+            object-contain
+            transition-opacity duration-500 ease-in-out
+            ${imageLoaded ? "opacity-0 pointer-events-none" : "opacity-100"}
+          `}
+          />
           {/* Overlay (desktop only, does not block hover) */}
           {/* <div
 					className={`
