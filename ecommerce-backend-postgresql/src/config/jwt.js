@@ -68,6 +68,8 @@ function jwt() {
 			'/v1/admin/branch', // Exclude branch route
 			'/v1/admin/language', // Exclude language route
 			'/v1/admin/move-to-r2', // Exclude move-to-r2 route
+			'/v1/test/purge-cache', // Exclude purge-cache route
+			'/v1/test/health-check', // Exclude health-check route
 			/^\/uploads(\/.*)?$/, // ✅ best version
 		],
 	});

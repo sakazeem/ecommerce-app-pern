@@ -128,12 +128,22 @@ app.use((req, _, next) => {
 app.use(responseFormatter);
 
 // Example route
-app.get('/', async (req, res) => {
+app.get('/health-check', async (req, res) => {
 	try {
 		// Some logic here
 		res.send('server running111');
 	} catch (err) {
 		res.send(err, 'Failed to fetch user');
+	}
+});
+
+app.get('/v1/test/purge-cache', async (req, res) => {
+	try {
+		await redisClient.flushAll();
+		res.status(200).send('Cache purged successfully');
+	} catch (error) {
+		console.error('Error purging cache:', error);
+		res.status(500).send('Error purging cache');
 	}
 });
 
