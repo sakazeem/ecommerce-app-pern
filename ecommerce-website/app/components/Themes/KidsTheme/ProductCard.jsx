@@ -36,6 +36,7 @@ const ProductCard = ({ product }) => {
   const { addToCart, toggleFavourite, favourites } = useCartStore();
   const { openCartDrawer } = useAuthUIStore();
   const { saveTargetProduct } = useScrollRestoration();
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const randomRating = useMemo(() => {
     return Math.floor(Math.random() * 9 + 2) / 2;
@@ -189,12 +190,14 @@ const ProductCard = ({ product }) => {
             alt={product.title}
             width={600}
             height={600}
+            onLoad={() => setImageLoaded(true)}
             className={`
-						absolute inset-0 w-full h-full object-cover rounded-t-md
-						transition-opacity duration-1000 ease-in-out
-						${isLongPressed ? "opacity-0" : "opacity-100"}
-						md:group-hover:opacity-0
-					`}
+            absolute inset-0 w-full h-full object-cover rounded-t-md
+            transition-opacity duration-1000 ease-in-out
+            ${isLongPressed ? "opacity-0" : "opacity-100"}
+            md:group-hover:opacity-0
+            ${imageLoaded ? "opacity-100" : "opacity-0"}
+          `}
           />
 
           {/* Hover image (fade + zoom) */}
@@ -210,6 +213,14 @@ const ProductCard = ({ product }) => {
 						md:group-hover:opacity-100 md:group-hover:scale-110
 					`}
           />
+
+          {!imageLoaded && (
+            <img
+              src="/bnb-logo-loader.gif"
+              alt="loading"
+              className="absolute inset-0 w-full h-full object-contain p-8 bg-white"
+            />
+          )}
 
           {/* Overlay (desktop only, does not block hover) */}
           {/* <div
