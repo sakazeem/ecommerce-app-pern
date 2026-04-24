@@ -1,6 +1,6 @@
 async function mediaUpload(file, subFolder) {
 	if (!file) throw new Error('No file provided');
-	console.log('Uploading file to R2:', file.originalname);
+	// console.log('Uploading file to R2:', file.originalname);
 	return {
 		url: file.location, // 🔥 R2 CDN URL
 		title: file.originalname,
@@ -114,12 +114,34 @@ import pLimit from 'p-limit';
 
 const limit = pLimit(10);
 
+const stats = {
+	total: 0,
+	uploaded: 0,
+	skipped: 0,
+	failed: 0,
+	dbUpdated: 0,
+	dbNotFound: 0,
+	dbUpdateMiss: 0, // 👈 add this
+};
+
 // helper function
 async function processFile(filePath) {
+
+
 	const oldDbPath =
 		'uploads/' + path.relative(UPLOAD_DIR, filePath).replace(/\\/g, '/');
 
 	try {
+		const existingMedia = await db.media.findOne({
+			where: { url: oldDbPath },
+		});
+
+		if (!existingMedia) {
+			stats.dbNotFound++;
+			console.log(`⏭ Not in DB: ${oldDbPath}`);
+			return;
+		}
+
 		const ext = path.extname(filePath).toLowerCase();
 		const fileName = path.basename(filePath);
 
@@ -137,18 +159,15 @@ async function processFile(filePath) {
 			finalBuffer = fs.readFileSync(filePath);
 			finalExt = ext.replace('.', '');
 			contentType = mimeType;
-
-			console.log(`🎥 Video detected: ${fileName}`);
 		} else if (mimeType && mimeType.startsWith('image/')) {
 			const processed = await processImage(filePath);
 
 			finalBuffer = processed.buffer;
 			finalExt = processed.ext;
 			contentType = processed.mime;
-
-			console.log(`🖼 Processed image: ${fileName}`);
 		} else {
-			console.log(`⏭ Skipped unsupported file: ${fileName}`);
+			stats.skipped++;
+			console.log(`⏭ Skipped unsupported: ${fileName}`);
 			return;
 		}
 
@@ -157,11 +176,24 @@ async function processFile(filePath) {
 
 		const url = await uploadToR2(finalBuffer, key, contentType);
 
-		console.log(`✅ Uploaded: ${url}`);
-		console.log('Processing:', oldDbPath);
+		stats.uploaded++;
 
-		await updateMediaInDB(oldDbPath, key);
+		const [updatedCount] = await db.media.update(
+			{ url: key },
+			{ where: { url: oldDbPath } }
+		);
+
+		if (updatedCount > 0) {
+			stats.dbUpdated++;
+		} else {
+			stats.dbUpdateMiss++;
+		}
+
+		if (stats.uploaded % 50 === 0) {
+			console.log(`🚀 Progress: ${stats.uploaded}/${stats.total}`);
+		}
 	} catch (err) {
+		stats.failed++;
 		console.error(`❌ Failed: ${filePath}`, err.message);
 	}
 }
@@ -176,6 +208,16 @@ async function migrate() {
 	await Promise.all(tasks);
 
 	console.log('🎉 Migration completed');
+	console.log('\n📊 MIGRATION REPORT');
+	console.log('---------------------------');
+	console.log(`Total Files:        ${files.length}`);
+	console.log(`Uploaded:           ${stats.uploaded}`);
+	console.log(`DB Updated:         ${stats.dbUpdated}`);
+	console.log(`Skipped:            ${stats.skipped}`);
+	console.log(`DB Not Found:       ${stats.dbNotFound}`);
+	console.log(`Failed:             ${stats.failed}`);
+	console.log(`DB Update Miss:     ${stats.dbUpdateMiss}`);
+	console.log('---------------------------');
 }
 // RUN
 // migrate();
