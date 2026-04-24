@@ -11,6 +11,12 @@ const createMedia = catchAsync(async (req, res) => {
 	if (!req.file) {
 		throw new ApiError(httpStatus.BAD_REQUEST, 'Image not found');
 	}
+	console.log('✅ Upload successful:', {
+		url: req.file.location,
+		key: req.file.key,
+		size: req.file.size,
+	});
+
 	const medias = await adminMediaService.createMedia(req);
 	res.send(medias);
 });

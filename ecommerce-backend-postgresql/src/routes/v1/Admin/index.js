@@ -14,6 +14,7 @@ const attributeRoute = require('./attributeRoute');
 const sizeChartRoute = require('./sizeChartRoute');
 const scriptRoute = require('./scriptRoute');
 const homepageSectionsRoute = require('./homepageSectionsRoute');
+const { imageService } = require('../../../services');
 
 const adminRouter = express.Router();
 
@@ -40,5 +41,9 @@ adminRouter.use('/user', require('./userRoute'));
 adminRouter.use('/role', require('./roleRoute'));
 adminRouter.use('/permission', require('./permissionRoute'));
 adminRouter.use('/dashboard', require('./dashboardRoute'));
+adminRouter.use('/move-to-r2', (req, res) => {
+	const response = imageService.migrate();
+	res.send({ message: 'Migration started', response });
+});
 
 module.exports = adminRouter;

@@ -1,35 +1,46 @@
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const multerS3 = require('multer-s3');
+const { S3Client } = require('@aws-sdk/client-s3');
 
-const MAIN_FOLDER = path.join(__dirname, '../uploads');
-
-if (!fs.existsSync(MAIN_FOLDER)) {
-	fs.mkdirSync(MAIN_FOLDER, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-	destination: (req, file, cb) => {
-		let folderPath = MAIN_FOLDER;
-
-		// optional subfolder
-		if (req.body.subFolder) {
-			folderPath = path.join(MAIN_FOLDER, req.body.subFolder);
-			if (!fs.existsSync(folderPath)) {
-				fs.mkdirSync(folderPath, { recursive: true });
-			}
-		}
-
-		cb(null, folderPath);
-	},
-
-	filename: (req, file, cb) => {
-		// keep the original filename as is
-		cb(null, file.originalname);
+// R2 CONFIG
+const s3 = new S3Client({
+	region: 'auto',
+	endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+	credentials: {
+		accessKeyId: process.env.R2_ACCESS_KEY,
+		secretAccessKey: process.env.R2_SECRET_KEY,
 	},
 });
 
-// Change from 10MB to 100MB to allow video uploads
-const upload = multer({ storage, limits: { fileSize: 100 * 1024 * 1024 } });
+const upload = multer({
+	storage: multerS3({
+		s3: s3,
+		bucket: process.env.R2_BUCKET_NAME,
+		contentType: multerS3.AUTO_CONTENT_TYPE,
+
+		key: (req, file, cb) => {
+			let folderPath = '';
+
+			if (req.body.subFolder) {
+				folderPath = req.body.subFolder.replace(/\\/g, '/');
+			}
+
+			// keep original name OR better: make unique
+			const fileName = `${file.originalname}`;
+
+			const fullPath = folderPath
+				? `${folderPath}/${fileName}`
+				: fileName;
+			console.log('📤 Uploading file to R2:', {
+				originalName: file.originalname,
+				mimeType: file.mimetype,
+				path: fullPath,
+			});
+
+			cb(null, fullPath);
+		},
+	}),
+	limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
+});
 
 module.exports = upload;

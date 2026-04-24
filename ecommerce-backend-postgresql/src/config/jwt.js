@@ -67,6 +67,7 @@ function jwt() {
 			/\/v[1-9](\d)*\/(auth|admin\/auth|docs|delete|website)\/.*/, // Public routes
 			'/v1/admin/branch', // Exclude branch route
 			'/v1/admin/language', // Exclude language route
+			'/v1/admin/move-to-r2', // Exclude move-to-r2 route
 			/^\/uploads(\/.*)?$/, // ✅ best version
 		],
 	});

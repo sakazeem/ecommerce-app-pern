@@ -16,8 +16,8 @@ router
 	)
 	.post(
 		// checkPermission('create_media'),
-		upload.single('file'),
 		validate(adminMediaValidation.createMedia),
+		upload.single('file'),
 		adminMediaController.createMedia
 	);
 router

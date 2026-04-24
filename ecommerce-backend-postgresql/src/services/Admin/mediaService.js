@@ -308,8 +308,76 @@ const getMedias = async (req) => {
 		page,
 	};
 };
+
+const slugify = require('slugify');
+
+function cleanFileName(name) {
+	const ext = name.split('.').pop();
+	const base = name.replace(/\.[^/.]+$/, '');
+
+	const clean = slugify(base, {
+		lower: true,
+		strict: true, // removes special chars
+	});
+
+	return `${clean}.${ext}`;
+}
+
+async function processImage(file) {
+	const isImage = file.mimetype.startsWith('image/');
+	const isVideo = file.mimetype.startsWith('video/');
+
+	// 👉 Skip videos completely
+	if (isVideo) {
+		return {
+			buffer: file.buffer,
+			ext: file.originalname.split('.').pop(),
+		};
+	}
+
+	if (!isImage) {
+		throw new Error('Unsupported file type');
+	}
+
+	let image = sharp(file.buffer);
+	const metadata = await image.metadata();
+
+	const isSquare = metadata.width === metadata.height;
+
+	// 👉 Resize ONLY if square and large
+	if (isSquare && metadata.width > 800) {
+		image = image.resize(800, 800);
+	}
+
+	// 👉 Convert to WebP + compress
+	const buffer = await image
+		.webp({ quality: 80 }) // 🔥 sweet spot
+		.toBuffer();
+
+	return {
+		buffer,
+		ext: 'webp',
+	};
+}
+const { PutObjectCommand } = require('@aws-sdk/client-s3');
+async function uploadToR2(buffer, key, mimetype) {
+	await s3.send(
+		new PutObjectCommand({
+			Bucket: process.env.R2_BUCKET_NAME,
+			Key: key,
+			Body: buffer,
+			ContentType: mimetype,
+		})
+	);
+
+	return `https://${process.env.R2_BUCKET_NAME}.r2.dev/${key}`;
+}
+
+const transferAllImagesToCloudfare = () => {};
+
 module.exports = {
 	deleteAllProductsMedia,
+	transferAllImagesToCloudfare,
 };
 
 module.exports = {
