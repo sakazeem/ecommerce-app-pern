@@ -124,7 +124,7 @@ const stats = {
 // helper function
 async function processFile(filePath) {
 	const oldDbPath =
-		'uploads/' + path.relative(UPLOAD_DIR, filePath).replace(/\\/g, '/');
+		'/uploads/' + path.relative(UPLOAD_DIR, filePath).replace(/\\/g, '/');
 
 	try {
 		const existingMedia = await db.media.findOne({
