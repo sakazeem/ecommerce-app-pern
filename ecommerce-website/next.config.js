@@ -23,6 +23,13 @@ const nextConfig = {
 			},
 			{
 				protocol: "https",
+				hostname: "cdn.babiesnbaba.com",
+				port: "",
+				pathname: "/**",
+				search: "",
+			},
+			{
+				protocol: "https",
 				hostname: "www.facebook.com",
 				port: "",
 				pathname: "/**",
