@@ -116,8 +116,8 @@ async function migrate() {
 	const files = getAllFiles(UPLOAD_DIR);
 
 	const targetFiles = [
-		'bnr-something-tiny-is-on-the-way.webp',
-		'bnr-store-opening-sale.webp',
+		'/uploads/bnr-something-tiny-is-on-the-way.webp',
+		'/uploads/bnr-store-opening-sale.webp',
 	];
 
 	console.log(`📦 Found ${files.length} files`);
@@ -128,9 +128,12 @@ async function migrate() {
 			path.relative(UPLOAD_DIR, filePath)
 			// .replace(/\\/g, '/')
 		}`;
-		console.log(oldDbPath, 'chkking filepath');
 		// 👇 ONLY process selected files
-		if (!targetFiles.includes(oldDbPath)) continue;
+		if (targetFiles.includes(oldDbPath)) {
+			console.log(oldDbPath, 'chkking filepath');
+		} else {
+			continue;
+		}
 
 		// const existingMedia = await db.media.findOne({
 		// 	where: { url: oldDbPath },
