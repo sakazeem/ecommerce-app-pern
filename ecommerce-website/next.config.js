@@ -53,9 +53,9 @@ const nextConfig = {
 		formats: ["image/avif", "image/webp"],
 		minimumCacheTTL: 60 * 60 * 24 * 30,
 	},
-	experimental: {
-		optimizeCss: true,
-	},
+	// experimental: {
+	// 	optimizeCss: true,
+	// },
 };
 
 module.exports = withNextIntl(nextConfig);
