@@ -110,7 +110,7 @@ async function updateMediaInDB(oldPath, newUrl) {
 		}
 	);
 }
-import pLimit from 'p-limit';
+const pLimit = require('p-limit').default;
 
 const limit = pLimit(10);
 
@@ -126,8 +126,6 @@ const stats = {
 
 // helper function
 async function processFile(filePath) {
-
-
 	const oldDbPath =
 		'uploads/' + path.relative(UPLOAD_DIR, filePath).replace(/\\/g, '/');
 
