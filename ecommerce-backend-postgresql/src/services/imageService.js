@@ -110,9 +110,6 @@ async function updateMediaInDB(oldPath, newUrl) {
 		}
 	);
 }
-const pLimit = require('p-limit').default;
-
-const limit = pLimit(10);
 
 const stats = {
 	total: 0,
@@ -197,6 +194,8 @@ async function processFile(filePath) {
 }
 // 🔥 MAIN MIGRATION FUNCTION
 async function migrate() {
+	const pLimit = (await import('p-limit')).default;
+	const limit = pLimit(10);
 	const files = getAllFiles(UPLOAD_DIR);
 
 	console.log(`📦 Found ${files.length} files`);
