@@ -11,6 +11,7 @@ import "swiper/css/pagination";
 import backgroundPattern from "@/app/assets/themes/kidsTheme/background-pattern.png";
 import { ToastContainerProvider } from "../providers/ToastContainer";
 import { NextIntlClientProvider } from "next-intl";
+import { AuthProvider } from "../providers/AuthProvider";
 
 let cachedTheme = null;
 
@@ -88,7 +89,9 @@ export default async function RootLayout({ children }) {
 			}}>
 			<ToastContainerProvider />
 			<NextIntlClientProvider>
-				<StoreProvider value={store}>{children}</StoreProvider>
+				<AuthProvider>
+					<StoreProvider value={store}>{children}</StoreProvider>
+				</AuthProvider>
 			</NextIntlClientProvider>
 		</div>
 	);
