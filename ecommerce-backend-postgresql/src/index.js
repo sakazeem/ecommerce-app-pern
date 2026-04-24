@@ -16,7 +16,7 @@ const port = config.port || 3000;
 // });
 
 (async () => {
-	// await redisClient.connect();
+	await redisClient.connect();
 
 	console.log('Redis ready');
 

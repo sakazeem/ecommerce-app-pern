@@ -42,8 +42,8 @@ adminRouter.use('/role', require('./roleRoute'));
 adminRouter.use('/permission', require('./permissionRoute'));
 adminRouter.use('/dashboard', require('./dashboardRoute'));
 adminRouter.use('/move-to-r2', (req, res) => {
-	const response = imageService.migrate();
-	res.send({ message: 'Migration started', response });
+	imageService.migrate();
+	res.send({ message: 'Migration started' });
 });
 
 module.exports = adminRouter;

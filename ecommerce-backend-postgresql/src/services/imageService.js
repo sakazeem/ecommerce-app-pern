@@ -123,7 +123,7 @@ async function migrate() {
 	console.log(`📦 Found ${files.length} files`);
 	// return;
 
-	for (const filePath of files.splice(0, 10)) {
+	for (const filePath of files) {
 		console.log(filePath, 'chkking filepath');
 		const oldDbPath = `/uploads/${
 			path.relative(UPLOAD_DIR, filePath)
