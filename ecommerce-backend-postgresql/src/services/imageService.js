@@ -115,6 +115,7 @@ const stats = {
 	total: 0,
 	uploaded: 0,
 	skipped: 0,
+
 	failed: 0,
 	dbUpdated: 0,
 	dbNotFound: 0,
@@ -130,6 +131,12 @@ async function processFile(filePath) {
 		const existingMedia = await db.media.findOne({
 			where: { url: oldDbPath },
 		});
+
+		// 🔄 CHANGED: treat as skipped instead of "not found"
+		if (!existingMedia) {
+			stats.skipped++; // ✅ CHANGED
+			return;
+		}
 
 		if (!existingMedia) {
 			stats.dbNotFound++;
@@ -184,8 +191,16 @@ async function processFile(filePath) {
 			stats.dbUpdateMiss++;
 		}
 
-		if (stats.uploaded % 50 === 0) {
-			console.log(`🚀 Progress: ${stats.uploaded}/${stats.total}`);
+		// if (stats.uploaded % 50 === 0) {
+		// 	console.log(`🚀 Progress: ${stats.uploaded}/${stats.total}`);
+		// }
+		// 🔄 CHANGED: better progress tracking (processed instead of uploaded)
+		if ((stats.uploaded + stats.skipped) % 50 === 0) {
+			console.log(
+				`🚀 Progress: ${
+					stats.uploaded + stats.skipped + stats.failed
+				}/${stats.total}`
+			);
 		}
 	} catch (err) {
 		stats.failed++;
