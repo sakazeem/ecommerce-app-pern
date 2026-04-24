@@ -2,7 +2,8 @@ async function mediaUpload(file, subFolder) {
 	if (!file) throw new Error('No file provided');
 	// console.log('Uploading file to R2:', file.originalname);
 	return {
-		url: file.location, // 🔥 R2 CDN URL
+		url: file.key, // 🔥 R2 CDN URL
+		// url: file.location, // 🔥 R2 CDN URL
 		title: file.originalname,
 		size: file.size,
 		filename: file.key, // path inside bucket
