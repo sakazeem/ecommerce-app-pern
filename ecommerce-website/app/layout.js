@@ -9,6 +9,7 @@ import "./globals.css";
 
 import localFont from "next/font/local";
 import { getTheme } from "./lib/getTheme";
+import RouteTrackerProvider from "./providers/RouteTrackerProvider";
 
 const champagne = localFont({
 	//changing font family its not champagne itlaic
@@ -228,7 +229,7 @@ export default async function RootLayout({ children }) {
 						src="https://www.facebook.com/tr?id=1371248501158222&ev=PageView&noscript=1"
 					/>
 				</noscript> */}
-				{/* <RouteTrackerProvider /> */}
+				<RouteTrackerProvider />
 
 				{children}
 			</body>
