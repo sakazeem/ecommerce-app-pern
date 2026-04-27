@@ -98,10 +98,17 @@ export default function TrackOrderPage() {
 								<h3 className="text-base font-semibold text-gray-800">
 									Shipment Tracking
 								</h3>
-								{order.tracking_id && (
-									<span className="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-1 rounded-md border border-gray-200">
-										Order # {order.tracking_id}
-									</span>
+								{order.couriertrackingId && (
+									<Link
+										href={`https://cclpak.com/tracking?trackingno=${order.couriertrackingId}`}
+										target="_blank"
+										// href={`/order-tracking?id=${order.trackingId}`}
+										className="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-1 rounded-md border border-gray-200 hover:underline">
+										Tracking Id: {order.couriertrackingId}
+									</Link>
+									// <span className="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-1 rounded-md border border-gray-200">
+									// 	Tracking Id: {order.couriertrackingId}
+									// </span>
 								)}
 							</div>
 							<div className="flex flex-col">
