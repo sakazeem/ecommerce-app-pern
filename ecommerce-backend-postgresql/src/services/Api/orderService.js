@@ -245,6 +245,7 @@ async function trackOrderByTrackingId(req) {
 					}
 				);
 				order.trackingStatus = booking.data;
+				order.couriertrackingId = courier_details.trackingId;
 			} catch (e) {
 				console.log('CCL Booking API Error:', e.message);
 			}
