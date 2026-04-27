@@ -2,7 +2,7 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { CCL_CITIES } from "./CCLCities";
 
-[
+const SHIPPING_SERVICES = [
 	{
 		id: "1",
 		label: "TCS",
