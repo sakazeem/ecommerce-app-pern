@@ -1,45 +1,51 @@
+import axios from "axios";
 import requests from "./httpService";
 
 const SettingServices = {
-	// global setting all function
-	addGlobalSetting: async (body) => {
-		return requests.post("/setting/global/add", body);
-	},
+  // global setting all function
+  addGlobalSetting: async (body) => {
+    return requests.post("/setting/global/add", body);
+  },
 
-	getGlobalSetting: async () => {
-		return null;
-		return requests.get("/setting/global/all");
-	},
+  getGlobalSetting: async () => {
+    return null;
+    return requests.get("/setting/global/all");
+  },
 
-	updateGlobalSetting: async (body) => {
-		return requests.put(`/setting/global/update`, body);
-	},
+  updateGlobalSetting: async (body) => {
+    return requests.put(`/setting/global/update`, body);
+  },
 
-	// store setting all function
-	addStoreSetting: async (body) => {
-		return requests.post("/setting/store-setting/add", body);
-	},
+  // store setting all function
+  addStoreSetting: async (body) => {
+    return requests.post("/setting/store-setting/add", body);
+  },
 
-	getStoreSetting: async () => {
-		return requests.get("/setting/store-setting/all");
-	},
+  getStoreSetting: async () => {
+    return requests.get("/setting/store-setting/all");
+  },
 
-	updateStoreSetting: async (body) => {
-		return requests.put(`/setting/store-setting/update`, body);
-	},
+  updateStoreSetting: async (body) => {
+    return requests.put(`/setting/store-setting/update`, body);
+  },
 
-	// store customization setting all function
-	addStoreCustomizationSetting: async (body) => {
-		return requests.post("/setting/store/customization/add", body);
-	},
+  // store customization setting all function
+  addStoreCustomizationSetting: async (body) => {
+    return requests.post("/setting/store/customization/add", body);
+  },
 
-	getStoreCustomizationSetting: async () => {
-		return requests.get("/setting/store/customization/all");
-	},
+  getStoreCustomizationSetting: async () => {
+    return requests.get("/setting/store/customization/all");
+  },
 
-	updateStoreCustomizationSetting: async (body) => {
-		return requests.put(`/setting/store/customization/update`, body);
-	},
+  updateStoreCustomizationSetting: async (body) => {
+    return requests.put(`/setting/store/customization/update`, body);
+  },
+  purgeCache: async () => {
+    return axios.get(
+      `${import.meta.env.VITE_APP_API_BASE_URL.replace("/admin", "")}/test/purge-cache`,
+    );
+  },
 };
 
 export default SettingServices;
