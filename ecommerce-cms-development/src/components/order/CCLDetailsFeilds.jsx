@@ -2,13 +2,44 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { CCL_CITIES } from "./CCLCities";
 
-const SHIPPING_SERVICES = [
-	{ id: 1, label: "TCS" },
-	{ id: 21, label: "TRAX" },
-	{ id: 3, label: "LEO" },
-	{ id: 17, label: "POSTEX" },
+[
+	{
+		id: "1",
+		label: "TCS",
+	},
+	{
+		id: "3",
+		label: "LEO (1 to 2 KG)",
+	},
+	{
+		id: "13",
+		label: "TCS - Detain",
+	},
+	{
+		id: "15",
+		label: "LEO - Detain (3 to 5 KG)",
+	},
+	{
+		id: "16",
+		label: "LEO - Overland (above 5KG)",
+	},
+	{
+		id: "17",
+		label: "POSTEX",
+	},
+	{
+		id: "21",
+		label: "TRAX",
+	},
+	{
+		id: "22",
+		label: "TRAX - Detain",
+	},
+	{
+		id: "40",
+		label: "POSTEX - Detain",
+	},
 ];
-
 const CCLDetailsFeilds = ({
 	shippingCity,
 	shippingService,
