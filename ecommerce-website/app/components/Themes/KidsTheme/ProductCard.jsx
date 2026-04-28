@@ -217,7 +217,7 @@ const ProductCard = ({ product }) => {
             alt="loading"
             className={`
             absolute inset-0 m-auto
-            w-16 h-16
+            w-32 h-32
             object-contain
             transition-opacity duration-500 ease-in-out
             ${imageLoaded ? "opacity-0 pointer-events-none" : "opacity-100"}
