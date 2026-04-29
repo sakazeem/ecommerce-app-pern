@@ -194,8 +194,8 @@ async function confirmOrder(req) {
 			// to: 'orders@babiesnbaba.com',
 			to:
 				config.env === 'development'
-					? 'devsts26@gmail.com'
-					: 'devsts26@gmail.com',
+					? 'annasahmed1609@gmail.com'
+					: 'babiesnbaba@gmail.com',
 			subject: `New Order #${orderId}`,
 			html: orderConfirmationAdminTemplate({
 				orderId,

@@ -30,8 +30,8 @@ if (config.env !== 'test') {
 const sendEmail = async ({ to, subject, text, html, attachments = [] }) => {
 	await transport.sendMail({
 		from,
-		to: config.env === 'development' ? 'devsts26@gmail.com' : to,
-		// bcc: config.env === 'development' ? [] : ['annasahmed1609@gmail.com'],
+		to: config.env === 'development' ? 'annasahmed1609@gmail.com' : to,
+		bcc: config.env === 'development' ? [] : ['annasahmed1609@gmail.com'],
 		// : ['salmanazeemkhan@gmail.com', 'annasahmed1609@gmail.com'],
 		subject,
 		text,
