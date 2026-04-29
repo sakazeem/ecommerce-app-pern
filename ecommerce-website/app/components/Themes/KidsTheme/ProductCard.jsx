@@ -213,7 +213,7 @@ const ProductCard = ({ product }) => {
           />
 
           <img
-            src="/bnb-logo-loader.gif"
+            src="/bnb-logo-loader.webp"
             alt="loading"
             className={`
             absolute inset-0 m-auto

@@ -25,8 +25,15 @@ const upload = multer({
 				folderPath = req.body.subFolder.replace(/\\/g, '/');
 			}
 
-			// keep original name OR better: make unique
-			const fileName = `${file.originalname}`;
+			// Append timestamp to stem to prevent same-name overwrites
+			const ext = file.originalname.includes('.')
+				? '.' + file.originalname.split('.').pop()
+				: '';
+			const stem = file.originalname.slice(
+				0,
+				file.originalname.length - ext.length
+			);
+			const fileName = `${stem}-${Date.now()}${ext}`;
 
 			const fullPath = folderPath
 				? `${folderPath}/${fileName}`
