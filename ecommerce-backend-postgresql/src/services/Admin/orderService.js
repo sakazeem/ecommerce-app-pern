@@ -363,7 +363,7 @@ async function createCCLBooking(data) {
 			details: productDetails, //Product Details
 			qty: quantity, //Product Quantity eg. 1 or 2 or 3 - MANDATORY
 			weight, //Shipment Weight eg. 0.5 or 1 or 2 - MANDATORY
-			total, //COD Amount - MANDATORY
+			total: payment_method === 'cod' ? total : 0, //COD Amount - MANDATORY
 			open_allow: '1', //Open Allowed Valuies 1 & 0 - Optional
 			shipment_services: shipmentService, //1 for TCS, 21 for TRAX, 3 for LEO, 17 for POSTEX, RIDER, CALL
 			client_order_id: tracking_id, //Your Internal Order ID,

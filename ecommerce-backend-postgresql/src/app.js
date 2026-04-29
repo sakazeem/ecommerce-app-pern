@@ -128,7 +128,7 @@ app.use((req, _, next) => {
 app.use(responseFormatter);
 
 // Example route
-app.get('/health-check', async (req, res) => {
+app.get('/v1/test/health-check', async (req, res) => {
 	try {
 		// Some logic here
 		res.send('server running111');
