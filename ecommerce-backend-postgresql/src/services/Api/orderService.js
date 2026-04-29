@@ -1,5 +1,5 @@
 const httpStatus = require('http-status');
-const fs = require('fs');
+const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3');
 const {
 	orderConfirmationAdminTemplate,
 } = require('../../config/emailTemplates/orderConfirmationAdmin');
@@ -13,6 +13,25 @@ const { addOrUpdateAddress } = require('./appUserService');
 const config = require('../../config/config');
 const { imageService } = require('../index.js');
 const { default: axios } = require('axios');
+
+// R2 client — used to fetch receipt buffer after multer-s3 upload (no local file path exists)
+const r2 = new S3Client({
+	region: 'auto',
+	endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+	credentials: {
+		accessKeyId: process.env.R2_ACCESS_KEY,
+		secretAccessKey: process.env.R2_SECRET_KEY,
+	},
+});
+
+async function fetchReceiptBufferFromR2(key) {
+	const { Body, ContentType } = await r2.send(
+		new GetObjectCommand({ Bucket: process.env.R2_BUCKET_NAME, Key: key })
+	);
+	const chunks = [];
+	for await (const chunk of Body) chunks.push(chunk);
+	return { buffer: Buffer.concat(chunks), contentType: ContentType };
+}
 
 async function confirmOrder(req) {
 	const { customer, billingAddress, items, summary, userId } = req.body;
@@ -129,18 +148,22 @@ async function confirmOrder(req) {
 
 		if (receiptFile) {
 			try {
+				// multer-s3: file is already in R2, mediaUpload just returns the key
 				const result = await imageService.mediaUpload(receiptFile);
-				receiptUrl = result.url;
-			} catch (e) {
-				console.error('Receipt upload failed:', e.message);
-			}
+				receiptUrl = result.url; // R2 object key
 
-			// Use buffer instead of path — works reliably with all SMTP providers
-			receiptAttachment.push({
-				filename: receiptFile.originalname,
-				content: fs.readFileSync(receiptFile.path), // Buffer
-				contentType: receiptFile.mimetype,
-			});
+				// Fetch the file back from R2 to attach to the admin email
+				const { buffer, contentType } = await fetchReceiptBufferFromR2(
+					receiptUrl
+				);
+				receiptAttachment.push({
+					filename: receiptFile.originalname,
+					content: buffer,
+					contentType: contentType || receiptFile.mimetype,
+				});
+			} catch (e) {
+				console.error('Receipt upload/fetch failed:', e.message);
+			}
 		}
 
 		if (receiptUrl) {
