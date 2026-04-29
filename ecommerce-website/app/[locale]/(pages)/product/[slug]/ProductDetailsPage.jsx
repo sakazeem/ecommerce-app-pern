@@ -98,7 +98,6 @@ export default function ProductDetailsPage() {
       });
     });
 
-
     const options = Object.fromEntries(
       Object.entries(attributeMap).map(([name, values]) => [
         name,
@@ -345,24 +344,30 @@ export default function ProductDetailsPage() {
           )}
 
           {/* Quantity & Buttons */}
-          <div className="flex items-end gap-3 max-md:gap-1 mb-6 pb-6 border-b">
-            <div className="flex flex-wrap items-center gap-3 mb-6/ p4 text-sm md:text-base">
-              <span className="font-medium">Quantity:</span>
-              <div className="flex items-center border rounded-md">
-                <button
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="px-3 py-1 border-r text-lg"
-                >
-                  -
-                </button>
-                <span className="px-4">{quantity}</span>
-                <button
-                  onClick={() => setQuantity((q) => q + 1)}
-                  className="px-3 py-1 border-l text-lg"
-                >
-                  +
-                </button>
+          <div className="flex items-start gap-3 max-md:gap-1 mb-6 pb-6 border-b">
+            <div className="flex flex-col">
+              <div className="flex flex-wrap items-center gap-3 mb-6/ p4 text-sm md:text-base">
+                <span className="font-medium">Quantity:</span>
+                <div className="flex items-center border rounded-md">
+                  <button
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    className="px-3 py-1 border-r text-lg"
+                  >
+                    -
+                  </button>
+                  <span className="px-4">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity((q) => q + 1)}
+                    className="px-3 py-1 border-l text-lg disabled:opacity-30 disabled:bg-gray-400"
+                    disabled={quantity >= selectedVariant?.stock}
+                  >
+                    +
+                  </button>
+                </div>
               </div>
+              <span className="text-md font-medium text-gray-700 pt-2">
+                Stock left: {selectedVariant?.stock}
+              </span>
             </div>
 
             <PrimaryButton
@@ -391,6 +396,7 @@ export default function ProductDetailsPage() {
               />
             </button>
           </div>
+
           {product.similarProducts?.length > 0 ? (
             <div className="items-end gap-3 max-md:gap-1 mb-6 pb-6 border-b">
               <div className="flex flex-wrap items-center gap-3 mb-6/ p4 text-sm md:text-base">

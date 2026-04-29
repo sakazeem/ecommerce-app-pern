@@ -148,11 +148,9 @@ async function confirmOrder(req) {
 
 		if (receiptFile) {
 			try {
-				// multer-s3: file is already in R2, mediaUpload just returns the key
 				const result = await imageService.mediaUpload(receiptFile);
-				receiptUrl = result.url; // R2 object key
+				receiptUrl = result.url;
 
-				// Fetch the file back from R2 to attach to the admin email
 				const { buffer, contentType } = await fetchReceiptBufferFromR2(
 					receiptUrl
 				);
@@ -163,6 +161,7 @@ async function confirmOrder(req) {
 				});
 			} catch (e) {
 				console.error('Receipt upload/fetch failed:', e.message);
+				throw new Error('Receipt upload failed: ', e.message);
 			}
 		}
 

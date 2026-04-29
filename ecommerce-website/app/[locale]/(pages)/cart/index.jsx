@@ -88,95 +88,100 @@ export default function CartPage() {
 							const price = discountedPrice ?? 0;
 							const subtotal = price * item.quantity;
 							return (
-								<div
-									key={`${item.id}-${idx}`}
-									className="flex flex-row items-center gap-6 max-md:gap-2 border p-3 sm:p-4 rounded-lg relative max-sm:flex-wrap max-sm:justify-center">
-									<BaseImage
-										src={
-											item?.selectedVariant?.image
-												? ENV_VARIABLES.IMAGE_BASE_URL +
-													item.selectedVariant.image
-												: item.thumbnail
-													? ENV_VARIABLES.IMAGE_BASE_URL + item.thumbnail
-													: item.images?.[0]
-														? ENV_VARIABLES.IMAGE_BASE_URL + item.images?.[0]
-														: null
-										}
-										alt={item.title}
-										width={120}
-										height={120}
-										className="w-24 h-24 sm:w-32 sm:h-32 rounded-md object-contain"
-									/>
+                <div
+                  key={`${item.id}-${idx}`}
+                  className="flex flex-row items-center gap-6 max-md:gap-2 border p-3 sm:p-4 rounded-lg relative max-sm:flex-wrap max-sm:justify-center"
+                >
+                  <BaseImage
+                    src={
+                      item?.selectedVariant?.image
+                        ? ENV_VARIABLES.IMAGE_BASE_URL +
+                          item.selectedVariant.image
+                        : item.thumbnail
+                          ? ENV_VARIABLES.IMAGE_BASE_URL + item.thumbnail
+                          : item.images?.[0]
+                            ? ENV_VARIABLES.IMAGE_BASE_URL + item.images?.[0]
+                            : null
+                    }
+                    alt={item.title}
+                    width={120}
+                    height={120}
+                    className="w-24 h-24 sm:w-32 sm:h-32 rounded-md object-contain"
+                  />
 
-									<div className="flex-1 text-left">
-										<h5 className="flex-1 h7 font-normal line-clamp-2 capitalize text-heading hover:text-secondary cursor-pointer transition-colors duration-300">
-											{item.title}
-											<br />
-											<span className="text-headingLight">
-												{" "}
-												{(() => {
-													const sizeAttr =
-														item.selectedVariant?.attributes?.find((attr) => {
-															const name =
-																typeof attr?.name === "string"
-																	? attr.name
-																	: attr?.name?.en || "";
-															return name.toLowerCase() === "size";
-														});
-													return sizeAttr?.value
-														? `Size: (${sizeAttr.value})`
-														: "";
-												})()}
-											</span>
-										</h5>
-										<p className="p6 text-headingLight font-normal line-clamp-1">
-											SKU: {item.sku || "-"}
-										</p>
-										<h6 className="flex font-normal gap-1 h7">
-											{item.selectedVariant?.discount_percentage > 0 && (
-												<BasePrice
-													className="text-headingLight line-through"
-													price={item.selectedVariant?.price || 0}
-												/>
-											)}
-											<BasePrice
-												className="text-secondary"
-												price={discountedPrice}
-											/>
-										</h6>
-									</div>
+                  <div className="flex-1 text-left">
+                    <h5 className="flex-1 h7 font-normal line-clamp-2 capitalize text-heading hover:text-secondary cursor-pointer transition-colors duration-300">
+                      {item.title}
+                      <br />
+                      <span className="text-headingLight">
+                        {" "}
+                        {(() => {
+                          const sizeAttr =
+                            item.selectedVariant?.attributes?.find((attr) => {
+                              const name =
+                                typeof attr?.name === "string"
+                                  ? attr.name
+                                  : attr?.name?.en || "";
+                              return name.toLowerCase() === "size";
+                            });
+                          return sizeAttr?.value
+                            ? `Size: (${sizeAttr.value})`
+                            : "";
+                        })()}
+                      </span>
+                    </h5>
+                    <p className="p6 text-headingLight font-normal line-clamp-1">
+                      SKU: {item.sku || "-"}
+                    </p>
+                    <h6 className="flex font-normal gap-1 h7">
+                      {item.selectedVariant?.discount_percentage > 0 && (
+                        <BasePrice
+                          className="text-headingLight line-through"
+                          price={item.selectedVariant?.price || 0}
+                        />
+                      )}
+                      <BasePrice
+                        className="text-secondary"
+                        price={discountedPrice}
+                      />
+                    </h6>
+                  </div>
 
-									<div className="flex flex-col-reverse sm:flex-row gap-6 max-md:gap-0 sm:items-center">
-										{/* Quantity Controls */}
-										<div className="flex items-center gap-3 border rounded-md px-2">
-											<button
-												onClick={() => updateQuantity(item, "decrease")}
-												className="px-2 py-1 p2">
-												-
-											</button>
-											<span className="p4">{item.quantity}</span>
-											<button
-												onClick={() => updateQuantity(item, "increase")}
-												className="px-2 py-1 p2">
-												+
-											</button>
-										</div>
+                  <div className="flex flex-col-reverse sm:flex-row gap-6 max-md:gap-0 sm:items-center">
+                    {/* Quantity Controls */}
+                    <div className="flex items-center gap-3 border rounded-md">
+                      <button
+                        onClick={() => updateQuantity(item, "decrease")}
+                        className="px-2 py-1 p2"
+                      >
+                        -
+                      </button>
+                      <span className="p4">{item.quantity}</span>
+                      <button
+                        onClick={() => updateQuantity(item, "increase")}
+                        disabled={item.quantity >= item.selectedVariant?.stock}
+                        className="px-2 py-1 p2 disabled:opacity-30 disabled:bg-gray-400"
+                      >
+                        +
+                      </button>
+                    </div>
 
-										{/* Subtotal */}
-										<BasePrice
-											price={subtotal}
-											className="w-20 text-right font-semibold"
-										/>
+                    {/* Subtotal */}
+                    <BasePrice
+                      price={subtotal}
+                      className="w-20 text-right font-semibold"
+                    />
 
-										{/* Remove */}
-										<button
-											onClick={() => removeItem(item)}
-											className="text-muted hover:text-red-600 transition max-sm:absolute max-sm:-top-2 max-sm:-right-1 max-sm:bg-white max-sm:w-7.5 max-sm:h-7.5 max-sm:rounded-full max-sm:border-2 max-sm:flex max-sm:justify-center max-sm:items-center max-sm:text-center max-sm:text-red-300 max-sm:border-red-300">
-											<Trash2 size={18} />
-										</button>
-									</div>
-								</div>
-							);
+                    {/* Remove */}
+                    <button
+                      onClick={() => removeItem(item)}
+                      className="text-muted hover:text-red-600 transition max-sm:absolute max-sm:-top-2 max-sm:-right-1 max-sm:bg-white max-sm:w-7.5 max-sm:h-7.5 max-sm:rounded-full max-sm:border-2 max-sm:flex max-sm:justify-center max-sm:items-center max-sm:text-center max-sm:text-red-300 max-sm:border-red-300"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+              );
 						})}
 					</div>
 
