@@ -12,3 +12,5 @@ module.exports.apiReturnedService = require('./returnedService');
 module.exports.apiSubscriberService = require('./subscriberService');
 module.exports.cartService = require('./cartService');
 module.exports.favouriteService = require('./favouriteService');
+const { logActivity, logActivityBatch } = require('./activityLogService');
+module.exports.activityLogService = { logActivity, logActivityBatch };
