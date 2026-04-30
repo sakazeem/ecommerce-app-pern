@@ -5,6 +5,20 @@ const withNextIntl = createNextIntlPlugin("./app/i18n/request.js");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+	async redirects() {
+		return [
+			{
+				source: "/collection/:category/",
+				destination: "/products?category=:category",
+				permanent: true,
+			},
+			{
+				source: "/brand/:brand/",
+				destination: "/products?brand=:brand",
+				permanent: true,
+			},
+		];
+	},
 	images: {
 		remotePatterns: [
 			{
