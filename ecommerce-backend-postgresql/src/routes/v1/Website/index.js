@@ -6,6 +6,7 @@ const authRoute = require('./authRoute');
 const languageRoute = require('./languageRoute');
 const cartRoute = require('./cartRoute');
 const favouriteRoute = require('./favouriteRoute');
+const activityRoute = require('./activityRoute');
 
 const websiteRouter = express.Router();
 
@@ -24,5 +25,6 @@ websiteRouter.use('/returned', require('./returnedRoute'));
 websiteRouter.use('/subscriber', require('./subscriberRoute'));
 websiteRouter.use('/cart', cartRoute);
 websiteRouter.use('/favourites', favouriteRoute);
+websiteRouter.use('/activity', activityRoute);
 
 module.exports = websiteRouter;
