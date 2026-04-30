@@ -161,7 +161,10 @@ async function confirmOrder(req) {
 				});
 			} catch (e) {
 				console.error('Receipt upload/fetch failed:', e.message);
-				throw new Error('Receipt upload failed: ', e.message);
+				throw new ApiError(
+					httpStatus.BAD_REQUEST,
+					'Receipt upload failed: ' + e.message
+				);
 			}
 		}
 
@@ -169,46 +172,52 @@ async function confirmOrder(req) {
 			createdOrder.payment_receipt_url = receiptUrl;
 			await createdOrder.save({ transaction });
 		}
+		await transaction.commit();
+		setImmediate(async () => {
+			try {
+				if (customer.email) {
+					await sendEmail({
+						// to: 'annasahmed1609@gmail.com',
+						to: customer.email,
+						subject: `Order Confirmation #${orderId}`,
+						html: orderConfirmationCustomerTemplate({
+							orderId,
+							customerName: `${customer.name}`,
+							items,
+							subtotal: summary.subtotal,
+							shipping: summary.shipping,
+							total: summary.total,
+						}),
+						attachments: [],
+					});
+				}
 
-		if (customer.email) {
-			await sendEmail({
-				// to: 'annasahmed1609@gmail.com',
-				to: customer.email,
-				subject: `Order Confirmation #${orderId}`,
-				html: orderConfirmationCustomerTemplate({
-					orderId,
-					customerName: `${customer.name}`,
-					items,
-					subtotal: summary.subtotal,
-					shipping: summary.shipping,
-					total: summary.total,
-				}),
-				attachments: [],
-			});
-		}
-
-		await sendEmail({
-			// to: 'annasahmed1609@gmail.com',
-			// to: 'salmanazeemkhan@gmail.com',
-			// to: 'orders@babiesnbaba.com',
-			to:
-				config.env === 'development'
-					? 'annasahmed1609@gmail.com'
-					: 'babiesnbaba@gmail.com',
-			subject: `New Order #${orderId}`,
-			html: orderConfirmationAdminTemplate({
-				orderId,
-				customer,
-				billingAddress,
-				items,
-				total: summary.total?.toFixed(1),
-				shipping: summary.shipping,
-				paymentMethod: customer.paymentMethod,
-			}),
-			attachments: receiptAttachment,
+				await sendEmail({
+					// to: 'annasahmed1609@gmail.com',
+					// to: 'salmanazeemkhan@gmail.com',
+					// to: 'orders@babiesnbaba.com',
+					to:
+						config.env === 'development'
+							? 'annasahmed1609@gmail.com'
+							: 'babiesnbaba@gmail.com',
+					subject: `New Order #${orderId}`,
+					html: orderConfirmationAdminTemplate({
+						orderId,
+						customer,
+						billingAddress,
+						items,
+						total: summary.total?.toFixed(1),
+						shipping: summary.shipping,
+						paymentMethod: customer.paymentMethod,
+					}),
+					attachments: receiptAttachment,
+				});
+			} catch (e) {
+				console.error('Email failed:', e.message);
+			}
 		});
 
-		await transaction.commit();
+		// await transaction.commit();
 
 		// if (receiptFile?.path) {
 		// 	fs.unlink(receiptFile.path, () => {});
