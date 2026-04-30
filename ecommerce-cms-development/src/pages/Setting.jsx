@@ -61,6 +61,26 @@ const Setting = () => {
 									</div>
 								</div>
 
+								<div className="grid md:grid-cols-5 items-center sm:grid-cols-12 gap-3 md:gap-5 xl:gap-6 lg:gap-6 mb-6">
+									<label className="block text-sm font-semibold text-customGray-600 dark:text-customGray-400 mb-1 sm:col-span-2">
+										Max Items Per Order
+										<br />
+										<small className="font-normal text-xs text-customGray-500">
+											Set to 0 or leave blank to disable the limit
+										</small>
+									</label>
+									<div className="sm:col-span-3">
+										<InputAreaTwo
+											register={register}
+											label="Max Items Per Order"
+											name="max_qty_per_order"
+											type="number"
+											placeholder="e.g. 5 (0 = no limit)"
+										/>
+										<Error errorName={errors.max_qty_per_order} />
+									</div>
+								</div>
+
 								<div className="grid md:grid-cols-5 sm:grid-cols-6 gap-3 md:gap-5 xl:gap-6 lg:gap-6 mb-6">
 									<label className="block text-sm text-customGray-600 font-semibold dark:text-customGray-400 mb-1 sm:col-span-2">
 										{t("AllowAutoTranslation")}
