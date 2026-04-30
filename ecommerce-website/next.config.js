@@ -8,13 +8,23 @@ const nextConfig = {
 	async redirects() {
 		return [
 			{
-				source: "/collection/:category/",
-				destination: "/products?category=:category",
+				source: "/:locale/collection/:category",
+				destination: "/:locale/products?category=:category",
 				permanent: true,
 			},
 			{
-				source: "/brand/:brand/",
-				destination: "/products?brand=:brand",
+				source: "/:locale/brand/:brand",
+				destination: "/:locale/products?brand=:brand",
+				permanent: true,
+			},
+			{
+				source: "/:locale/collection/:category/",
+				destination: "/:locale/products?category=:category",
+				permanent: true,
+			},
+			{
+				source: "/:locale/brand/:brand/",
+				destination: "/:locale/products?brand=:brand",
 				permanent: true,
 			},
 		];
