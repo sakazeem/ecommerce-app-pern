@@ -73,70 +73,77 @@ export default function CartDrawer({ open, setOpen }) {
 									(item.selectedVariant?.price || 0) *
 									(1 - (item.selectedVariant?.discount_percentage || 0) / 100);
 								return (
-									<div
-										key={`${item.id}-${idx}`}
-										className="flex items-center gap-4 border-b pb-4">
-										<BaseImage
-											src={
-												item?.selectedVariant?.image
-													? ENV_VARIABLES.IMAGE_BASE_URL +
-														item.selectedVariant.image
-													: item.thumbnail
-														? ENV_VARIABLES.IMAGE_BASE_URL + item.thumbnail
-														: item.images?.[0]
-															? ENV_VARIABLES.IMAGE_BASE_URL + item.images?.[0]
-															: null
-											}
-											alt={item.title}
-											width={64}
-											height={64}
-											className="w-20 h-20 rounded object-contain"
-										/>
+                  <div
+                    key={`${item.id}-${idx}`}
+                    className="flex items-center gap-4 border-b pb-4"
+                  >
+                    <BaseImage
+                      src={
+                        item?.selectedVariant?.image
+                          ? ENV_VARIABLES.IMAGE_BASE_URL +
+                            item.selectedVariant.image
+                          : item.thumbnail
+                            ? ENV_VARIABLES.IMAGE_BASE_URL + item.thumbnail
+                            : item.images?.[0]
+                              ? ENV_VARIABLES.IMAGE_BASE_URL + item.images?.[0]
+                              : null
+                      }
+                      alt={item.title}
+                      width={64}
+                      height={64}
+                      className="w-20 h-20 rounded object-contain"
+                    />
 
-										<div className="flex-1">
-											<p className="p5 font-medium line-clamp-1  capitalize">
-												{item.title?.toLowerCase()}
-											</p>
+                    <div className="flex-1">
+                      <p className="p5 font-medium line-clamp-1  capitalize">
+                        {item.title?.toLowerCase()}
+                      </p>
 
-											<p className="p6 text-headingLight font-normal line-clamp-1">
-												SKU: {item.sku || "-"}
-											</p>
-											<div className="flex items-center gap-2 mt-1">
-												<BasePrice
-													price={discountedPrice}
-													className="text-secondary"
-												/>
-												{item.selectedVariant?.discount_percentage > 0 && (
-													<BasePrice
-														price={item.selectedVariant?.price || 0}
-														className="text-muted line-through p5"
-													/>
-												)}
-											</div>
+                      <p className="p6 text-headingLight font-normal line-clamp-1">
+                        SKU: {item.sku || "-"}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <BasePrice
+                          price={discountedPrice}
+                          className="text-secondary"
+                        />
+                        {item.selectedVariant?.discount_percentage > 0 && (
+                          <BasePrice
+                            price={item.selectedVariant?.price || 0}
+                            className="text-muted line-through p5"
+                          />
+                        )}
+                      </div>
 
-											{/* Quantity */}
-											<div className="flex items-center gap-2 mt-2">
-												<button
-													onClick={() => updateQty(item, "dec")}
-													className="w-7 h-7 flex items-center justify-center border rounded">
-													<Minus size={14} />
-												</button>
-												<span className="p4">{item.quantity}</span>
-												<button
-													onClick={() => updateQty(item, "inc")}
-													className="w-7 h-7 flex items-center justify-center border rounded">
-													<Plus size={14} />
-												</button>
-											</div>
-										</div>
+                      {/* Quantity */}
+                      <div className="flex items-center gap-2 mt-2">
+                        <button
+                          onClick={() => updateQty(item, "dec")}
+                          className="w-7 h-7 flex items-center justify-center border rounded"
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span className="p4">{item.quantity}</span>
+                        <button
+                          onClick={() => updateQty(item, "inc")}
+                          disabled={
+                            item.quantity >= item.selectedVariant?.stock
+                          }
+                          className="w-7 h-7 flex items-center justify-center border rounded disabled:opacity-30 disabled:bg-gray-400"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                    </div>
 
-										<button
-											onClick={() => removeFromCart(item, isAuthenticated)}
-											className="text-muted hover:text-red-500">
-											<Trash2 size={16} />
-										</button>
-									</div>
-								);
+                    <button
+                      onClick={() => removeFromCart(item, isAuthenticated)}
+                      className="text-muted hover:text-red-500"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                );
 							})
 						)}
 					</div>
