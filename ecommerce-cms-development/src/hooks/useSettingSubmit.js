@@ -56,6 +56,7 @@ const useSettingSubmit = (id) => {
           from_email: data.from_email,
           allow_auto_trans: isAllowAutoTranslation,
           translation_key: data.translation_key,
+          max_qty_per_order: data.max_qty_per_order ? parseInt(data.max_qty_per_order) : 0,
         },
       };
 
@@ -119,6 +120,7 @@ const useSettingSubmit = (id) => {
           setEnableInvoice(res?.email_to_customer || false);
           setValue("translation_key", res?.translation_key);
           setIsAllowAutoTranslation(res?.allow_auto_trans || false);
+          setValue("max_qty_per_order", res?.max_qty_per_order || 0);
         }
       } catch (err) {
         notifyError(err?.response?.data?.message || err?.message);

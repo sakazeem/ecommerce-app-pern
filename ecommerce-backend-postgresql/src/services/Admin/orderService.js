@@ -194,38 +194,34 @@ async function updateOrderStatus(req) {
 		if (!order) {
 			throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
 		}
-		// 2️⃣ Fetch user separately (no lock needed)
-		let user = null;
+
 		if (order.app_user_id) {
 			order.app_user = await db.app_user.findByPk(order.app_user_id, {
 				transaction,
 			});
 		}
-		order.order_item = await db.order_item.findAll({
+
+		const orderItems = await db.order_item.findAll({
 			where: { order_id: orderId },
 			transaction,
 		});
 
+		order.order_item = orderItems;
+
 		const oldStatus = order.status;
 
-		// 2️⃣ Deduct stock ONLY when pending → in_progress
 		if (oldStatus === 'pending' && newStatus === 'in_progress') {
-			let quantity = 0;
-			const orderItems = await db.order_item.findAll({
+			const lockedItems = await db.order_item.findAll({
 				where: { order_id: orderId },
 				transaction,
 				lock: transaction.LOCK.UPDATE,
 			});
 
-			// group quantities by variant
 			const variantQtyMap = {};
-
 			let productDetails = '';
-			// return;
 
-			for (const item of orderItems) {
+			for (const item of lockedItems) {
 				if (!item.product_variant_id) {
-					// continue;
 					throw new ApiError(
 						httpStatus.BAD_REQUEST,
 						`Variant missing for order item ${item.id}`
@@ -235,12 +231,12 @@ async function updateOrderStatus(req) {
 				variantQtyMap[item.product_variant_id] =
 					(variantQtyMap[item.product_variant_id] || 0) +
 					item.quantity;
+
 				productDetails += `${item.product_title} (SKU: ${item.sku}) ${item.quantity} pcs  \n`;
 			}
 
 			const variantIds = Object.keys(variantQtyMap);
 
-			// get stock rows with lock
 			const stockRows = await db.product_variant_to_branch.findAll({
 				where: {
 					product_variant_id: {
@@ -254,21 +250,21 @@ async function updateOrderStatus(req) {
 			for (const stockRow of stockRows) {
 				const requiredQty = variantQtyMap[stockRow.product_variant_id];
 
-				// check stock availability
 				if (stockRow.stock < requiredQty) {
 					throw new ApiError(
 						httpStatus.BAD_REQUEST,
 						`Insufficient stock for variant ${stockRow.product_variant_id}`
 					);
 				}
-
-				// deduct stock
-				stockRow.stock -= requiredQty;
-				quantity += requiredQty;
-
-				await stockRow.save({ transaction });
 			}
+
+			const quantity = lockedItems.reduce(
+				(sum, item) => sum + item.quantity,
+				0
+			);
+
 			const courier_details = JSON.parse(order.courier_details);
+
 			if (
 				!courier_details ||
 				!courier_details.city ||
@@ -280,6 +276,7 @@ async function updateOrderStatus(req) {
 					'Complete shipping details are required to process order'
 				);
 			}
+
 			const booking = await createCCLBooking({
 				name: order.app_user_id
 					? order.app_user?.name
@@ -294,7 +291,7 @@ async function updateOrderStatus(req) {
 					null,
 				address: order.shipping_address,
 				instructions: req.body.instructions || null,
-				productDetails: productDetails,
+				productDetails,
 				quantity,
 				total: order.total,
 				payment_method: order.payment_method,
@@ -303,15 +300,49 @@ async function updateOrderStatus(req) {
 				weight: courier_details.weight,
 				shipmentService: courier_details.service,
 			});
+
 			order.courier_details = JSON.stringify({
 				...courier_details,
 				bookingId: booking.id,
 				trackingId: booking.tracking_number,
 			});
+
 			await sendInprocessEmailToUser(order, booking.tracking_number);
 		}
 
-		// 3️⃣ Update order status
+		// Revert stock when admin cancels an order (only from pending or in_progress)
+		if (
+			newStatus === 'cancelled' &&
+			['pending', 'in_progress'].includes(oldStatus)
+		) {
+			const itemsToRevert = await db.order_item.findAll({
+				where: { order_id: orderId },
+				transaction,
+				lock: transaction.LOCK.UPDATE,
+			});
+
+			for (const item of itemsToRevert) {
+				if (item.product_variant_id) {
+					await db.product_variant.increment('stock', {
+						by: item.quantity,
+						where: { id: item.product_variant_id },
+						transaction,
+					});
+					await db.product_variant_to_branch.increment('stock', {
+						by: item.quantity,
+						where: { product_variant_id: item.product_variant_id },
+						transaction,
+					});
+				} else if (item.product_id) {
+					await db.product.increment('stock', {
+						by: item.quantity,
+						where: { id: item.product_id },
+						transaction,
+					});
+				}
+			}
+		}
+
 		order.status = newStatus;
 
 		await order.save({ transaction });
@@ -324,13 +355,13 @@ async function updateOrderStatus(req) {
 		};
 	} catch (error) {
 		await transaction.rollback();
+
 		throw new ApiError(
 			httpStatus.INTERNAL_SERVER_ERROR,
 			error.message || 'Failed to update order status'
 		);
 	}
 }
-
 // run this function only when status change from pending to inprocess
 // third-party api to create booking
 async function createCCLBooking(data) {
