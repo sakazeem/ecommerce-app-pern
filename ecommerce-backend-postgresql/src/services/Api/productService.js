@@ -186,10 +186,10 @@ const getProducts = async (req) => {
 	const cacheKey = `products:base:${page}:${limit}:${filterQuery}`;
 
 	// 1. Check cache
-	const cached = await redisClient.get(cacheKey);
-	if (cached) {
-		return JSON.parse(cached);
-	}
+	// const cached = await redisClient.get(cacheKey);
+	// if (cached) {
+	// 	return JSON.parse(cached);
+	// }
 
 	const products = await db.product
 		.scope(
@@ -287,12 +287,12 @@ const getProducts = async (req) => {
 	};
 
 	// 2. Store in Redis (SHORT TTL because data changes often)
-	await redisClient.set(
-		cacheKey,
-		JSON.stringify(result),
-		'EX',
-		60 * 30 // 🔥 30 minutes only (important)
-	);
+	// await redisClient.set(
+	// 	cacheKey,
+	// 	JSON.stringify(result),
+	// 	'EX',
+	// 	60 * 30 // 🔥 30 minutes only (important)
+	// );
 
 	return result;
 
@@ -314,10 +314,10 @@ const getCategoryFilterProducts = async (req) => {
 	}`;
 
 	// 1. Check cache
-	const cached = await redisClient.get(cacheKey);
-	if (cached) {
-		return JSON.parse(cached);
-	}
+	// const cached = await redisClient.get(cacheKey);
+	// if (cached) {
+	// 	return JSON.parse(cached);
+	// }
 
 	const products = await db.product
 		.scope(
@@ -419,12 +419,12 @@ const getCategoryFilterProducts = async (req) => {
 	};
 
 	// 2. Store in Redis (short TTL recommended)
-	await redisClient.set(
-		cacheKey,
-		JSON.stringify(result),
-		'EX',
-		60 * 30 // 30 minutes
-	);
+	// await redisClient.set(
+	// 	cacheKey,
+	// 	JSON.stringify(result),
+	// 	'EX',
+	// 	60 * 30 // 30 minutes
+	// );
 	return result;
 	return {
 		total: products.count,
@@ -450,10 +450,10 @@ const getProductsForFilterPage = async (req) => {
 	)}`;
 
 	// 1. Check cache
-	const cached = await redisClient.get(cacheKey);
-	if (cached) {
-		return JSON.parse(cached);
-	}
+	// const cached = await redisClient.get(cacheKey);
+	// if (cached) {
+	// 	return JSON.parse(cached);
+	// }
 
 	const {
 		categoryIds,
@@ -585,12 +585,12 @@ const getProductsForFilterPage = async (req) => {
 		page,
 	};
 	// 2. Store in cache (IMPORTANT: short TTL recommended)
-	await redisClient.set(
-		cacheKey,
-		JSON.stringify(result),
-		'EX',
-		60 * 30 // 30 minutes (because filters change often)
-	);
+	// await redisClient.set(
+	// 	cacheKey,
+	// 	JSON.stringify(result),
+	// 	'EX',
+	// 	60 * 30 // 30 minutes (because filters change often)
+	// );
 	return result;
 	return {
 		total: products.count,
