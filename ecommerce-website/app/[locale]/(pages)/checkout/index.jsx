@@ -182,7 +182,7 @@ export default function CheckoutPage() {
 	}, 0);
 
 	const [shipping, setShipping] = useState(
-		subtotal > 0 ? (subtotal > 3000 ? 0 : 150) : 0,
+		subtotal > 0 ? (subtotal > 3000 ? 150 : 150) : 0,
 	);
 
 	const discount = voucher ? 0 : 0; // extend later
@@ -231,7 +231,9 @@ export default function CheckoutPage() {
 
 			const isKarachi =
 				normalizedCity.includes("karachi") || normalizedCity === "khi";
-			setShipping(subtotal > 3000 ? 0 : isKarachi ? 150 : 200);
+			setShipping(
+				subtotal > 3000 ? (isKarachi ? 150 : 200) : isKarachi ? 150 : 200,
+			);
 		}
 		setFormData((prev) => ({
 			...prev,
