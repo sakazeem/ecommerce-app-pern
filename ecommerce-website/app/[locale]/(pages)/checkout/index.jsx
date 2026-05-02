@@ -117,7 +117,8 @@ export default function CheckoutPage() {
 		email: user?.email || "",
 		name: user?.name || "",
 		phone: user?.phone || "",
-		city: "Karachi",
+		city: "",
+		// city: "Karachi",
 		address: "",
 		postalCode: "",
 		country: "Pakistan",
@@ -128,7 +129,8 @@ export default function CheckoutPage() {
 		country: "Pakistan",
 		name: user?.name || "",
 		address: "",
-		city: "Karachi",
+		city: "",
+		// city: "Karachi",
 		postalCode: "",
 		phone: user?.phone || "",
 	});
@@ -156,7 +158,7 @@ export default function CheckoutPage() {
 		setFormData((prev) => ({
 			...prev,
 			address: savedAddress.shipping?.address || "",
-			city: savedAddress.shipping?.city || "Karachi",
+			city: savedAddress.shipping?.city || "",
 			postalCode: savedAddress.shipping?.postal_code || "",
 			country: savedAddress.shipping?.country || "Pakistan",
 		}));
@@ -165,7 +167,7 @@ export default function CheckoutPage() {
 			setBillingAddress((prev) => ({
 				...prev,
 				address: savedAddress.billing?.address || "",
-				city: savedAddress.billing?.city || "Karachi",
+				city: savedAddress.billing?.city || "",
 				postalCode: savedAddress.billing?.postal_code || "",
 				country: savedAddress.billing?.country || "Pakistan",
 			}));
