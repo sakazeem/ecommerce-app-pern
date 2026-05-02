@@ -1145,7 +1145,8 @@ async function exportProducts(req, res) {
 				const inventoryDataLowStock = variants
 					.map((variant) => {
 						const sku = variant.sku;
-						const stock = variant.branches?.[0]?.pvb?.stock ?? 0;
+						const stock =
+							variant.branches?.[0]?.pvb?.low_stock ?? 0;
 						return `${sku}(${stock})`;
 					})
 					.join(', ');

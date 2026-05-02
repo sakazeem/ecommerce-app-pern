@@ -73,7 +73,7 @@ const orderConfirmationCustomerTemplate = ({
 									<td align="right">Rs ${subtotal}</td>
 								</tr>
 								<tr>
-									<td>Shipping</td>
+									<td>Shipping Fee</td>
 									<td align="right">Rs ${shipping}</td>
 								</tr>
 								<tr style="margin-top:8px;">

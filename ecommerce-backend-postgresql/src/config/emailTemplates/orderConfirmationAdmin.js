@@ -107,10 +107,10 @@ const orderConfirmationAdminTemplate = ({
 							<table width="100%" cellpadding="4" cellspacing="0">
 								<tr>
 									<td><strong>Payment Method:</strong></td>
-									<td align="right">${paymentMethod}</td>
+									<td align="right">${paymentMethod?.toLocaleUpperCase()}</td>
 								</tr>
 								<tr>
-									<td><strong>Shipping:</strong></td>
+									<td><strong>Shipping Free:</strong></td>
 									<td align="right">Rs ${shipping}</td>
 								</tr>
 								<tr style="margin-top:8px;">
