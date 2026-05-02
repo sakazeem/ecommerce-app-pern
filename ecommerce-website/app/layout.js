@@ -176,11 +176,20 @@ export default async function RootLayout({ children }) {
 					name="facebook-domain-verification"
 					content="7gy9rr0f107zjr8thk3ggeebs7v3ty"
 				/>
+				<Script id="gtm-head" strategy="afterInteractive">
+					{`
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-K72ZT6HR');
+  `}
+				</Script>
 				<Script
 					src="https://www.googletagmanager.com/gtag/js?id=G-V6M9W091WE"
-					strategy="lazyOnload"
+					strategy="afterInteractive"
 				/>
-				<Script id="google-analytics" strategy="lazyOnload">
+				<Script id="google-analytics" strategy="afterInteractive">
 					{`
 					window.dataLayer = window.dataLayer || [];
 					function gtag(){dataLayer.push(arguments);}
@@ -190,7 +199,7 @@ export default async function RootLayout({ children }) {
 				</Script>
 
 				{/* Meta Pixel */}
-				<Script id="meta-pixel" strategy="lazyOnload">
+				<Script id="meta-pixel" strategy="afterInteractive">
 					{`
             !function(f,b,e,v,n,t,s)
             {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -229,6 +238,13 @@ export default async function RootLayout({ children }) {
 						src="https://www.facebook.com/tr?id=1371248501158222&ev=PageView&noscript=1"
 					/>
 				</noscript> */}
+				<noscript>
+					<iframe
+						src="https://www.googletagmanager.com/ns.html?id=GTM-K72ZT6HR"
+						height="0"
+						width="0"
+						style={{ display: "none", visibility: "hidden" }}></iframe>
+				</noscript>
 				<RouteTrackerProvider />
 
 				{children}
