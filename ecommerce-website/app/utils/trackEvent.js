@@ -1,6 +1,6 @@
 export const trackEvent = (event, payload = {}) => {
-	if (typeof window === "undefined") return;
-	return;
+	// if (typeof window === "undefined") return;
+	// return;
 
 	// ---- Facebook Pixel ----
 	const fbEventsMapping = [
