@@ -854,7 +854,7 @@ export default function CheckoutPage() {
 										<BasePrice price={subtotal} />
 									</div>
 									<div className="flex justify-between">
-										<span>Shipping</span>
+										<span>Shipping Fee</span>
 										<BasePrice price={shipping} />
 									</div>
 									<hr />
