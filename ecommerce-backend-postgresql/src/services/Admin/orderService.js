@@ -323,11 +323,6 @@ async function updateOrderStatus(req) {
 
 			for (const item of itemsToRevert) {
 				if (item.product_variant_id) {
-					await db.product_variant.increment('stock', {
-						by: item.quantity,
-						where: { id: item.product_variant_id },
-						transaction,
-					});
 					await db.product_variant_to_branch.increment('stock', {
 						by: item.quantity,
 						where: { product_variant_id: item.product_variant_id },
