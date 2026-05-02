@@ -115,10 +115,15 @@ async function confirmOrder(req) {
 
 	try {
 		// Check global purchase limit per order
-		const globalSetting = await db.setting.findOne({ where: { name: 'globalSetting' } });
+		const globalSetting = await db.setting.findOne({
+			where: { name: 'globalSetting' },
+		});
 		const maxQtyPerOrder = globalSetting?.setting?.max_qty_per_order;
 		if (maxQtyPerOrder && maxQtyPerOrder > 0) {
-			const totalQty = items.reduce((sum, item) => sum + item.quantity, 0);
+			const totalQty = items.reduce(
+				(sum, item) => sum + item.quantity,
+				0
+			);
 			if (totalQty > maxQtyPerOrder) {
 				throw new ApiError(
 					httpStatus.BAD_REQUEST,
@@ -156,30 +161,29 @@ async function confirmOrder(req) {
 
 		for (const item of items) {
 			if (item.selectedVariant?.id) {
-				const variant = await db.product_variant.findOne({
-					where: { id: item.selectedVariant.id },
-					transaction,
-					lock: transaction.LOCK.UPDATE,
-				});
+				const variantBranch =
+					await db.product_variant_to_branch.findOne({
+						where: { product_variant_id: item.selectedVariant.id },
+						transaction,
+						lock: transaction.LOCK.UPDATE,
+					});
 
-				if (!variant) {
+				if (!variantBranch) {
 					throw new ApiError(
 						httpStatus.BAD_REQUEST,
 						`Variant not found for product ${item.title}`
 					);
 				}
 
-				if (variant.stock < item.quantity) {
+				if (variantBranch.stock < item.quantity) {
 					throw new ApiError(
 						httpStatus.BAD_REQUEST,
 						`Insufficient stock for ${item.title}`
 					);
 				}
 
-				await variant.update(
-					{
-						stock: variant.stock - item.quantity,
-					},
+				await variantBranch.update(
+					{ stock: variantBranch.stock - item.quantity },
 					{ transaction }
 				);
 			} else {
@@ -267,6 +271,7 @@ async function confirmOrder(req) {
 					// to: 'annasahmed1609@gmail.com',
 					// to: 'salmanazeemkhan@gmail.com',
 					// to: 'orders@babiesnbaba.com',
+					// to: 'devsts26@gmail.com',
 					to:
 						config.env === 'development'
 							? 'annasahmed1609@gmail.com'
