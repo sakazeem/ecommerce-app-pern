@@ -114,6 +114,24 @@ async function confirmOrder(req) {
 	const transaction = await db.sequelize.transaction();
 
 	try {
+		// Check global purchase limit per order
+		const globalSetting = await db.setting.findOne({
+			where: { name: 'globalSetting' },
+		});
+		const maxQtyPerOrder = globalSetting?.setting?.max_qty_per_order;
+		if (maxQtyPerOrder && maxQtyPerOrder > 0) {
+			const totalQty = items.reduce(
+				(sum, item) => sum + item.quantity,
+				0
+			);
+			if (totalQty > maxQtyPerOrder) {
+				throw new ApiError(
+					httpStatus.BAD_REQUEST,
+					`Order exceeds the maximum allowed quantity of ${maxQtyPerOrder} items per order`
+				);
+			}
+		}
+
 		const createdOrder = await db.order.create(data, {
 			transaction,
 		});
@@ -140,6 +158,63 @@ async function confirmOrder(req) {
 		await db.order_item.bulkCreate(orderItemsData, {
 			transaction,
 		});
+
+		for (const item of items) {
+			if (item.selectedVariant?.id) {
+				const variantBranch =
+					await db.product_variant_to_branch.findOne({
+						where: { product_variant_id: item.selectedVariant.id },
+						transaction,
+						lock: transaction.LOCK.UPDATE,
+					});
+
+				if (!variantBranch) {
+					throw new ApiError(
+						httpStatus.BAD_REQUEST,
+						`Variant not found for product ${item.title}`
+					);
+				}
+
+				if (variantBranch.stock < item.quantity) {
+					throw new ApiError(
+						httpStatus.BAD_REQUEST,
+						`Insufficient stock for ${item.title}`
+					);
+				}
+
+				await variantBranch.update(
+					{ stock: variantBranch.stock - item.quantity },
+					{ transaction }
+				);
+			} else {
+				const product = await db.product.findOne({
+					where: { id: item.id },
+					transaction,
+					lock: transaction.LOCK.UPDATE,
+				});
+
+				if (!product) {
+					throw new ApiError(
+						httpStatus.BAD_REQUEST,
+						`Product not found: ${item.title}`
+					);
+				}
+
+				if (product.stock < item.quantity) {
+					throw new ApiError(
+						httpStatus.BAD_REQUEST,
+						`Insufficient stock for ${item.title}`
+					);
+				}
+
+				await product.update(
+					{
+						stock: product.stock - item.quantity,
+					},
+					{ transaction }
+				);
+			}
+		}
 
 		const orderId = createdOrder.tracking_id;
 
@@ -196,6 +271,7 @@ async function confirmOrder(req) {
 					// to: 'annasahmed1609@gmail.com',
 					// to: 'salmanazeemkhan@gmail.com',
 					// to: 'orders@babiesnbaba.com',
+					// to: 'devsts26@gmail.com',
 					to:
 						config.env === 'development'
 							? 'annasahmed1609@gmail.com'
