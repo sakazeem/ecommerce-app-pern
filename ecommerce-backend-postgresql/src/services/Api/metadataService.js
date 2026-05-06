@@ -342,7 +342,7 @@ async function getNavCategories(req) {
 				'ASC',
 			],
 		],
-		limit: 9,
+		// limit: 9,
 	});
 	// 3. Store in Redis (TTL: 1 hour)
 	await redisClient.set(cacheKey, JSON.stringify(categories), 'EX', 60 * 60);
