@@ -234,7 +234,7 @@ export default function CheckoutPage() {
 			const isKarachi =
 				normalizedCity.includes("karachi") || normalizedCity === "khi";
 			setShipping(
-				subtotal > 3000 ? (isKarachi ? 150 : 200) : isKarachi ? 150 : 200,
+				subtotal > 3000 ? (isKarachi ? 150 : 220) : isKarachi ? 150 : 220,
 			);
 		}
 		setFormData((prev) => ({
