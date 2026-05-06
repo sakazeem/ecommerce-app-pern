@@ -10,6 +10,7 @@ const db = require('../../db/models');
 const ApiError = require('../../utils/ApiError');
 const { sendEmail } = require('../email.service');
 const { addOrUpdateAddress } = require('./appUserService');
+const { notificationService } = require('../Admin');
 const config = require('../../config/config');
 const { imageService } = require('../index.js');
 const { default: axios } = require('axios');
@@ -182,10 +183,20 @@ async function confirmOrder(req) {
 					);
 				}
 
+				const newVariantStock = variantBranch.stock - item.quantity;
 				await variantBranch.update(
-					{ stock: variantBranch.stock - item.quantity },
+					{ stock: newVariantStock },
 					{ transaction }
 				);
+				if (newVariantStock <= variantBranch.low_stock) {
+					notificationService
+						.addNotification({
+							message: `Low stock alert: "${item.title}" has only ${newVariantStock} units left.`,
+							image: item.thumbnail || null,
+							productId: item.id,
+						})
+						.catch(() => {});
+				}
 			} else {
 				const product = await db.product.findOne({
 					where: { id: item.id },
@@ -207,12 +218,22 @@ async function confirmOrder(req) {
 					);
 				}
 
+				const newProductStock = product.stock - item.quantity;
 				await product.update(
 					{
-						stock: product.stock - item.quantity,
+						stock: newProductStock,
 					},
 					{ transaction }
 				);
+				if (newProductStock <= (product.low_stock ?? 10)) {
+					notificationService
+						.addNotification({
+							message: `Low stock alert: "${item.title}" has only ${newProductStock} units left.`,
+							image: item.thumbnail || null,
+							productId: item.id,
+						})
+						.catch(() => {});
+				}
 			}
 		}
 

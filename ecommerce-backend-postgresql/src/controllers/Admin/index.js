@@ -21,3 +21,4 @@ module.exports.adminAppUserController = require('./appUserController');
 module.exports.adminRoleController = require('./roleController');
 module.exports.adminPermissionController = require('./permissionController');
 module.exports.adminDashboardController = require('./dashboardController');
+module.exports.notificationController = require('./notificationController');
