@@ -247,16 +247,16 @@ async function updateOrderStatus(req) {
 				lock: transaction.LOCK.UPDATE,
 			});
 
-			for (const stockRow of stockRows) {
-				const requiredQty = variantQtyMap[stockRow.product_variant_id];
+			// for (const stockRow of stockRows) {
+			// 	const requiredQty = variantQtyMap[stockRow.product_variant_id];
 
-				if (stockRow.stock < requiredQty) {
-					throw new ApiError(
-						httpStatus.BAD_REQUEST,
-						`Insufficient stock for variant ${stockRow.product_variant_id}`
-					);
-				}
-			}
+			// 	if (stockRow.stock < requiredQty) {
+			// 		throw new ApiError(
+			// 			httpStatus.BAD_REQUEST,
+			// 			`Insufficient stock for variant ${stockRow.product_variant_id}`
+			// 		);
+			// 	}
+			// }
 
 			const quantity = lockedItems.reduce(
 				(sum, item) => sum + item.quantity,
