@@ -580,10 +580,235 @@ async function exportOrders(req, res) {
 	return res.send(buffer);
 }
 
+async function updateOrderDetails(req) {
+	const { orderId } = req.params;
+	const {
+		guest_first_name,
+		guest_last_name,
+		guest_email,
+		guest_phone,
+		shipping_address,
+		shipping_apartment,
+		shipping_city,
+		shipping_country,
+		shipping_postal_code,
+		shipping,
+		order_items,
+		add_items,
+		remove_item_ids,
+	} = req.body;
+
+	const transaction = await db.sequelize.transaction();
+
+	try {
+		const order = await db.order.findByPk(orderId, {
+			transaction,
+			lock: transaction.LOCK.UPDATE,
+		});
+		if (!order) throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
+
+		const orderUpdates = {};
+		if (guest_first_name !== undefined)
+			orderUpdates.guest_first_name = guest_first_name;
+		if (guest_last_name !== undefined)
+			orderUpdates.guest_last_name = guest_last_name;
+		if (guest_email !== undefined) orderUpdates.guest_email = guest_email;
+		if (guest_phone !== undefined) orderUpdates.guest_phone = guest_phone;
+		if (shipping_address !== undefined)
+			orderUpdates.shipping_address = shipping_address;
+		if (shipping_apartment !== undefined)
+			orderUpdates.shipping_apartment = shipping_apartment;
+		if (shipping_city !== undefined)
+			orderUpdates.shipping_city = shipping_city;
+		if (shipping_country !== undefined)
+			orderUpdates.shipping_country = shipping_country;
+		if (shipping_postal_code !== undefined)
+			orderUpdates.shipping_postal_code = shipping_postal_code;
+
+		if (shipping !== undefined) {
+			const newShipping = parseFloat(shipping);
+			const currentOrderAmount = parseFloat(order.order_amount);
+			orderUpdates.shipping = newShipping;
+			orderUpdates.total = currentOrderAmount + newShipping;
+		}
+
+		const adjustStock = async (item, diff) => {
+			if (item.product_variant_id) {
+				if (diff > 0) {
+					const stock = await db.product_variant_to_branch.findOne({
+						where: { product_variant_id: item.product_variant_id },
+						transaction,
+					});
+					if (stock && stock.stock < diff)
+						throw new ApiError(
+							httpStatus.BAD_REQUEST,
+							`Insufficient stock for ${item.product_title}. Available: ${stock.stock}`
+						);
+					await db.product_variant_to_branch.decrement('stock', {
+						by: diff,
+						where: { product_variant_id: item.product_variant_id },
+						transaction,
+					});
+				} else {
+					await db.product_variant_to_branch.increment('stock', {
+						by: Math.abs(diff),
+						where: { product_variant_id: item.product_variant_id },
+						transaction,
+					});
+				}
+			} else if (item.product_id) {
+				if (diff > 0) {
+					const product = await db.product.findByPk(item.product_id, {
+						transaction,
+					});
+					if (product && product.stock < diff)
+						throw new ApiError(
+							httpStatus.BAD_REQUEST,
+							`Insufficient stock for ${item.product_title}. Available: ${product.stock}`
+						);
+					await db.product.decrement('stock', {
+						by: diff,
+						where: { id: item.product_id },
+						transaction,
+					});
+				} else {
+					await db.product.increment('stock', {
+						by: Math.abs(diff),
+						where: { id: item.product_id },
+						transaction,
+					});
+				}
+			}
+		};
+
+		if (remove_item_ids && remove_item_ids.length > 0) {
+			for (const itemId of remove_item_ids) {
+				const item = await db.order_item.findOne({
+					where: { id: itemId, order_id: orderId },
+					transaction,
+					lock: transaction.LOCK.UPDATE,
+				});
+				if (!item)
+					throw new ApiError(
+						httpStatus.NOT_FOUND,
+						`Order item ${itemId} not found`
+					);
+				await adjustStock(item, -item.quantity);
+				await item.destroy({ transaction });
+			}
+		}
+
+		if (add_items && add_items.length > 0) {
+			for (const {
+				product_id,
+				product_variant_id,
+				sku,
+				product_title,
+				price,
+				quantity,
+			} of add_items) {
+				if (!quantity || quantity < 1)
+					throw new ApiError(
+						httpStatus.BAD_REQUEST,
+						`Invalid quantity for new item`
+					);
+				await adjustStock(
+					{ product_id, product_variant_id, product_title },
+					quantity
+				);
+				await db.order_item.create(
+					{
+						order_id: orderId,
+						product_id: product_id || null,
+						product_variant_id: product_variant_id || null,
+						sku,
+						product_title,
+						price: parseFloat((price * quantity).toFixed(2)),
+						quantity,
+					},
+					{ transaction }
+				);
+			}
+		}
+
+		if (order_items && order_items.length > 0) {
+			for (const { id: itemId, quantity: newQty } of order_items) {
+				if (!Number.isInteger(newQty) || newQty < 1)
+					throw new ApiError(
+						httpStatus.BAD_REQUEST,
+						`Invalid quantity for item ${itemId}`
+					);
+				const item = await db.order_item.findOne({
+					where: { id: itemId, order_id: orderId },
+					transaction,
+					lock: transaction.LOCK.UPDATE,
+				});
+				if (!item)
+					throw new ApiError(
+						httpStatus.NOT_FOUND,
+						`Order item ${itemId} not found`
+					);
+				const diff = newQty - item.quantity;
+				if (diff !== 0) {
+					await adjustStock(item, diff);
+					const unitPrice = parseFloat(item.price) / item.quantity;
+					await item.update(
+						{
+							quantity: newQty,
+							price: parseFloat((unitPrice * newQty).toFixed(2)),
+						},
+						{ transaction }
+					);
+				}
+			}
+		}
+
+		const itemsChanged =
+			(order_items?.length || 0) +
+				(remove_item_ids?.length || 0) +
+				(add_items?.length || 0) >
+			0;
+		if (itemsChanged) {
+			const allItems = await db.order_item.findAll({
+				where: { order_id: orderId },
+				transaction,
+			});
+			const newOrderAmount = allItems.reduce(
+				(sum, i) => sum + parseFloat(i.price),
+				0
+			);
+			orderUpdates.order_amount = parseFloat(newOrderAmount.toFixed(2));
+			const shippingFee =
+				orderUpdates.shipping !== undefined
+					? parseFloat(orderUpdates.shipping)
+					: parseFloat(order.shipping);
+			orderUpdates.total = parseFloat(
+				(newOrderAmount + shippingFee).toFixed(2)
+			);
+		}
+
+		if (Object.keys(orderUpdates).length > 0) {
+			await order.update(orderUpdates, { transaction });
+		}
+
+		await transaction.commit();
+		return { success: true };
+	} catch (error) {
+		await transaction.rollback();
+		throw error instanceof ApiError
+			? error
+			: new ApiError(
+					httpStatus.INTERNAL_SERVER_ERROR,
+					error.message || 'Failed to update order'
+			  );
+	}
+}
+
 module.exports = {
 	getOrderById,
 	getAllOrders,
 	exportOrders,
 	updateOrderStatus,
 	updateOrderId,
+	updateOrderDetails,
 };

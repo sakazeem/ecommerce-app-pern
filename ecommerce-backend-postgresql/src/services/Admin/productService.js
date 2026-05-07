@@ -124,6 +124,13 @@ const productService = createBaseService(db.product, {
 async function getProductTitlesOnly(req) {
 	return await db.product_translation.findAll({
 		attributes: ['product_id', 'title'],
+		include: [
+			{
+				model: db.product,
+				attributes: ['sku'],
+				required: false,
+			},
+		],
 	});
 }
 

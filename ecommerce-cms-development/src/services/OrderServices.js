@@ -23,6 +23,10 @@ const OrderServices = {
     return requests.post("/order", body);
   },
 
+  updateOrderDetails: async (id, body) => {
+    return requests.patch(`/order/${id}/details`, body);
+  },
+
   updateOrder: async (id, body) => {
     return requests.patch(`/order/${id}`, body);
   },
