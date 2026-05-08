@@ -360,14 +360,16 @@ const ProductCard = ({ product }) => {
 						<div className="flex-1 flex flex-col gap-0.5">
 							<PrimaryButton
 								isSmall
-								// disabled={isOutOfStock}
+								disabled={isOutOfStock}
 								onClick={() => {
 									setViewShopNowModalOpen(true);
 								}}
-								className="w-full mt-4 flex items-center justify-between gap-2 bg-transparent border-secondary hover:border-primary text-secondary border"
+								className="w-full mt-4 flex items-center justify-between gap-2 bg-primary disabled:bg-transparent border-primary hover:border-secondary text-white border"
 								justifyContent="justify-between"
-								hoverBgColor={"bg-primary"}
-								borderColor="bg-primary">
+								hoverBgColor={isOutOfStock ? "bg-gray-400" : "bg-secondary"}
+								borderColor="bg-primary"
+								
+								>
 								{"Shop Now"}
 								<ShoppingBagIcon
 									style={{
