@@ -20,7 +20,7 @@ const Brand = () => {
 	const { toggleDrawer, lang } = useContext(SidebarContext);
 	const [page, setPage] = useState(1);
 	const [filters, setFilters] = useState({});
-	const limit = 10;
+	const [limit, setLimit] = useState(10);
 	const {
 		data: brandsData,
 		loading,
@@ -30,7 +30,7 @@ const Brand = () => {
 			BrandServices.getAllBrands(
 				`limit=${limit}&page=${page}${filters.search ? `&search=${filters.search}` : ""}`,
 			),
-		[page, filters],
+		[page, filters, limit],
 	);
 	const toggleDrawerData = useToggleDrawer();
 	const { serviceId } = toggleDrawerData;
@@ -67,7 +67,8 @@ const Brand = () => {
 				loading={loading}
 				error={error}
 				data={brandsData}
-				onPageChange={setPage}>
+				onPageChange={setPage}
+				onLimitChange={setLimit}>
 				<Table>
 					<TableHeader>
 						<tr>
