@@ -13,6 +13,7 @@ const createCategory = {
 					description: Joi.string().allow(null),
 					slug: Joi.string().custom(validateSlug).required(),
 					language_id: Joi.number().integer().required(),
+					tag: Joi.string().allow(null),
 				})
 			)
 			.min(1)
@@ -35,6 +36,7 @@ const updateCategory = {
 					description: Joi.string().allow(null),
 					slug: Joi.string().custom(validateSlug).required(),
 					language_id: Joi.number().integer().required(),
+					tag: Joi.string().allow(null),
 				})
 			)
 			// .min(1)

@@ -39,6 +39,10 @@ module.exports = (sequelize, DataTypes) => {
 				type: DataTypes.STRING,
 				allowNull: false,
 			},
+			tag: {
+				type: DataTypes.STRING,
+				allowNull: true,
+			},
 		},
 		{
 			tableName: 'category_translation',

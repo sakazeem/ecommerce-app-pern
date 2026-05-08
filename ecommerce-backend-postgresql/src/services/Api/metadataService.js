@@ -301,7 +301,7 @@ async function getNavCategories(req) {
 							{
 								model: db.category_translation,
 								as: 'translations',
-								attributes: ['title', 'slug'],
+								attributes: ['title', 'slug', 'tag'],
 								include: [translationInclude(req)],
 							},
 						],
@@ -317,7 +317,7 @@ async function getNavCategories(req) {
 			{
 				model: db.category_translation,
 				as: 'translations',
-				attributes: ['title', 'slug'],
+				attributes: ['title', 'slug', 'tag'],
 				include: [translationInclude(req)],
 			},
 		],
@@ -344,6 +344,7 @@ async function getNavCategories(req) {
 		],
 		// limit: 9,
 	});
+
 	// 3. Store in Redis (TTL: 1 hour)
 	await redisClient.set(cacheKey, JSON.stringify(categories), 'EX', 60 * 60);
 	return categories;
