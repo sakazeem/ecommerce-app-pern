@@ -740,7 +740,7 @@ const OrderDetailsDrawer = ({ id }) => {
           </SectionCard>
 
           {/* Order Items */}
-          <div className="bg-white dark:bg-customGray-800 rounded-xl border border-gray-200 dark:border-customGray-600 shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-customGray-800 rounded-xl border border-gray-200 dark:border-customGray-600 shadow-sm">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-customGray-600">
               <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
                 Order Items ({orderDetails.order_items?.length || 0})
