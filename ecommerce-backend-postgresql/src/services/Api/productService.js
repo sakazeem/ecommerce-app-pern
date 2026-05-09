@@ -319,13 +319,19 @@ const getCategoryFilterProducts = async (req) => {
 	// 	return JSON.parse(cached);
 	// }
 
+	const isMixed = filterQuery === 'mixed';
+
+	// For mixed: fetch 4× more so after per-category deduplication
+	// we still have enough products to fill the requested limit
+	const fetchLimit = isMixed ? limit * 4 : limit;
+
 	const products = await db.product
 		.scope(
 			{ method: ['active'] } // active scope with params
 		)
 		.findAndCountAll({
 			offset,
-			limit,
+			limit: fetchLimit, // inflated only for mixed, unchanged for everything else
 			order: filterQuery ? db.sequelize.random() : [['id', 'DESC']],
 			attributes: [
 				'id',
@@ -355,34 +361,15 @@ const getCategoryFilterProducts = async (req) => {
 				// --- PRODUCT VARIANTS & ATTRIBUTE FILTER ---
 				{
 					model: db.product_variant,
-					// required: false,
 					required: false,
 					attributes: ['id', 'sku'],
 					include: [
-						// {
-						// 	model: db.product_variant_to_attribute,
-						// 	as: 'product_variant_to_attributes', // must match the alias above
-						// 	required: false,
-						// 	attributes: ['id', 'attribute_id', 'value'],
-						// 	include: [
-						// 		{
-						// 			model: db.attribute,
-						// 			required: false,
-						// 			attributes: ['name'],
-						// 		},
-						// 	],
-						// },
 						{
 							model: db.branch,
 							required: false,
 							through: {
 								as: 'pvb',
 							},
-							// attributes: [
-							// 	'stock',
-							// 	'sale_price',
-							// 	'discount_percentage',
-							// ],
 						},
 					],
 				},
@@ -411,9 +398,37 @@ const getCategoryFilterProducts = async (req) => {
 			col: 'id', // to fix count
 		});
 
+	// ── Mixed deduplication ───────────────────────────────────────────────────
+	// Keep only the first product seen per category so every item in the
+	// returned list belongs to a different category. Products with no category
+	// are each treated as their own unique bucket (keyed by product id).
+	let records = products.rows;
+
+	if (isMixed) {
+		const seenCategories = new Set();
+		const dedupedRecords = [];
+
+		for (const product of products.rows) {
+			// categories is the Sequelize association populated by the include above
+			const categoryId = product.categories?.[0]?.id;
+			const key =
+				categoryId != null ? `cat_${categoryId}` : `prod_${product.id}`;
+
+			if (!seenCategories.has(key)) {
+				seenCategories.add(key);
+				dedupedRecords.push(product);
+			}
+
+			if (dedupedRecords.length >= limit) break;
+		}
+
+		records = dedupedRecords;
+	}
+	// ─────────────────────────────────────────────────────────────────────────
+
 	const result = {
 		total: products.count,
-		records: products.rows,
+		records,
 		limit,
 		page,
 	};
@@ -425,15 +440,8 @@ const getCategoryFilterProducts = async (req) => {
 	// 	'EX',
 	// 	60 * 30 // 30 minutes
 	// );
-	return result;
-	return {
-		total: products.count,
-		records: products.rows,
-		limit: limit,
-		page: page,
-	};
 
-	return products;
+	return result;
 };
 const getProductsForFilterPage = async (req) => {
 	const { page: defaultPage, limit: defaultLimit } = config.pagination;

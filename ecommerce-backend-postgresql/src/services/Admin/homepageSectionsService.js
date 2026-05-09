@@ -20,8 +20,8 @@ async function updateSection(req) {
 }
 
 async function getHomepageSections(req) {
+	// No status filter — CMS shows all sections including hidden ones
 	const sections = await db.homepage_sections.findAll({
-		where: { status: true },
 		order: [['position', 'ASC']],
 		raw: true,
 	});
@@ -111,6 +111,7 @@ async function getHomepageSections(req) {
 			type: section.type,
 			title: section.title,
 			position: section.position,
+			status: section.status, // included so CMS knows which sections are hidden
 			config,
 		};
 	});
