@@ -79,7 +79,7 @@ const DraggableSection = ({
     }
   };
 
-  const isHidden = section.config?.hidden === true;
+  const isHidden = section.status === false;
 
   return (
     <div
@@ -172,9 +172,7 @@ const Homepage = () => {
   const handleToggleVisibility = (index) => {
     setSections((prev) =>
       prev.map((s, i) =>
-        i === index
-          ? { ...s, config: { ...s.config, hidden: !s.config?.hidden } }
-          : s,
+        i === index ? { ...s, status: s.status === false ? true : false } : s,
       ),
     );
   };
@@ -240,18 +238,23 @@ const Homepage = () => {
     setLoading(true);
     try {
       await Promise.all(
-        sections.map((sec) => {
-          if (sec.title && typeof sec.title === "string")
-            sec.title = { en: sec.title };
-          if (`${sec.id}`.includes("_uuid4")) {
-            const { id, ...payload } = sec;
-            return HomepageSectionsServices.addHomepageSection(payload);
+        sections.map((sec, i) => {
+          const payload = { ...sec, position: i + 1 };
+          if (payload.title && typeof payload.title === "string")
+            payload.title = { en: payload.title };
+          if (`${payload.id}`.includes("_uuid4")) {
+            const { id, ...rest } = payload;
+            return HomepageSectionsServices.addHomepageSection(rest);
           }
-          return HomepageSectionsServices.updateHomepageSection(sec.id, sec);
+          return HomepageSectionsServices.updateHomepageSection(
+            payload.id,
+            payload,
+          );
         }),
       );
       toast.success("Homepage sections saved!");
       setRefreshKey((prev) => !prev);
+      setOrderChanged(false);
     } catch (err) {
       console.error(err);
     } finally {

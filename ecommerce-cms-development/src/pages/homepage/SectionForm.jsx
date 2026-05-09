@@ -191,7 +191,7 @@ const SectionForm = ({
     },
   }[section.type];
 
-  const isHidden = section.config?.hidden === true;
+  const isHidden = section.status === false;
 
   return (
     <div className="space-y-6">
@@ -658,6 +658,7 @@ const SectionForm = ({
               >
                 <option value="">📂 Select Category</option>
                 <option value="best-selling">🏆 Best Selling</option>
+                <option value="mixed">🔀 Mixed Products</option>
                 <option value="sale">💰 Sale</option>
                 <option value="trending">🔥 Trending</option>
                 {categories.map((cat) => (
