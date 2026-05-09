@@ -848,6 +848,7 @@ export default function CheckoutPage() {
 							Apply
 						</button>
 					</div> */}
+								{/* Delivery Timeline */}
 
 								{/* Totals */}
 								<div className="space-y-2 p4">
@@ -864,6 +865,12 @@ export default function CheckoutPage() {
 										<span>Total</span>
 										<BasePrice price={total} />
 									</h4>
+								</div>
+								<div className="mt-6 p-4 bg-white border rounded-md text-sm text-gray-700">
+									<h4 className="font-semibold mb-2">Delivery Timeline</h4>
+									<p>Karachi: 1–3 working days</p>
+									<p>Major Cities: 2–4 working days</p>
+									<p>Other Areas in Pakistan: 3–6 working days</p>
 								</div>
 							</div>
 						)}
