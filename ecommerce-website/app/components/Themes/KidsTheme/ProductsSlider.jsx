@@ -10,7 +10,7 @@ import { useMemo } from "react";
 const ProductsSlider = ({
 	title = "",
 	slug = "",
-	columns = "grid-cols-4",
+	columns = "grid-cols-5",
 	productsData = [],
 	isSlider = "both", //onlyMobile
 	showTitle = true,
