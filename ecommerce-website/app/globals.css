@@ -53,11 +53,11 @@
 }
 
 body {
-  background-image: url('assets/themes/kidsTheme/background-pattern.webp');
-  background-repeat: repeat;
-  background-size: contain;
-  font-family: var(--font-champagne);
-  scroll-behavior: smooth;
+	background-image: url("assets/themes/kidsTheme/background-pattern.webp");
+	background-repeat: repeat;
+	background-size: contain;
+	font-family: var(--font-champagne);
+	scroll-behavior: smooth;
 }
 h1,
 h2,
@@ -435,7 +435,21 @@ body,
 }
 
 @media (max-width: 767px) {
-  .reel-play-btn-overlay {
-    display: none !important;
-  }
+	.reel-play-btn-overlay {
+		display: none !important;
+	}
+}
+
+@keyframes blink {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0;
+	}
+}
+
+.animate-blink {
+	animation: blink 1s infinite;
 }

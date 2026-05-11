@@ -71,7 +71,7 @@ const NavigationMenu = ({ isMenuOpen, setIsMenuOpen }) => {
 						onMouseEnter={() => setActiveMenu(index)}
 						onMouseLeave={() => setActiveMenu(null)}>
 						{item.tag ? (
-							<span className="absolute -top-4.5 -right-4 bg-secondary text-light text-sm px-3 py-0.25 rounded-full">
+							<span className="absolute -top-4.5 -right-4 bg-secondary text-light text-sm px-3 py-0.25 rounded-full animate-blink ">
 								{item.tag}
 							</span>
 						) : null}
