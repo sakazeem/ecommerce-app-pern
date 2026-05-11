@@ -1,9 +1,11 @@
 "use client";
 
 import { useFetchReactQuery } from "@/app/hooks/useFetchReactQuery";
+import { useAuth } from "@/app/providers/AuthProvider";
 import { useStore } from "@/app/providers/StoreProvider";
 import ProductServices from "@/app/services/ProductServices";
 import { useCartStore } from "@/app/store/cartStore";
+import { useAuthUIStore } from "@/app/store/useAuthUIStore";
 import {
 	Dialog,
 	DialogPanel,
@@ -15,12 +17,8 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import BasePrice from "../BaseComponents/BasePrice";
 import PrimaryButton from "./PrimaryButton";
-import ProductImageSliderWithoutThumbnails from "./ProductImageSliderWithoutThumbnails";
 import SocialShare from "./SocialShare";
 import SpinLoader from "./SpinLoader";
-import { useAuthUIStore } from "@/app/store/useAuthUIStore";
-import { trackEvent } from "@/app/utils/trackEvent";
-import { useAuth } from "@/app/providers/AuthProvider";
 
 export default function QuickShopModal({ isOpen, onClose, slug }) {
 	const [quantity, setQuantity] = useState(1);
@@ -54,14 +52,6 @@ export default function QuickShopModal({ isOpen, onClose, slug }) {
 		// 	(product.base_price || product.price) *
 		// 	(1 - (product.discount || product.base_discount_percentage) / 100)
 		// ).toFixed(2);
-
-		trackEvent("ViewContent", {
-			content_ids: [product.id],
-			content_name: product.title,
-			sku: product.sku,
-			value: discountedPrice,
-			currency: "PKR",
-		});
 
 		const attributeMap = {};
 		product.variants?.forEach((variant) => {
