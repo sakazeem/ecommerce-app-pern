@@ -23,10 +23,16 @@ const exportOrders = catchAsync(async (req, res) => {
 	await adminOrderService.exportOrders(req, res);
 });
 
+const updateOrderDetails = catchAsync(async (req, res) => {
+	const result = await adminOrderService.updateOrderDetails(req);
+	res.send(result);
+});
+
 module.exports = {
 	getOrderById,
 	getOrders,
 	updateOrderStatus,
 	updateOrderId,
+	updateOrderDetails,
 	exportOrders,
 };
