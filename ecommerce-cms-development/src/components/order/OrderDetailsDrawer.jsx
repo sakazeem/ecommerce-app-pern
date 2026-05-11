@@ -673,11 +673,11 @@ const OrderDetailsDrawer = ({ id }) => {
                 <InfoRow label="Name" value={displayName} />
                 <InfoRow
                   label="Email"
-                  value={orderDetails.user?.email || orderDetails.guest_email}
+                  value={orderDetails.guest_email || orderDetails.user?.email}
                 />
                 <InfoRow
                   label="Phone"
-                  value={orderDetails.user?.phone || orderDetails.guest_phone}
+                  value={orderDetails.guest_phone || orderDetails.user?.phone}
                 />
               </div>
             )}
