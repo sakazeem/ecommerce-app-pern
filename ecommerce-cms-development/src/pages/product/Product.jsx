@@ -26,7 +26,7 @@ const Product = () => {
 	const [filters, setFilters] = useState({});
 	const [exportLoading, setExportLoading] = useState(false);
 	const [stockSortOrder, setStockSortOrder] = useState(null);
-	const limit = 8;
+	const [limit, setLimit] = useState(8);
 	const {
 		data: productsData,
 		loading,
@@ -151,7 +151,8 @@ const Product = () => {
 				loading={loading}
 				error={error}
 				data={productsData}
-				onPageChange={setPage}>
+				onPageChange={setPage}
+				onLimitChange={setLimit}>
 				<Table>
 					<TableHeader>
 						<tr>

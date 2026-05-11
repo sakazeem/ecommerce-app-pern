@@ -380,7 +380,9 @@ export default function CheckoutPage() {
 				}
 			})
 			.catch((err) => {
-				toast.error("Something went wrong while placing the order.");
+				toast.error(
+					err?.message || "Something went wrong while placing the order.",
+				);
 				console.error("ORDER ERROR", err);
 				logActivity({
 					eventType: "order_failed",

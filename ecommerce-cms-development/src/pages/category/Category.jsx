@@ -20,7 +20,7 @@ const Category = () => {
 	const { toggleDrawer, lang } = useContext(SidebarContext);
 	const [page, setPage] = useState(1);
 	const [filters, setFilters] = useState({});
-	const limit = 10;
+	const [limit, setLimit] = useState(10);
 	const {
 		data: categoriesData,
 		loading,
@@ -30,7 +30,7 @@ const Category = () => {
 			CategoryServices.getAllCategory(
 				`limit=${limit}&page=${page}${filters.search ? `&search=${filters.search}` : ""}`,
 			),
-		[page, filters],
+		[page, filters, limit],
 	);
 
 	const { t } = useTranslation();
@@ -67,7 +67,8 @@ const Category = () => {
 				loading={loading}
 				error={error}
 				data={categoriesData}
-				onPageChange={setPage}>
+				onPageChange={setPage}
+				onLimitChange={setLimit}>
 				<Table>
 					<TableHeader>
 						<tr>
