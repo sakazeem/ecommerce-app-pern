@@ -26,7 +26,7 @@ const NavigationMenu = ({ isMenuOpen, setIsMenuOpen }) => {
 	return (
 		<nav className="bg-primary text-light shadow-sm overflow-auto/">
 			{/* Desktop Nav */}
-			<ul className="hidden sm:flex flex-wrap items-center justify-between gap-4 pt-4 container-layout">
+			<ul className="hidden sm:flex flex-wrap items-center justify-between gap-4 pt-6 pb-2 container-layout">
 				<li
 					className={`
 						relative pb-4
@@ -66,9 +66,15 @@ const NavigationMenu = ({ isMenuOpen, setIsMenuOpen }) => {
 						hover:after:scale-x-100
 						hover:after:scale-x-100/
 						${activeMenu === index ? "after:scale-x-100" : ""}
+						relative
 					`}
 						onMouseEnter={() => setActiveMenu(index)}
 						onMouseLeave={() => setActiveMenu(null)}>
+						{item.tag ? (
+							<span className="absolute -top-4.5 -right-4 bg-secondary text-light text-sm px-3 py-0.25 rounded-full">
+								{item.tag}
+							</span>
+						) : null}
 						<BaseLink
 							href={`${item.to || `/products?category=${item.slug}`}`}
 							className="uppercase px-4 py-1 rounded-full transition">
@@ -79,7 +85,7 @@ const NavigationMenu = ({ isMenuOpen, setIsMenuOpen }) => {
 							<div
 								className={`
 								absolute
-								top-10
+								top-12
 								${index > 3 ? "right-0" : "left-0"}
 								min-w-140
 								text-primary

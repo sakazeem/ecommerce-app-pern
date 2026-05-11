@@ -18,6 +18,7 @@ function createBaseService(model, options = {}) {
 		includes = [],
 		translationModel = null, // <-- NEW: pass translation model
 		translationForeignKey = null, // <-- e.g. "parent_category_id"
+		isTagColumn = false, // <-- to handle tag field in category translation
 	} = options;
 
 	const getLang = (req) =>
@@ -84,6 +85,7 @@ function createBaseService(model, options = {}) {
 						title: t.title,
 						description: t.description || null,
 						slug: t.slug,
+						...(isTagColumn ? { tag: t.tag || null } : {}),
 					}));
 					await translationModel.bulkCreate(translations, {
 						transaction,
@@ -157,6 +159,7 @@ function createBaseService(model, options = {}) {
 								title: t.title,
 								description: t.description || null,
 								slug: t.slug,
+								...(isTagColumn ? { tag: t.tag || null } : {}),
 							},
 							{ transaction }
 						);

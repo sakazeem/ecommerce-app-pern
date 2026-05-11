@@ -92,6 +92,9 @@ const CategoryTable = ({
 							</TableCell>
 							<TableCell className="text-sm">{category?.level}</TableCell>
 							<TableCell className="text-sm">
+								{showSelectedLanguageTranslation(category?.translations, "tag")}
+							</TableCell>
+							<TableCell className="text-sm">
 								{category?.is_leaf.toString()}
 								{/* {category?.is_leaf1.toString()} */}
 							</TableCell>

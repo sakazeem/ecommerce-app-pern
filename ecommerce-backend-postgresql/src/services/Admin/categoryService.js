@@ -24,6 +24,7 @@ const { level } = require('winston');
 const categoryService = createBaseService(db.category, {
 	name: 'Category',
 	checkDuplicateSlug: true,
+	isTagColumn: true, // <-- enable tag column for category translations
 	formatCreateData: (data) => ({
 		level: data.level,
 		icon: data.icon,

@@ -6,6 +6,7 @@ function extractTranslation(translations = [], lang) {
 		title: translation.title || null,
 		description: translation.description || null,
 		slug: translation.slug || null,
+		tag: translation.tag || null,
 		excerpt: translation.excerpt || null,
 	};
 }

@@ -95,6 +95,7 @@ function transformNavCategoriesResponse(response, lang = 'en') {
 			id: root.id,
 			title: rootTranslation.title,
 			slug: rootTranslation.slug,
+			tag: rootTranslation.tag,
 			children: transformLevel2(root.children, lang),
 		};
 	});
