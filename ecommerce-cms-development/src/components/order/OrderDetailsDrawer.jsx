@@ -162,12 +162,17 @@ const ProductAddPanel = ({ onAdd }) => {
     }
   };
 
-  // Resolve price from variant → branches[0].pvb.sale_price
+  // Resolve price from variant → branches[0].pvb.sale_price after discount
   const getVariantPrice = (v) => {
     if (!v) return 0;
-    return parseFloat(
-      v.branches?.[0]?.pvb?.sale_price ?? v.sale_price ?? v.base_price ?? 0,
+    const pvb = v.branches?.[0]?.pvb;
+    const basePrice = parseFloat(
+      pvb?.sale_price ?? v.sale_price ?? v.base_price ?? 0,
     );
+    const discount = parseFloat(
+      pvb?.discount_percentage ?? v.discount_percentage ?? 0,
+    );
+    return discount > 0 ? basePrice * (1 - discount / 100) : basePrice;
   };
 
   // Label shown in variant dropdown: "Color: Red / Size: M (SKU-001)"

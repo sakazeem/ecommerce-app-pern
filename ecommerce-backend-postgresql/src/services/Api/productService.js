@@ -300,38 +300,22 @@ const getProducts = async (req) => {
 };
 const getCategoryFilterProducts = async (req) => {
 	const { page: defaultPage, limit: defaultLimit } = config.pagination;
-	const {
-		page = defaultPage,
-		limit = defaultLimit,
-		filterQuery = false,
-	} = req.query;
+	const { filterQuery = false } = req.query;
+
+	const page = Number(req.query.page ?? defaultPage);
+	const limit = Number(req.query.limit ?? defaultLimit);
+
 	const offset = getOffset(page, limit);
 	const { categoryIds } = await productFilterConditions(req);
 
-	// 🔥 Cache key (keep it stable + small, not full req.query JSON)
-	const cacheKey = `category_products:${page}:${limit}:${filterQuery}:${
-		categoryIds?.join(',') || 'all'
-	}`;
-
-	// 1. Check cache
-	// const cached = await redisClient.get(cacheKey);
-	// if (cached) {
-	// 	return JSON.parse(cached);
-	// }
-
 	const isMixed = filterQuery === 'mixed';
-
-	// For mixed: fetch 4× more so after per-category deduplication
-	// we still have enough products to fill the requested limit
 	const fetchLimit = isMixed ? limit * 4 : limit;
 
 	const products = await db.product
-		.scope(
-			{ method: ['active'] } // active scope with params
-		)
+		.scope({ method: ['active'] })
 		.findAndCountAll({
 			offset,
-			limit: fetchLimit, // inflated only for mixed, unchanged for everything else
+			limit: fetchLimit,
 			order: filterQuery ? db.sequelize.random() : [['id', 'DESC']],
 			attributes: [
 				'id',
@@ -358,7 +342,6 @@ const getCategoryFilterProducts = async (req) => {
 						},
 					],
 				},
-				// --- PRODUCT VARIANTS & ATTRIBUTE FILTER ---
 				{
 					model: db.product_variant,
 					required: false,
@@ -367,13 +350,10 @@ const getCategoryFilterProducts = async (req) => {
 						{
 							model: db.branch,
 							required: false,
-							through: {
-								as: 'pvb',
-							},
+							through: { as: 'pvb' },
 						},
 					],
 				},
-
 				{
 					model: db.media,
 					required: false,
@@ -394,14 +374,10 @@ const getCategoryFilterProducts = async (req) => {
 				},
 			],
 			unique: true,
-			distinct: true, // to fix count
-			col: 'id', // to fix count
+			distinct: true,
+			col: 'id',
 		});
 
-	// ── Mixed deduplication ───────────────────────────────────────────────────
-	// Keep only the first product seen per category so every item in the
-	// returned list belongs to a different category. Products with no category
-	// are each treated as their own unique bucket (keyed by product id).
 	let records = products.rows;
 
 	if (isMixed) {
@@ -409,7 +385,6 @@ const getCategoryFilterProducts = async (req) => {
 		const dedupedRecords = [];
 
 		for (const product of products.rows) {
-			// categories is the Sequelize association populated by the include above
 			const categoryId = product.categories?.[0]?.id;
 			const key =
 				categoryId != null ? `cat_${categoryId}` : `prod_${product.id}`;
@@ -424,24 +399,13 @@ const getCategoryFilterProducts = async (req) => {
 
 		records = dedupedRecords;
 	}
-	// ─────────────────────────────────────────────────────────────────────────
 
-	const result = {
+	return {
 		total: products.count,
 		records,
 		limit,
 		page,
 	};
-
-	// 2. Store in Redis (short TTL recommended)
-	// await redisClient.set(
-	// 	cacheKey,
-	// 	JSON.stringify(result),
-	// 	'EX',
-	// 	60 * 30 // 30 minutes
-	// );
-
-	return result;
 };
 const getProductsForFilterPage = async (req) => {
 	const { page: defaultPage, limit: defaultLimit } = config.pagination;
@@ -451,17 +415,6 @@ const getProductsForFilterPage = async (req) => {
 		filterQuery = false,
 	} = req.query;
 	const offset = getOffset(page, limit);
-
-	// 🔥 include all dynamic inputs in cache key
-	const cacheKey = `products:filter:${page}:${limit}:${filterQuery}:${JSON.stringify(
-		req.query
-	)}`;
-
-	// 1. Check cache
-	// const cached = await redisClient.get(cacheKey);
-	// if (cached) {
-	// 	return JSON.parse(cached);
-	// }
 
 	const {
 		categoryIds,

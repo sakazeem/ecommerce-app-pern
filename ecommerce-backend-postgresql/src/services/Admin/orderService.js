@@ -699,6 +699,7 @@ async function updateOrderDetails(req) {
 		}
 
 		if (add_items && add_items.length > 0) {
+			console.log("ADD ITEM", add_items)
 			for (const {
 				product_id,
 				product_variant_id,
