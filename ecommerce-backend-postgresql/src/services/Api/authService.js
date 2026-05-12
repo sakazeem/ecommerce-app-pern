@@ -28,6 +28,11 @@ async function loginUserWithEmailAndPassword(req) {
 		where: {
 			app_user_id: user.id,
 		},
+		order: [
+			['type', 'ASC'],
+			['is_default', 'DESC'],
+			['id', 'ASC'],
+		],
 	});
 
 	return user;

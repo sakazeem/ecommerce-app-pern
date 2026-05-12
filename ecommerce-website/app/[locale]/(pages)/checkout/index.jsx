@@ -11,10 +11,25 @@ import OrderService from "@/app/services/OrderService";
 import ThankYouScreen from "./ThankYouScreen";
 import SpinLoader from "@/app/components/Shared/SpinLoader";
 import { trackEvent } from "@/app/utils/trackEvent";
-import Link from "next/link";
 import { triggerAuthDrawer } from "@/app/store/authEvents";
 import { useAuth } from "@/app/providers/AuthProvider";
 import { logActivity } from "@/app/lib/activityLogger";
+
+const pickDefaultAddress = (addresses = []) => {
+	if (!addresses.length) return null;
+	return addresses.find((item) => item.is_default) || addresses[0];
+};
+
+const calculateShippingFee = (subtotal, city) => {
+	if (subtotal <= 0) return 0;
+	const normalizedCity = (city || "")
+		.trim()
+		.toLowerCase()
+		.replace(/[^a-z\s]/g, "");
+	const isKarachi =
+		normalizedCity.includes("karachi") || normalizedCity === "khi";
+	return subtotal > 3000 ? (isKarachi ? 150 : 220) : isKarachi ? 150 : 220;
+};
 
 export default function CheckoutPage() {
 	const {
@@ -98,21 +113,37 @@ export default function CheckoutPage() {
 	const [voucher, setVoucher] = useState("");
 	const [orderSuccess, setOrderSuccess] = useState(false);
 	const [orderSummary, setOrderSummary] = useState(null);
+	const [selectedShippingAddressId, setSelectedShippingAddressId] =
+		useState(null);
+	const [selectedBillingAddressId, setSelectedBillingAddressId] = useState(null);
 
-	const savedAddress = useMemo(() => {
-		if (!user?.addresses?.length) return null;
-
-		const shipping =
-			user.addresses.find((a) => a.type === "shipping" && a.is_default) ||
-			user.addresses.find((a) => a.type === "shipping") ||
-			user.addresses[0];
-
-		const billing =
-			user.addresses.find((a) => a.type === "billing" && a.is_default) ||
-			user.addresses.find((a) => a.type === "billing");
-
-		return { shipping, billing };
-	}, [user?.addresses]);
+	const userAddresses = user?.addresses || [];
+	const shippingAddresses = useMemo(
+		() =>
+			userAddresses
+				.filter((item) => item.type === "shipping")
+				.sort((a, b) => (a.is_default === b.is_default ? a.id - b.id : a.is_default ? -1 : 1)),
+		[userAddresses],
+	);
+	const billingAddresses = useMemo(
+		() =>
+			userAddresses
+				.filter((item) => item.type === "billing")
+				.sort((a, b) => (a.is_default === b.is_default ? a.id - b.id : a.is_default ? -1 : 1)),
+		[userAddresses],
+	);
+	const selectedShippingAddress = useMemo(
+		() =>
+			userAddresses.find((item) => item.id === Number(selectedShippingAddressId)) ||
+			null,
+		[userAddresses, selectedShippingAddressId],
+	);
+	const selectedBillingAddress = useMemo(
+		() =>
+			userAddresses.find((item) => item.id === Number(selectedBillingAddressId)) ||
+			null,
+		[userAddresses, selectedBillingAddressId],
+	);
 	const [formData, setFormData] = useState({
 		email: user?.email || "",
 		name: user?.name || "",
@@ -136,6 +167,24 @@ export default function CheckoutPage() {
 	});
 
 	useEffect(() => {
+		const preferredShipping =
+			pickDefaultAddress(shippingAddresses) || pickDefaultAddress(userAddresses);
+		const preferredBilling = pickDefaultAddress(billingAddresses);
+
+		setSelectedShippingAddressId((prev) => {
+			if (!preferredShipping) return null;
+			const exists = userAddresses.some((item) => item.id === Number(prev));
+			return exists ? prev : preferredShipping.id;
+		});
+
+		setSelectedBillingAddressId((prev) => {
+			if (!preferredBilling) return null;
+			const exists = billingAddresses.some((item) => item.id === Number(prev));
+			return exists ? prev : preferredBilling.id;
+		});
+	}, [userAddresses, shippingAddresses, billingAddresses]);
+
+	useEffect(() => {
 		if (user) {
 			setFormData((prev) => ({
 				...prev,
@@ -153,26 +202,26 @@ export default function CheckoutPage() {
 	}, [user]);
 
 	useEffect(() => {
-		if (!savedAddress?.shipping) return;
-
+		if (!selectedShippingAddress) return;
 		setFormData((prev) => ({
 			...prev,
-			address: savedAddress.shipping?.address || "",
-			city: savedAddress.shipping?.city || "",
-			postalCode: savedAddress.shipping?.postal_code || "",
-			country: savedAddress.shipping?.country || "Pakistan",
+			address: selectedShippingAddress.address || "",
+			city: selectedShippingAddress.city || "",
+			postalCode: selectedShippingAddress.postal_code || "",
+			country: selectedShippingAddress.country || "Pakistan",
 		}));
+	}, [selectedShippingAddress]);
 
-		if (savedAddress?.billing) {
-			setBillingAddress((prev) => ({
-				...prev,
-				address: savedAddress.billing?.address || "",
-				city: savedAddress.billing?.city || "",
-				postalCode: savedAddress.billing?.postal_code || "",
-				country: savedAddress.billing?.country || "Pakistan",
-			}));
-		}
-	}, [savedAddress]);
+	useEffect(() => {
+		if (!selectedBillingAddress) return;
+		setBillingAddress((prev) => ({
+			...prev,
+			address: selectedBillingAddress.address || "",
+			city: selectedBillingAddress.city || "",
+			postalCode: selectedBillingAddress.postal_code || "",
+			country: selectedBillingAddress.country || "Pakistan",
+		}));
+	}, [selectedBillingAddress]);
 
 	// ------------------ CALCULATIONS ------------------
 	const subtotal = cart.reduce((acc, item) => {
@@ -183,12 +232,14 @@ export default function CheckoutPage() {
 		return acc + price * item.quantity;
 	}, 0);
 
-	const [shipping, setShipping] = useState(
-		subtotal > 0 ? (subtotal > 3000 ? 150 : 150) : 0,
-	);
+	const [shipping, setShipping] = useState(calculateShippingFee(subtotal, ""));
 
 	const discount = voucher ? 0 : 0; // extend later
 	const total = subtotal + shipping - discount;
+
+	useEffect(() => {
+		setShipping(calculateShippingFee(subtotal, formData.city));
+	}, [subtotal, formData.city]);
 
 	useEffect(() => {
 		trackEvent("InitiateCheckout", {
@@ -225,18 +276,6 @@ export default function CheckoutPage() {
 	// ------------------ HANDLERS ------------------
 	const handleChange = (e) => {
 		const { name, value, type, checked } = e.target;
-		if (name === "city") {
-			const normalizedCity = value
-				.trim()
-				.toLowerCase()
-				.replace(/[^a-z\s]/g, ""); // remove commas, dashes, etc.
-
-			const isKarachi =
-				normalizedCity.includes("karachi") || normalizedCity === "khi";
-			setShipping(
-				subtotal > 3000 ? (isKarachi ? 150 : 220) : isKarachi ? 150 : 220,
-			);
-		}
 		setFormData((prev) => ({
 			...prev,
 			[name]: type === "checkbox" ? checked : value,
@@ -278,17 +317,15 @@ export default function CheckoutPage() {
 			);
 			return;
 		}
-		if (formData.paymentMethod === "ibft" && !ibftReceipt) {
-			toast.error(
-				"Please upload your payment receipt to complete the IBFT order.",
-			);
-			return;
-		}
 
 		setLoading(true);
 
 		const orderPayload = {
-			customer: formData,
+			customer: {
+				...formData,
+				selectedShippingAddressId: selectedShippingAddress?.id || null,
+				selectedBillingAddressId: selectedBillingAddress?.id || null,
+			},
 			billingAddress: formData.billingSameAsShipping ? null : billingAddress,
 			items: cart.map((item) => {
 				const unitPrice =
@@ -477,6 +514,32 @@ export default function CheckoutPage() {
 							{/* Delivery */}
 							<section>
 								<h2 className="text-lg font-semibold mb-3">Delivery</h2>
+
+								{isAuthenticated && shippingAddresses.length > 0 && (
+									<div className="mb-4">
+										<label className="text-sm text-gray-600 mb-1 block">
+											Use saved shipping address
+										</label>
+										<select
+											className="w-full border rounded-md p-3"
+											value={selectedShippingAddressId || ""}
+											onChange={(e) =>
+												setSelectedShippingAddressId(
+													e.target.value ? Number(e.target.value) : null,
+												)
+											}>
+											{shippingAddresses.map((address) => (
+												<option key={address.id} value={address.id}>
+													{address.title
+														? `${address.title} - `
+														: ""}
+													{address.address}, {address.city}
+													{address.is_default ? " (Default)" : ""}
+												</option>
+											))}
+										</select>
+									</div>
+								)}
 
 								<select
 									name="country"
@@ -671,6 +734,34 @@ export default function CheckoutPage() {
 									{/* Billing Form */}
 									{!formData.billingSameAsShipping && (
 										<div className="p-4 space-y-4 border-t bg-white">
+											{isAuthenticated && billingAddresses.length > 0 && (
+												<div>
+													<label className="text-sm text-gray-600 mb-1 block">
+														Use saved billing address
+													</label>
+													<select
+														className="w-full border rounded-md p-3"
+														value={selectedBillingAddressId || ""}
+														onChange={(e) =>
+															setSelectedBillingAddressId(
+																e.target.value ? Number(e.target.value) : null,
+															)
+														}>
+														{billingAddresses.map((address) => (
+															<option key={address.id} value={address.id}>
+																{address.title
+																	? `${address.title} - `
+																	: ""}
+																{address.address}, {address.city}
+																{address.is_default
+																	? " (Default)"
+																	: ""}
+															</option>
+														))}
+													</select>
+												</div>
+											)}
+
 											<select
 												className="w-full border rounded-md p-3"
 												value={billingAddress.country}
