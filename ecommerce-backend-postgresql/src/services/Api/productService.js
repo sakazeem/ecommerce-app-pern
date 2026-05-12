@@ -309,14 +309,30 @@ const getCategoryFilterProducts = async (req) => {
 	const { categoryIds } = await productFilterConditions(req);
 
 	const isMixed = filterQuery === 'mixed';
+	const isBestSelling = filterQuery === 'best-selling';
 	const fetchLimit = isMixed ? limit * 4 : limit;
+
+	const bestSellingOrder = [
+		db.sequelize.literal(`(
+			SELECT COALESCE(SUM(oi.quantity), 0)
+			FROM order_item oi
+			INNER JOIN "order" o ON o.id = oi.order_id
+			WHERE oi.product_id = "product"."id"
+			  AND o.created_at >= NOW() - INTERVAL '30 days'
+		)`),
+		'DESC',
+	];
 
 	const products = await db.product
 		.scope({ method: ['active'] })
 		.findAndCountAll({
 			offset,
 			limit: fetchLimit,
-			order: filterQuery ? db.sequelize.random() : [['id', 'DESC']],
+			order: isBestSelling
+				? [bestSellingOrder]
+				: isMixed
+				? db.sequelize.random()
+				: [['id', 'DESC']],
 			attributes: [
 				'id',
 				'sku',
