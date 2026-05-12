@@ -98,6 +98,7 @@ export default function HomepageSection({ section }) {
 						categoryId={config.category?.id}
 						categorySlug={config.category?.slug}
 						query={config.category_id}
+						columns="grid-cols-5"
 					/>
 				</section>
 			);
