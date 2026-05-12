@@ -22,14 +22,36 @@ export default function VariantTable({
 		setVariants(
 			generatedVariants.map((variant) => ({
 				...variant,
-				costPrice: variant.costPrice || defaultValues.costPrice,
-				salePrice: variant.salePrice || defaultValues.salePrice,
-				stock: variant.stock || defaultValues.stock, // keep it null for now
-				lowStock: variant.lowStock || defaultValues.lowStock, // keep it null for now
-				reorderQty: variant.reorderQty || defaultValues.reorderQty, // keep it null for now
-				discount: variant.discount || defaultValues.discount,
-				imageId: variant.imageId || defaultValues.imageId, // keep it null for now
-				imageUrl: variant.imageUrl || defaultValues.imageUrl, // keep it null for now
+				costPrice:
+					variant.costPrice !== undefined
+						? variant.costPrice
+						: defaultValues.costPrice,
+				salePrice:
+					variant.salePrice !== undefined
+						? variant.salePrice
+						: defaultValues.salePrice,
+				stock:
+					variant.stock !== undefined ? variant.stock : defaultValues.stock, // keep it null for now
+				lowStock:
+					variant.lowStock !== undefined
+						? variant.lowStock
+						: defaultValues.lowStock, // keep it null for now
+				reorderQty:
+					variant.reorderQty !== undefined
+						? variant.reorderQty
+						: defaultValues.reorderQty, // keep it null for now
+				discount:
+					variant.discount !== undefined
+						? variant.discount
+						: defaultValues.discount,
+				imageId:
+					variant.imageId !== undefined
+						? variant.imageId
+						: defaultValues.imageId, // keep it null for now
+				imageUrl:
+					variant.imageUrl !== undefined
+						? variant.imageUrl
+						: defaultValues.imageUrl, // keep it null for now
 			})),
 		);
 	}, [generatedVariants, defaultValues]);
@@ -53,6 +75,7 @@ export default function VariantTable({
 		setVariants((prev) => prev.filter((_, i) => i !== idx));
 		if (onDelete) onDelete(idx);
 	};
+
 	// return null;
 	return (
 		<Table className="w-full overflow-x-auto">
@@ -70,19 +93,20 @@ export default function VariantTable({
 				</tr>
 			</TableHeader>
 			<TableBody>
-				{variants.map((variant, idx) => (
-					<TableRow key={idx} className="text-xs">
-						<TableCell>{getDisplayString(variant?.name)}</TableCell>
+				{variants.map((variant, idx) => {
+					return (
+						<TableRow key={idx} className="text-xs">
+							<TableCell>{getDisplayString(variant?.name)}</TableCell>
 
-						<TableCell>
-							<input
-								type="text"
-								value={variant.sku || ""}
-								onChange={(e) => handleChange(idx, "sku", e.target.value)}
-								className="border p-1 rounded w-24 text-xs"
-							/>
-						</TableCell>
-						{/* <TableCell>
+							<TableCell>
+								<input
+									type="text"
+									value={variant.sku || ""}
+									onChange={(e) => handleChange(idx, "sku", e.target.value)}
+									className="border p-1 rounded w-24 text-xs"
+								/>
+							</TableCell>
+							{/* <TableCell>
 							<input
 								type="number"
 								value={variant.costPrice || ""}
@@ -91,37 +115,62 @@ export default function VariantTable({
 							/>
 						</TableCell> */}
 
-						<TableCell>
-							<input
-								type="number"
-								value={variant.salePrice || ""}
-								onChange={(e) => handleChange(idx, "salePrice", e.target.value)}
-								className="border p-1 rounded w-12"
-							/>
-						</TableCell>
+							<TableCell>
+								<input
+									type="number"
+									value={
+										variant.salePrice !== undefined ? variant.salePrice : ""
+									}
+									onChange={(e) =>
+										handleChange(idx, "salePrice", e.target.value)
+									}
+									className="border p-1 rounded w-12"
+								/>
+							</TableCell>
 
-						<TableCell>
-							<input
-								type="number"
-								value={variant.stock === 0 ? 0 : variant.stock || ""}
-								onChange={(e) => handleChange(idx, "stock", e.target.value)}
-								className="border p-1 rounded w-12"
-							/>
-						</TableCell>
+							<TableCell>
+								<input
+									type="number"
+									// value={parseInt(`${variant.stock}`)}
+									// value={parseInt(variant.stock)}
+									// value={variant.stock !== undefined ? variant.stock : ""}
+									value={
+										variant.stock === 0
+											? 0
+											: variant.stock === null
+												? 0
+												: variant.stock !== undefined
+													? variant.stock
+													: ""
+									}
+									onChange={(e) => handleChange(idx, "stock", e.target.value)}
+									className="border p-1 rounded w-12"
+								/>
+							</TableCell>
 
-						<TableCell>
-							<input
-								type="number"
-								value={variant.lowStock === 0 ? 0 : variant.lowStock || ""}
-								onChange={(e) => handleChange(idx, "lowStock", e.target.value)}
-								className="border p-1 rounded w-12"
-							/>
-						</TableCell>
+							<TableCell>
+								<input
+									type="number"
+									value={
+										variant.lowStock === 0
+											? 0
+											: variant.lowStock === null
+												? 0
+												: variant.lowStock !== undefined
+													? variant.lowStock
+													: ""
+									}
+									onChange={(e) =>
+										handleChange(idx, "lowStock", e.target.value)
+									}
+									className="border p-1 rounded w-12"
+								/>
+							</TableCell>
 
-						{/* <TableCell>
+							{/* <TableCell>
 							<input
 								type="number"
-								value={variant.reorderQty || ""}
+								value={variant.reorderQty !== undefined ? variant.reorderQty : ""}
 								onChange={(e) =>
 									handleChange(idx, "reorderQty", e.target.value)
 								}
@@ -129,45 +178,48 @@ export default function VariantTable({
 							/>
 						</TableCell> */}
 
-						<TableCell>
-							<input
-								type="number"
-								value={variant.discount || ""}
-								onChange={(e) => handleChange(idx, "discount", e.target.value)}
-								className="border p-1 rounded w-12"
-							/>
-						</TableCell>
+							<TableCell>
+								<input
+									type="number"
+									value={variant.discount !== undefined ? variant.discount : ""}
+									onChange={(e) =>
+										handleChange(idx, "discount", e.target.value)
+									}
+									className="border p-1 rounded w-12"
+								/>
+							</TableCell>
 
-						<TableCell>
-							<ImageSelectorField
-								label={"image"}
-								selectedImage={variant.imageId}
-								setSelectedImage={(imageId) => {
-									handleChange(idx, "imageId", imageId);
-								}}
-								selectedImageUrl={variant.imageUrl}
-								setSelectedImageUrl={(imageUrl) => {
-									handleChange(idx, "imageUrl", imageUrl);
-								}}
-								isVertical
-								// className="col-span-2"
-								isSmall
-								className="border p-1 w-40 rounded"
-								isVariantImage={true}
-								variantImages={variantImagesOptions}
-							/>
-						</TableCell>
+							<TableCell>
+								<ImageSelectorField
+									label={"image"}
+									selectedImage={variant.imageId}
+									setSelectedImage={(imageId) => {
+										handleChange(idx, "imageId", imageId);
+									}}
+									selectedImageUrl={variant.imageUrl}
+									setSelectedImageUrl={(imageUrl) => {
+										handleChange(idx, "imageUrl", imageUrl);
+									}}
+									isVertical
+									// className="col-span-2"
+									isSmall
+									className="border p-1 w-40 rounded"
+									isVariantImage={true}
+									variantImages={variantImagesOptions}
+								/>
+							</TableCell>
 
-						<TableCell>
-							<button
-								type="button"
-								className="text-red-500 w-12"
-								onClick={() => handleDelete(idx)}>
-								Delete
-							</button>
-						</TableCell>
-					</TableRow>
-				))}
+							<TableCell>
+								<button
+									type="button"
+									className="text-red-500 w-12"
+									onClick={() => handleDelete(idx)}>
+									Delete
+								</button>
+							</TableCell>
+						</TableRow>
+					);
+				})}
 			</TableBody>
 		</Table>
 	);
