@@ -116,7 +116,7 @@ export default function VariantTable({
 						<TableCell>
 							<input
 								type="number"
-								value={variant.salePrice || ""}
+								value={variant.salePrice !== undefined ? variant.salePrice : ""}
 								onChange={(e) => handleChange(idx, "salePrice", e.target.value)}
 								className="border p-1 rounded w-12"
 							/>
@@ -125,7 +125,14 @@ export default function VariantTable({
 						<TableCell>
 							<input
 								type="number"
-								value={variant.stock === 0 ? 0 : variant.stock || ""}
+								value={variant.stock !== undefined ? variant.stock : ""}
+								// value={
+								// 	variant.stock === 0
+								// 		? 0
+								// 		: variant.stock !== undefined
+								// 			? variant.stock
+								// 			: ""
+								// }
 								onChange={(e) => handleChange(idx, "stock", e.target.value)}
 								className="border p-1 rounded w-12"
 							/>
@@ -134,7 +141,7 @@ export default function VariantTable({
 						<TableCell>
 							<input
 								type="number"
-								value={variant.lowStock === 0 ? 0 : variant.lowStock || ""}
+								value={variant.lowStock !== undefined ? variant.lowStock : ""}
 								onChange={(e) => handleChange(idx, "lowStock", e.target.value)}
 								className="border p-1 rounded w-12"
 							/>
@@ -143,7 +150,7 @@ export default function VariantTable({
 						{/* <TableCell>
 							<input
 								type="number"
-								value={variant.reorderQty || ""}
+								value={variant.reorderQty !== undefined ? variant.reorderQty : ""}
 								onChange={(e) =>
 									handleChange(idx, "reorderQty", e.target.value)
 								}
@@ -154,7 +161,7 @@ export default function VariantTable({
 						<TableCell>
 							<input
 								type="number"
-								value={variant.discount || ""}
+								value={variant.discount !== undefined ? variant.discount : ""}
 								onChange={(e) => handleChange(idx, "discount", e.target.value)}
 								className="border p-1 rounded w-12"
 							/>
