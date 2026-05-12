@@ -22,14 +22,36 @@ export default function VariantTable({
 		setVariants(
 			generatedVariants.map((variant) => ({
 				...variant,
-				costPrice: variant.costPrice || defaultValues.costPrice,
-				salePrice: variant.salePrice || defaultValues.salePrice,
-				stock: variant.stock || defaultValues.stock, // keep it null for now
-				lowStock: variant.lowStock || defaultValues.lowStock, // keep it null for now
-				reorderQty: variant.reorderQty || defaultValues.reorderQty, // keep it null for now
-				discount: variant.discount || defaultValues.discount,
-				imageId: variant.imageId || defaultValues.imageId, // keep it null for now
-				imageUrl: variant.imageUrl || defaultValues.imageUrl, // keep it null for now
+				costPrice:
+					variant.costPrice !== undefined
+						? variant.costPrice
+						: defaultValues.costPrice,
+				salePrice:
+					variant.salePrice !== undefined
+						? variant.salePrice
+						: defaultValues.salePrice,
+				stock:
+					variant.stock !== undefined ? variant.stock : defaultValues.stock, // keep it null for now
+				lowStock:
+					variant.lowStock !== undefined
+						? variant.lowStock
+						: defaultValues.lowStock, // keep it null for now
+				reorderQty:
+					variant.reorderQty !== undefined
+						? variant.reorderQty
+						: defaultValues.reorderQty, // keep it null for now
+				discount:
+					variant.discount !== undefined
+						? variant.discount
+						: defaultValues.discount,
+				imageId:
+					variant.imageId !== undefined
+						? variant.imageId
+						: defaultValues.imageId, // keep it null for now
+				imageUrl:
+					variant.imageUrl !== undefined
+						? variant.imageUrl
+						: defaultValues.imageUrl, // keep it null for now
 			})),
 		);
 	}, [generatedVariants, defaultValues]);
