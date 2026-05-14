@@ -28,6 +28,13 @@ router
 		checkPermission('create_product'),
 		adminProductController.importProductsFromSheet
 	);
+router
+	.route('/import-products-stock')
+
+	.post(
+		checkPermission('create_product'),
+		adminProductController.importProductsStockFromSheet
+	);
 
 router
 	.route('/export-products')

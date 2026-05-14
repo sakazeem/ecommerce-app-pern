@@ -37,6 +37,10 @@ const importProductsFromSheet = catchAsync(async (req, res) => {
 	const results = await adminProductService.importProductsFromSheet(req);
 	res.send(results);
 });
+const importProductsStockFromSheet = catchAsync(async (req, res) => {
+	const results = await adminProductService.importProductsStockFromSheet(req);
+	res.send(results);
+});
 const cleanDescriptionProducts = catchAsync(async (req, res) => {
 	const results = await adminProductService.cleanDescriptionProducts(req);
 	res.send(results);
@@ -57,4 +61,5 @@ module.exports = {
 	exportProducts,
 	getProductTitlesOnly,
 	cleanDescriptionProducts,
+	importProductsStockFromSheet,
 };
