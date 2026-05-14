@@ -240,6 +240,164 @@ const UploadProductsExcel = () => {
 				rows.forEach((row, index) => {
 					const excelRowNumber = index + 2; // header = row 1
 
+					// 🔴 VALIDATE ROW
+					const rowErrors = validateRow(row, excelRowNumber);
+					if (rowErrors.length) {
+						allErrors.push(...rowErrors);
+						return;
+					}
+
+					// 🟢 DUPLICATE CHECK WITHIN EXCEL
+					const sku = safeStr(row[excelFeilds.sku]);
+					const slug = safeStr(row[excelFeilds.slug]);
+					const title = safeStr(row[excelFeilds.title]);
+
+					if (seenSKUs.has(sku)) {
+						allErrors.push(
+							`Row ${excelRowNumber}: Duplicate SKU '${sku}' found (also in row ${seenSKUs.get(
+								sku,
+							)})`,
+						);
+					} else if (sku) seenSKUs.set(sku, excelRowNumber);
+
+					if (seenSlugs.has(slug)) {
+						allErrors.push(
+							`Row ${excelRowNumber}: Duplicate Slug '${slug}' found (also in row ${seenSlugs.get(
+								slug,
+							)})`,
+						);
+					} else if (slug) seenSlugs.set(slug, excelRowNumber);
+
+					if (seenTitles.has(title)) {
+						allErrors.push(
+							`Row ${excelRowNumber}: Duplicate Title '${title}' found (also in row ${seenTitles.get(
+								title,
+							)})`,
+						);
+					} else if (title) seenTitles.set(title, excelRowNumber);
+
+					// 🟢 FORMAT VALID ROW
+					// const color = safeStr(row[excelFeilds.color])?.toLowerCase();
+					// const gender = safeStr(row[excelFeilds.gender])?.toLowerCase();
+					// const size = safeStr(row[excelFeilds.size])?.toLowerCase();
+					const productSku = safeStr(row[excelFeilds.sku]);
+
+					const parsedDiscount = parsePercentToNumber(
+						safeStr(row[excelFeilds.discount]),
+					);
+
+					const gender = safeStr(row[excelFeilds.gender])?.toLowerCase();
+					const colors = parseMultiValues(
+						safeStr(row[excelFeilds.color])?.toLowerCase(),
+					);
+					const sizes = parseSizesWithSku(safeStr(row[excelFeilds.size]));
+					const stock = parseSizesWithSku(
+						safeStr(row[excelFeilds.remaining_stock]),
+					);
+					const stockThreshold = parseSizesWithSku(
+						safeStr(row[excelFeilds.stock_threshold]),
+					);
+					const price = parsePrice(row[excelFeilds.price])?.priceWithSku;
+
+					// If missing, fallback
+					if (!colors.length) colors.push(null);
+					if (!sizes.length) sizes.push({ size: null, sku: null });
+
+					const sizeAttrId =
+						filterAttributes.find((v) => v.name?.en === "size")?.id || 8;
+					const genderAttrId =
+						filterAttributes.find((v) => v.name?.en === "gender")?.id || 9;
+					const colorAttrId =
+						filterAttributes.find((v) => v.name?.en === "color")?.id || 7;
+
+					const variants = [];
+
+					sizes.forEach((sizeObj) => {
+						colors.forEach((color) => {
+							const attributeData = [];
+
+							// ✅ SIZE FIRST
+							if (sizeObj?.size) {
+								attributeData.push({
+									attribute_id: sizeAttrId,
+									value: {
+										en: sizeObj.size,
+										type: "baby", // as required
+									},
+								});
+							}
+
+							// ✅ GENDER SECOND
+							if (gender) {
+								attributeData.push({
+									attribute_id: genderAttrId,
+									value: {
+										en: gender,
+									},
+								});
+							}
+
+							// ✅ COLOR THIRD
+							if (color) {
+								attributeData.push({
+									attribute_id: colorAttrId,
+									value: {
+										en: color,
+									},
+								});
+							}
+
+							console.log(
+								price,
+								price.find((v) => v.size == productSku)?.sku,
+								price.find((v) => v.size === productSku)?.sku,
+								productSku,
+								"chkking price skuss",
+							);
+							if (sizeObj?.sku) {
+								variants.push({
+									sku: sizeObj?.sku || productSku,
+									branch_data: [
+										{
+											branch_id: 1,
+											cost_price: price.find((v) => v.size === sizeObj?.sku)
+												?.sku,
+											stock:
+												stock.find((v) => v.size === sizeObj?.sku)?.sku || 100,
+											low_stock:
+												stockThreshold.find((v) => v.size === sizeObj?.sku)
+													?.sku || 100,
+											reorder_quantity: 100,
+											sale_price: price.find((v) => v.size === sizeObj?.sku)
+												?.sku,
+											discount_percentage: parsedDiscount,
+										},
+									],
+									attribute_data: attributeData,
+								});
+							} else {
+								variants.push({
+									sku: sizeObj?.sku || productSku,
+									branch_data: [
+										{
+											branch_id: 1,
+											cost_price: price.find((v) => v.size === productSku)?.sku,
+											stock:
+												stock.find((v) => v.size === productSku)?.sku || 100,
+											low_stock:
+												stockThreshold.find((v) => v.size === productSku)
+													?.sku || 100,
+											reorder_quantity: 100,
+											sale_price: price.find((v) => v.size === productSku)?.sku,
+											discount_percentage: parsedDiscount,
+										},
+									],
+									attribute_data: attributeData,
+								});
+							}
+						});
+					});
+
 					// const attributeData = [];
 
 					// if (color && !color.includes("default") && !color.includes("multi")) {
@@ -271,8 +429,57 @@ const UploadProductsExcel = () => {
 					// }
 
 					products.push({
-						sku: safeStr(row["sku"]),
-						stock: safeStr(row["stock"]),
+						sku: safeStr(row[excelFeilds.sku]),
+						meta_title: safeStr(row[excelFeilds.meta_title]),
+						meta_description: safeStr(row[excelFeilds.meta_description]),
+						base_price: toNumber(parsePrice(row[excelFeilds.price]).price),
+						base_discount_percentage: parsedDiscount,
+						images: [],
+						translations: [
+							{
+								title: safeStr(row[excelFeilds.title]),
+								slug: safeStr(row[excelFeilds.slug]),
+								excerpt: safeStr(row[excelFeilds.excerpt]),
+								description: buildHtmlDescription(
+									safeStr(row[excelFeilds.description]),
+									safeStr(row[excelFeilds.additionalInfo]),
+								),
+								language_id: 1,
+							},
+						],
+						variants,
+						// variants: [
+						// 	{
+						// 		sku: "SKU-1",
+						// 		branch_data: [
+						// 			{
+						// 				branch_id: 1,
+						// 				cost_price: toNumber(safeStr(row[excelFeilds.price])),
+						// 				stock: 100,
+						// 				low_stock: 100,
+						// 				reorder_quantity: 100,
+						// 				sale_price: toNumber(safeStr(row[excelFeilds.price])),
+						// 				discount_percentage: parsedDiscount,
+						// 			},
+						// 		],
+						// 		attribute_data: attributeData,
+						// 	},
+						// ],
+						categories: row[excelFeilds.categories]
+							? row[excelFeilds.categories]
+									.split(",")
+									.map((c) => c.trim())
+									.filter(Boolean)
+							: [],
+						brand_id: safeStr(row[excelFeilds.brand]) || null,
+						similarProductsSku: row[excelFeilds.similar_products]
+							? `${row[excelFeilds.similar_products]}`
+									.split(",")
+									.map((sku) => sku.trim())
+									.filter(Boolean)
+							: [],
+						is_featured: false,
+						status: true,
 						// thumbnail: null,
 					});
 				});
@@ -308,10 +515,6 @@ const UploadProductsExcel = () => {
 				let totalCreatedBrands = 0;
 				// return;
 				// ------------------ BATCH UPLOAD ------------------
-
-				console.log(products, "chkkin pro");
-				// return;
-
 				const batchSize = 200;
 				for (let i = 0; i < products.length; i += batchSize) {
 					const batch = products.slice(i, i + batchSize);
@@ -319,7 +522,7 @@ const UploadProductsExcel = () => {
 					const end = Math.min(i + batchSize, products.length);
 					try {
 						addMessage("info", `Uploading products ${start} - ${end}...`);
-						const res = await ProductServices.importProductsStock({
+						const res = await ProductServices.importProducts({
 							products: batch,
 						});
 						totalUpdatedProducts += res.updatedProducts?.length || 0;

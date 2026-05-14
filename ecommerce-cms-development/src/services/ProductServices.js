@@ -31,6 +31,9 @@ const ProductServices = {
 	importProducts: async (body) => {
 		return requests.post(`/product/import-products`, body);
 	},
+	importProductsStock: async (body) => {
+		return requests.post(`/product/import-products-stock`, body);
+	},
 	importProductPrices: async (body) => {
 		return requests.post(`/product/import-variant-prices`, body);
 	},
