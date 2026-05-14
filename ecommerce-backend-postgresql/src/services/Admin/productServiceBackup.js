@@ -12,7 +12,6 @@ const httpStatus = require('http-status');
 const { pickLanguageFields } = require('../../utils/languageUtils.js');
 const config = require('../../config/config.js');
 const { getOffset } = require('../../utils/query.js');
-const { createLog } = require('../../utils/loggerUtils.js');
 
 const productService = createBaseService(db.product, {
 	name: 'Product',
@@ -265,8 +264,6 @@ async function createProduct(req, existingTransaction) {
 }
 
 async function updateProduct(req, existingTransaction) {
-	const date = Date.now();
-	const method = `updateProduct_${date}`;
 	const {
 		categories = [],
 		branches = [],
@@ -295,20 +292,7 @@ async function updateProduct(req, existingTransaction) {
 			{ ...productData, user_id: userId },
 			{ transaction }
 		);
-		await createLog({
-			req,
-			data: {
-				model: 'product',
-				record_id: product.id,
-				action: 'UPDATE',
-				method,
-				old_values: { ...product._previousDataValues },
-				new_values: { ...product.dataValues },
-				user_id: userId,
-				message: 'Product updated',
-			},
-			transaction,
-		});
+
 		if (translations.length > 0) {
 			// Update translations: remove old, add new
 			await db.product_translation.destroy({
@@ -320,21 +304,6 @@ async function updateProduct(req, existingTransaction) {
 				product_id: product.id,
 			}));
 			await db.product_translation.bulkCreate(translationsWithProductId, {
-				transaction,
-			});
-
-			await createLog({
-				req,
-				data: {
-					model: 'product_translation',
-					record_id: product.id,
-					action: 'UPDATE',
-					method,
-					old_values: null,
-					new_values: translations,
-					user_id: userId,
-					message: 'Product translations deleted and then recreated',
-				},
 				transaction,
 			});
 		}
@@ -437,22 +406,6 @@ async function updateProduct(req, existingTransaction) {
 				where: { id: deleteIds },
 				transaction,
 			});
-
-			await createLog({
-				req,
-				data: {
-					model: 'product_variant',
-					record_id: product.id,
-					action: 'DELETE',
-					method,
-					old_values: variantsToDelete.map((v) => v.toJSON()),
-					new_values: null,
-					user_id: userId,
-					message:
-						'Product Variants deleted due to missing SKUs in update payload',
-				},
-				transaction,
-			});
 		}
 
 		// Loop incoming variants
@@ -465,34 +418,13 @@ async function updateProduct(req, existingTransaction) {
 			} = variant;
 
 			let variantRecord;
-			let oldStock = null;
+
 			// UPDATE existing variant
 			if (existingVariantMap.has(sku)) {
 				variantRecord = existingVariantMap.get(sku);
 
-				const oldVariant = variantRecord.toJSON();
 				await variantRecord.update(variantData, { transaction });
-				const newVariant = variantRecord.toJSON();
 
-				await createLog({
-					req,
-					data: {
-						model: 'product_variant',
-						record_id: variantRecord.id,
-						action: 'UPDATE',
-						method,
-						old_values: oldVariant,
-						new_values: newVariant,
-						user_id: userId,
-						message: 'Product Variatns updated',
-					},
-					transaction,
-				});
-
-				oldStock = await db.product_variant_to_branch.findAll({
-					where: { product_variant_id: variantRecord.id },
-					transaction,
-				});
 				// Remove old relations
 				await db.product_variant_to_branch.destroy({
 					where: { product_variant_id: variantRecord.id },
@@ -514,19 +446,6 @@ async function updateProduct(req, existingTransaction) {
 					},
 					{ transaction }
 				);
-				await createLog({
-					req,
-					data: {
-						model: 'product_variant',
-						record_id: variantRecord.id,
-						action: 'CREATE',
-						method,
-						new_values: variantRecord.toJSON(),
-						user_id: userId,
-						message: 'Product Variatns updated',
-					},
-					transaction,
-				});
 			}
 
 			// Insert attributes
@@ -552,38 +471,6 @@ async function updateProduct(req, existingTransaction) {
 				}));
 
 				await db.product_variant_to_branch.bulkCreate(branchEntries, {
-					transaction,
-				});
-				await createLog({
-					req,
-					data: {
-						model: 'product_variant_to_branch',
-						record_id: variantRecord.id,
-						action: 'CREATE',
-						method,
-						old_values: oldStock
-							? oldStock.map((s) => s.toJSON())
-							: null,
-						new_values: branchEntries,
-						user_id: userId,
-						message: 'Product variant to branch bulk created',
-					},
-					transaction,
-				});
-			}
-
-			if (!branch_data.length && oldStock && oldStock.length) {
-				await createLog({
-					req,
-					data: {
-						model: 'product_variant_to_branch',
-						record_id: variantRecord.id,
-						action: 'DELETE',
-						method,
-						old_values: oldStock.map((s) => s.toJSON()),
-						new_values: [],
-						message: 'All stock removed for variant',
-					},
 					transaction,
 				});
 			}

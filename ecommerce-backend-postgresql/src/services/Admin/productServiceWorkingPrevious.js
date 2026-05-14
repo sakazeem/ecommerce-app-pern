@@ -1,7 +1,7 @@
 const db = require('../../db/models/index.js');
 const commonUtils = require('../../utils/commonUtils.js');
 const createBaseService = require('../../utils/baseService.js');
-const { Op, QueryTypes, where } = require('sequelize');
+const { Op, QueryTypes } = require('sequelize');
 const { createBrand } = require('./brandService.js');
 const { createCategory } = require('./categoryService.js');
 const ExcelJS = require('exceljs');
@@ -972,49 +972,6 @@ async function importProductsFromSheet(req) {
 		throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error);
 	}
 }
-async function importProductsStockFromSheet(req) {
-	const { products } = req.body;
-
-	const transaction = await db.sequelize.transaction();
-
-	try {
-		let updatedProducts = 0;
-
-		for (const product of products) {
-			const { sku, stock } = product;
-
-			if (!sku || stock == null) continue;
-
-			const variant = await db.product_variant.findOne({
-				where: { sku },
-				transaction,
-			});
-
-			if (variant) {
-				await db.product_variant_to_branch.update(
-					{ stock },
-					{
-						where: {
-							product_variant_id: variant.id,
-						},
-						transaction,
-					}
-				);
-
-				updatedProducts++;
-			}
-		}
-
-		await transaction.commit();
-
-		return {
-			updatedProducts,
-		};
-	} catch (error) {
-		await transaction.rollback();
-		throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error);
-	}
-}
 
 function splitDescription(html) {
 	if (!html) return { description: '', additionalInfo: '' };
@@ -1521,7 +1478,6 @@ module.exports = {
 	exportProducts,
 	getProductTitlesOnly,
 	cleanDescriptionProducts,
-	importProductsStockFromSheet,
 };
 
 const excelFeilds = {
