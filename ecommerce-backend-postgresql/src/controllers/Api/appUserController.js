@@ -41,10 +41,13 @@ const deleteAddress = catchAsync(async (req, res) => {
 });
 
 const setDefaultAddress = catchAsync(async (req, res) => {
-	const userId = req.user.id;
+	const accessToken = req.cookies.accessToken;
+	if (!accessToken)
+		throw new ApiError(httpStatus.UNAUTHORIZED, 'Unauthorized');
+	const payload = await verifyToken(accessToken);
 	const result = await apiAppUserService.setDefaultAddress(
 		req.params.id,
-		userId
+		payload.userId
 	);
 	res.send(result);
 });

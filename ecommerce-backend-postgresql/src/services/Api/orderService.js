@@ -83,6 +83,7 @@ async function confirmOrder(req) {
 		);
 		await addOrUpdateAddress(
 			{
+				id: customer.selectedShippingAddressId || undefined,
 				address: customer.address,
 				apartment: customer.apartment || null,
 				city: customer.city,
@@ -95,6 +96,7 @@ async function confirmOrder(req) {
 		if (!customer.billingSameAsShipping) {
 			await addOrUpdateAddress(
 				{
+					id: customer.selectedBillingAddressId || undefined,
 					address: billingAddress.address,
 					apartment: billingAddress.apartment || null,
 					city: billingAddress.city,

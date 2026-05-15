@@ -20,26 +20,18 @@ const EMPTY_FORM = {
 export default function Addresses() {
   const { user, fetchUser } = useAuth();
   const addresses = user?.addresses || [];
-
-  // ✅ Detect existing types
-  const hasShipping = addresses.some((a) => a.type === "shipping");
-  const hasBilling = addresses.some((a) => a.type === "billing");
+  const sortedAddresses = [...addresses].sort((a, b) => {
+    if (a.type !== b.type) return a.type === "shipping" ? -1 : 1;
+    if (a.is_default !== b.is_default) return a.is_default ? -1 : 1;
+    return a.id - b.id;
+  });
 
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Add with restriction
   const openAdd = () => {
-    if (hasShipping && hasBilling) {
-      toast.error("Shipping and Billing addresses already exist");
-      return;
-    }
-
-    let defaultType = "shipping";
-    if (hasShipping) defaultType = "billing";
-
-    setForm({ ...EMPTY_FORM, type: defaultType });
+    setForm({ ...EMPTY_FORM, type: "shipping" });
     setShowForm(true);
   };
 
@@ -66,16 +58,6 @@ export default function Addresses() {
 
     if (!form.address || !form.city || !form.country || !form.postal_code) {
       toast.error("Please fill all required fields");
-      return;
-    }
-
-    // ✅ Prevent duplicate type
-    const isDuplicateType = addresses.some(
-      (a) => a.type === form.type && a.id !== form.id,
-    );
-
-    if (isDuplicateType) {
-      toast.error(`${form.type} address already exists`);
       return;
     }
 
@@ -106,6 +88,7 @@ export default function Addresses() {
   const handleSetDefault = async (id) => {
     try {
       await ProfileServices.setDefaultAddress(id);
+      toast.success("Default address updated");
       await fetchUser();
     } catch (err) {
       toast.error(err.message || "Failed to set default");
@@ -120,8 +103,7 @@ export default function Addresses() {
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-xl font-semibold">My Addresses</h2>
 
-        {/* ✅ Hide if both exist */}
-        {!showForm && !(hasShipping && hasBilling) && (
+        {!showForm && (
           <button
             onClick={openAdd}
             className="flex items-center gap-1.5 bg-secondary text-white px-4 py-2 rounded-lg text-sm"
@@ -163,17 +145,10 @@ export default function Addresses() {
                   onChange={handleChange}
                   className={inputClass}
                 >
-                  {/* ✅ Disable duplicate types when adding */}
-                  <option
-                    value="shipping"
-                    disabled={hasShipping && form.id === null}
-                  >
+                  <option value="shipping">
                     Shipping
                   </option>
-                  <option
-                    value="billing"
-                    disabled={hasBilling && form.id === null}
-                  >
+                  <option value="billing">
                     Billing
                   </option>
                 </select>
@@ -282,7 +257,7 @@ export default function Addresses() {
         </button>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {addresses.map((addr) => (
+          {sortedAddresses.map((addr) => (
             <div
               key={addr.id}
               className="bg-white border rounded-lg p-4 space-y-1"

@@ -112,38 +112,111 @@ async function createAppUser(req) {
 	return await appUserService.create(req.body);
 }
 
+function assertAddressType(type) {
+	if (!['shipping', 'billing'].includes(type)) {
+		throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid address type');
+	}
+}
+
+async function normalizeDefaultAddressByType(
+	userId,
+	type,
+	transaction,
+	preferredAddressId = null
+) {
+	const addresses = await db.address.findAll({
+		where: { app_user_id: userId, type },
+		order: [
+			['is_default', 'DESC'],
+			['id', 'ASC'],
+		],
+		transaction,
+		lock: transaction.LOCK.UPDATE,
+	});
+
+	if (!addresses.length) return;
+
+	const preferred =
+		preferredAddressId !== null
+			? addresses.find((item) => item.id === Number(preferredAddressId))
+			: null;
+	const target = preferred || addresses.find((item) => item.is_default) || addresses[0];
+
+	await db.address.update(
+		{ is_default: false },
+		{
+			where: {
+				app_user_id: userId,
+				type,
+				id: { [Op.ne]: target.id },
+				is_default: true,
+			},
+			transaction,
+		}
+	);
+
+	if (!target.is_default) {
+		await target.update({ is_default: true }, { transaction });
+	}
+}
+
 async function addOrUpdateAddress(data, userId) {
-	const { id, address, apartment, city, country, postal_code, type, title } =
-		data;
+	const {
+		id,
+		address,
+		apartment,
+		city,
+		country,
+		postal_code,
+		type,
+		title,
+		is_default,
+	} = data;
 
 	if (!type)
 		throw new ApiError(httpStatus.BAD_REQUEST, 'Address type is required');
+	assertAddressType(type);
 
 	return await db.sequelize.transaction(async (t) => {
-		// Count existing addresses of this type for this user
-		const count = await db.address.count({
-			where: { app_user_id: userId, type },
-			transaction: t,
-		});
-
 		if (id) {
-			// UPDATE existing
 			const existing = await db.address.findOne({
 				where: { id, app_user_id: userId },
 				transaction: t,
+				lock: t.LOCK.UPDATE,
 			});
 			if (!existing)
 				throw new ApiError(httpStatus.NOT_FOUND, 'Address not found');
+
+			const previousType = existing.type;
+			const wasDefault = existing.is_default;
+
 			await existing.update(
-				{ address, apartment, city, country, postal_code, type, title },
+				{
+					address: address ?? existing.address,
+					apartment: apartment ?? existing.apartment,
+					city: city ?? existing.city,
+					country: country ?? existing.country,
+					postal_code: postal_code ?? existing.postal_code,
+					type,
+					title: title ?? existing.title,
+				},
 				{ transaction: t }
 			);
+
+			if (is_default === true) {
+				await normalizeDefaultAddressByType(userId, type, t, existing.id);
+			} else {
+				await normalizeDefaultAddressByType(userId, type, t);
+			}
+
+			if (previousType !== type && wasDefault) {
+				await normalizeDefaultAddressByType(userId, previousType, t);
+			}
+
 			return existing;
 		}
 
-		// CREATE new — first of its type is auto-default
-		const isFirst = count === 0;
-		return await db.address.create(
+		const created = await db.address.create(
 			{
 				address,
 				apartment,
@@ -153,50 +226,52 @@ async function addOrUpdateAddress(data, userId) {
 				type,
 				title,
 				app_user_id: userId,
-				is_default: isFirst,
+				is_default: is_default === true,
 			},
 			{ transaction: t }
 		);
+
+		await normalizeDefaultAddressByType(
+			userId,
+			type,
+			t,
+			is_default === true ? created.id : null
+		);
+
+		return created;
 	});
 }
 
 async function setDefaultAddress(addressId, userId) {
-	const address = await db.address.findOne({
-		where: { id: addressId, app_user_id: userId },
-	});
-	if (!address) throw new ApiError(httpStatus.NOT_FOUND, 'Address not found');
-
 	await db.sequelize.transaction(async (t) => {
-		// Unset all defaults of same type
-		await db.address.update(
-			{ is_default: false },
-			{
-				where: { app_user_id: userId, type: address.type },
-				transaction: t,
-			}
-		);
-		// Set new default
-		await address.update({ is_default: true }, { transaction: t });
+		const address = await db.address.findOne({
+			where: { id: addressId, app_user_id: userId },
+			transaction: t,
+			lock: t.LOCK.UPDATE,
+		});
+		if (!address)
+			throw new ApiError(httpStatus.NOT_FOUND, 'Address not found');
+
+		await normalizeDefaultAddressByType(userId, address.type, t, address.id);
 	});
 
 	return { success: true };
 }
 
 async function deleteAddress(addressId, userId) {
-	const address = await db.address.findOne({
-		where: { id: addressId, app_user_id: userId },
-	});
-	if (!address) throw new ApiError(httpStatus.NOT_FOUND, 'Address not found');
-
-	await address.destroy();
-
-	// If deleted was default, promote the next one
-	if (address.is_default) {
-		const next = await db.address.findOne({
-			where: { app_user_id: userId, type: address.type },
+	await db.sequelize.transaction(async (t) => {
+		const address = await db.address.findOne({
+			where: { id: addressId, app_user_id: userId },
+			transaction: t,
+			lock: t.LOCK.UPDATE,
 		});
-		if (next) await next.update({ is_default: true });
-	}
+		if (!address)
+			throw new ApiError(httpStatus.NOT_FOUND, 'Address not found');
+
+		const type = address.type;
+		await address.destroy({ transaction: t });
+		await normalizeDefaultAddressByType(userId, type, t);
+	});
 
 	return { success: true };
 }
@@ -207,14 +282,6 @@ async function resetPassword(userId, newPassword) {
 	await db.token.destroy({
 		where: { app_user_id: userId, type: tokenTypes.RESET_PASSWORD },
 	});
-}
-
-async function deleteAddress(addressId, userId) {
-	const deleted = await db.address.destroy({
-		where: { id: addressId, app_user_id: userId },
-	});
-	if (!deleted) throw new ApiError(httpStatus.NOT_FOUND, 'Address not found');
-	return { success: true };
 }
 
 module.exports = {
