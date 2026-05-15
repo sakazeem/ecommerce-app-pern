@@ -2,7 +2,6 @@ const db = require('../db/models');
 const commonUtils = require('./commonUtils');
 
 async function createLog({ data, req, transaction }) {
-	console.log('Creating log with data000:', data);
 	if (req) {
 		const userId = commonUtils.getUserId(req);
 		if (userId) {
@@ -16,8 +15,6 @@ async function createLog({ data, req, transaction }) {
 		}
 	}
 
-	console.log('Req====', req.originalUrl, req.body);
-	console.log('Creating log with data111:', data);
 	const {
 		model,
 		record_id,
