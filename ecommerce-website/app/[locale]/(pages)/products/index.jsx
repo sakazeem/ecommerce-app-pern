@@ -17,112 +17,120 @@ import { loadThemeComponents } from "@/app/components/Themes/autoLoader";
 const PRODUCTS_PER_PAGE = 8;
 
 const ProductsPage = () => {
-	const searchParams = useSearchParams();
-	const paramsCategory = searchParams.get("category");
-	const paramsBrand = searchParams.get("brand");
-	const paramsSearch = searchParams.get("search");
-	const store = useStore();
-	const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-	const [resolvedCategory, setResolvedCategory] = useState(null);
-	const { getTargetProduct, clearTargetProduct, scrollToProduct } =
-		useScrollRestoration();
-	const { Footer } = loadThemeComponents(store.themeName);
-	const [isMobile, setIsMobile] = useState(false);
+  const searchParams = useSearchParams();
+  const paramsCategory = searchParams.get("category");
+  const paramsBrand = searchParams.get("brand");
+  const paramsSearch = searchParams.get("search");
+  const paramsFilterQuery =
+    searchParams.get("best-selling") !== null
+      ? "best-selling"
+      : searchParams.get("mixed") !== null
+        ? "mixed"
+        : null;
+  const store = useStore();
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [resolvedCategory, setResolvedCategory] = useState(null);
+  const { getTargetProduct, clearTargetProduct, scrollToProduct } =
+    useScrollRestoration();
+  const { Footer } = loadThemeComponents(store.themeName);
+  const [isMobile, setIsMobile] = useState(false);
 
-	useEffect(() => {
-		const handleResize = () => {
-			setIsMobile(window.innerWidth <= 768);
-		};
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
 
-		handleResize();
-		window.addEventListener("resize", handleResize);
+    handleResize();
+    window.addEventListener("resize", handleResize);
 
-		return () => window.removeEventListener("resize", handleResize);
-	}, []);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-	const [selectedFilters, setSelectedFilters] = useState({
-		categories: [],
-		brands: [],
-		price: null,
-		size: null,
-		color: null,
-	});
+  const [selectedFilters, setSelectedFilters] = useState({
+    categories: [],
+    brands: [],
+    price: null,
+    size: null,
+    color: null,
+  });
 
-	const [defaultFilters, setDefaultFilters] = useState(null);
-	const loaderRef = useRef(null);
-	const category = paramsCategory || "";
-	const brand = paramsBrand || "";
-	const search = paramsSearch || "";
+  const [defaultFilters, setDefaultFilters] = useState(null);
+  const loaderRef = useRef(null);
+  const category = paramsCategory || "";
+  const brand = paramsBrand || "";
+  const search = paramsSearch || "";
 
-	const scrollAttempted = useRef(false);
+  const scrollAttempted = useRef(false);
 
-	const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
-		useInfiniteQuery({
-			queryKey: [
-				"filteredProducts",
-				JSON.stringify(selectedFilters || {}),
-				JSON.stringify(defaultFilters || {}),
-				search,
-				category,
-				brand,
-			],
-			queryFn: ({ pageParam = 1 }) =>
-				ProductServices.getFilteredProducts({
-					filters: selectedFilters,
-					defaultFilters,
-					search: paramsSearch,
-					page: pageParam,
-					limit: PRODUCTS_PER_PAGE,
-				}),
-			getNextPageParam: (lastPage, allPages) => {
-				const totalPages = Math.ceil(lastPage.total / PRODUCTS_PER_PAGE);
-				return allPages.length < totalPages ? allPages.length + 1 : undefined;
-			},
-			enabled: !!store.themeName && defaultFilters !== null,
-			staleTime: 1000 * 60 * 30,
-			gcTime: 1000 * 60 * 60,
-			refetchOnWindowFocus: false,
-			refetchOnMount: false, // 🔥 key fix
-			// placeholderData: (prev) => prev,
-		});
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useInfiniteQuery({
+      queryKey: [
+        "filteredProducts",
+        JSON.stringify(selectedFilters || {}),
+        JSON.stringify(defaultFilters || {}),
+        search,
+        category,
+        brand,
+        paramsFilterQuery,
+      ],
+      queryFn: ({ pageParam = 1 }) =>
+        ProductServices.getFilteredProducts({
+          filters: selectedFilters,
+          defaultFilters,
+          search: paramsSearch,
+          filterQuery: paramsFilterQuery,
+          page: pageParam,
+          limit: PRODUCTS_PER_PAGE,
+        }),
+      getNextPageParam: (lastPage, allPages) => {
+        const totalPages = Math.ceil(lastPage.total / PRODUCTS_PER_PAGE);
+        return allPages.length < totalPages ? allPages.length + 1 : undefined;
+      },
+      enabled: !!store.themeName && defaultFilters !== null,
+      staleTime: 1000 * 60 * 30,
+      gcTime: 1000 * 60 * 60,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false, // 🔥 key fix
+      // placeholderData: (prev) => prev,
+    });
 
-	const products = data?.pages.flatMap((page) => page.records) ?? [];
+  const products = data?.pages.flatMap((page) => page.records) ?? [];
 
-	useEffect(() => {
-		if (scrollAttempted.current) return;
-		if (!data || defaultFilters === null || isLoading) return;
+  useEffect(() => {
+    if (scrollAttempted.current) return;
+    if (!data || defaultFilters === null || isLoading) return;
 
-		const targetId = getTargetProduct();
-		if (!targetId) return;
+    const targetId = getTargetProduct();
+    if (!targetId) return;
 
-		const isLoaded = products.some((p) => String(p.id) === String(targetId));
+    const isLoaded = products.some((p) => String(p.id) === String(targetId));
 
-		if (isLoaded) {
-			scrollAttempted.current = true;
-			scrollToProduct(targetId, clearTargetProduct);
-		} else if (hasNextPage && !isFetchingNextPage) {
-			fetchNextPage();
-		} else if (!hasNextPage) {
-			scrollAttempted.current = true;
-			clearTargetProduct();
-		}
-	}, [data?.pages.length, defaultFilters, isLoading, isFetchingNextPage]);
+    if (isLoaded) {
+      scrollAttempted.current = true;
+      scrollToProduct(targetId, clearTargetProduct);
+    } else if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    } else if (!hasNextPage) {
+      scrollAttempted.current = true;
+      clearTargetProduct();
+    }
+  }, [data?.pages.length, defaultFilters, isLoading, isFetchingNextPage]);
 
-	useEffect(() => {
-		if (!loaderRef.current || isFetchingNextPage || !hasNextPage) return;
-		if (!scrollAttempted.current && getTargetProduct()) return; // wait for restore
+  useEffect(() => {
+    if (!loaderRef.current || isFetchingNextPage || !hasNextPage) return;
+    if (!scrollAttempted.current && getTargetProduct()) return; // wait for restore
 
-		const observer = new IntersectionObserver(
-			(entries) => {
-				if (entries[0].isIntersecting && hasNextPage) fetchNextPage();
-			},
-			{ rootMargin: "200px" },
-		);
-		observer.observe(loaderRef.current);
-		return () => observer.disconnect();
-	}, [isFetchingNextPage, hasNextPage, fetchNextPage, scrollAttempted.current]);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage) fetchNextPage();
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [isFetchingNextPage, hasNextPage, fetchNextPage, scrollAttempted.current]);
 
-	return (
+  return (
     <>
       <main>
         <section className="container-layout section-layout">

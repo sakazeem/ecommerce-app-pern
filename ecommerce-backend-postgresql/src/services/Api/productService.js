@@ -441,18 +441,39 @@ const getProductsForFilterPage = async (req) => {
 		variantAttributeFilter,
 	} = await productFilterConditions(req);
 
+	const isMixed = filterQuery === 'mixed';
+	const isBestSelling = filterQuery === 'best-selling';
+	const fetchLimit = isMixed ? limit * 4 : limit;
+
+	const bestSellingOrder = [
+		db.sequelize.literal(`(
+			SELECT COALESCE(SUM(oi.quantity), 0)
+			FROM order_item oi
+			INNER JOIN "order" o ON o.id = oi.order_id
+			WHERE oi.product_id = "product"."id"
+			  AND o.created_at >= NOW() - INTERVAL '30 days'
+		)`),
+		'DESC',
+	];
+
+	const productOrder = isBestSelling
+		? [bestSellingOrder]
+		: isMixed
+		? db.sequelize.random()
+		: [['id', 'DESC']];
+
 	const products = await db.product
 		.scope(
 			{ method: ['active'] } // active scope with params
 		)
 		.findAndCountAll({
 			offset,
-			limit,
+			limit: fetchLimit,
 			where: {
 				...priceCondition,
 				...brandCondition,
 			},
-			order: filterQuery ? db.sequelize.random() : [['id', 'DESC']],
+			order: productOrder,
 			attributes: [
 				'id',
 				'sku',
@@ -555,28 +576,35 @@ const getProductsForFilterPage = async (req) => {
 			distinct: true, // to fix count
 			col: 'id', // to fix count
 		});
-	const result = {
+
+	let records = products.rows;
+
+	if (isMixed) {
+		const seenCategories = new Set();
+		const dedupedRecords = [];
+
+		for (const product of products.rows) {
+			const categoryId = product.categories?.[0]?.id;
+			const key =
+				categoryId != null ? `cat_${categoryId}` : `prod_${product.id}`;
+
+			if (!seenCategories.has(key)) {
+				seenCategories.add(key);
+				dedupedRecords.push(product);
+			}
+
+			if (dedupedRecords.length >= limit) break;
+		}
+
+		records = dedupedRecords;
+	}
+
+	return {
 		total: products.count,
-		records: products.rows,
+		records,
 		limit,
 		page,
 	};
-	// 2. Store in cache (IMPORTANT: short TTL recommended)
-	// await redisClient.set(
-	// 	cacheKey,
-	// 	JSON.stringify(result),
-	// 	'EX',
-	// 	60 * 30 // 30 minutes (because filters change often)
-	// );
-	return result;
-	return {
-		total: products.count,
-		records: products.rows,
-		limit: limit,
-		page: page,
-	};
-
-	return products;
 };
 
 module.exports = {
