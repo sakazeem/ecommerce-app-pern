@@ -439,11 +439,11 @@ body
 .notification-content h6 {
 	font-size: 13px;
 	margin-bottom: 5px;
-	-webkit-line-clamp: 1;
-	overflow: hidden;
-	display: -webkit-box;
-	-webkit-box-orient: vertical;
-	text-overflow: ellipsis;
+	/* -webkit-line-clamp: 1; */
+	/* overflow: hidden; */
+	/* display: -webkit-box; */
+	/* -webkit-box-orient: vertical; */
+	/* text-overflow: ellipsis; */
 }
 .notification-content p span {
 	font-size: 11px;

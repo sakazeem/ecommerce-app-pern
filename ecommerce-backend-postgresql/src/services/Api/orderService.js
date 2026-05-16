@@ -8,6 +8,7 @@ const {
 } = require('../../config/emailTemplates/orderConfirmationUser');
 const db = require('../../db/models');
 const ApiError = require('../../utils/ApiError');
+const { createNotification } = require('../Admin/notificationService');
 const { sendEmail } = require('../email.service');
 const { addOrUpdateAddress } = require('./appUserService');
 const config = require('../../config/config');
@@ -188,6 +189,17 @@ async function confirmOrder(req) {
 					{ stock: variantBranch.stock - item.quantity },
 					{ transaction }
 				);
+
+				const newVariantStock = variantBranch.stock - item.quantity;
+				if (newVariantStock <= variantBranch.low_stock) {
+					await createNotification(
+						`${item.title} (${
+							item.selectedVariant
+								? item.selectedVariant.sku
+								: item.sku
+						}) is low on stock`
+					).catch(() => {}); // non-blocking
+				}
 			} else {
 				const product = await db.product.findOne({
 					where: { id: item.id },
@@ -215,6 +227,18 @@ async function confirmOrder(req) {
 					},
 					{ transaction }
 				);
+
+				const LOW_STOCK_THRESHOLD = 5;
+				const newProductStock = product.stock - item.quantity;
+				if (newProductStock <= LOW_STOCK_THRESHOLD) {
+					await createNotification(
+						`${item.title} (${
+							item.selectedVariant
+								? item.selectedVariant.sku
+								: item.sku
+						}) is low on stock`
+					).catch(() => {}); // non-blocking
+				}
 			}
 		}
 
@@ -273,11 +297,11 @@ async function confirmOrder(req) {
 					// to: 'annasahmed1609@gmail.com',
 					// to: 'salmanazeemkhan@gmail.com',
 					// to: 'orders@babiesnbaba.com',
-					// to: 'devsts26@gmail.com',
-					to:
-						config.env === 'development'
-							? 'annasahmed1609@gmail.com'
-							: 'babiesnbaba@gmail.com',
+					to: 'devsts26@gmail.com',
+					// to:
+					// 	config.env === 'development'
+					// 		? 'annasahmed1609@gmail.com'
+					// 		: 'babiesnbaba@gmail.com',
 					subject: `New Order #${orderId}`,
 					html: orderConfirmationAdminTemplate({
 						orderId,
