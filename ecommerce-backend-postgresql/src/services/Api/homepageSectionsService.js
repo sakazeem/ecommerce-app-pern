@@ -74,6 +74,13 @@ async function getHomepageSections() {
 		if (Array.isArray(config.tab_categories)) {
 			config.tab_categories.forEach((id) => categoryIds.add(Number(id)));
 		}
+
+		// Mixed products category pool
+		if (Array.isArray(config.mixed_category_ids)) {
+			config.mixed_category_ids.forEach((id) =>
+				categoryIds.add(Number(id))
+			);
+		}
 	}
 
 	// 3. Fetch media & categories in bulk
@@ -167,10 +174,29 @@ async function getHomepageSections() {
 			config.image = mediaMap[config.image] || null;
 		}
 
-		// Single product category
+		// Single product category (only hydrate if it's a real numeric id)
 		if (config.category_id && Number(config.category_id)) {
 			config.category = categoryMap[Number(config.category_id)] || null;
 			delete config.category_id;
+		}
+
+		// For products sections, embed ready-made query params the website can forward
+		if (section.type === 'products') {
+			const filterQuery = config.category_id || '';
+			const qp = { filterQuery, limit: config.limit || 10 };
+			if (filterQuery === 'mixed') {
+				// Pass sectionId so BE can look up mixed_category_ids directly from DB
+				// This works even if the website doesn't know about mixedCategoryIds
+				qp.sectionId = section.id;
+				// Also pass mixedCategoryIds for clients that support it
+				if (
+					Array.isArray(config.mixed_category_ids) &&
+					config.mixed_category_ids.length > 0
+				) {
+					qp.mixedCategoryIds = config.mixed_category_ids.join(',');
+				}
+			}
+			config.query_params = qp;
 		}
 
 		// Categories
@@ -189,6 +215,16 @@ async function getHomepageSections() {
 			delete config.tab_categories;
 		}
 
+		// Mixed products category pool
+		if (
+			Array.isArray(config.mixed_category_ids) &&
+			config.mixed_category_ids.length > 0
+		) {
+			config.mixed_categories = config.mixed_category_ids
+				.map((id) => categoryMap[Number(id)])
+				.filter(Boolean);
+		}
+
 		return {
 			id: section.id,
 			type: section.type,
@@ -197,6 +233,91 @@ async function getHomepageSections() {
 			config,
 		};
 	});
+
+	// Pre-fetch mixed products for sections that have a category pool
+	// so the website receives products directly without needing extra params
+	for (const section of hydratedSections) {
+		if (
+			section.type === 'products' &&
+			section.config.category_id === 'mixed' &&
+			Array.isArray(section.config.mixed_category_ids) &&
+			section.config.mixed_category_ids.length > 0
+		) {
+			const poolIds = section.config.mixed_category_ids
+				.map(Number)
+				.filter(Boolean);
+			const limit = section.config.limit || 10;
+
+			const perCatResults = await Promise.all(
+				poolIds.map((catId) =>
+					db.product.scope({ method: ['active'] }).findAll({
+						limit: 2,
+						order: db.sequelize.random(),
+						attributes: [
+							'id',
+							'sku',
+							'base_price',
+							'base_discount_percentage',
+							'is_featured',
+						],
+						include: [
+							{
+								model: db.category.scope('active'),
+								attributes: ['id'],
+								required: true,
+								where: { id: catId },
+							},
+							{
+								model: db.product_variant,
+								required: false,
+								attributes: ['id', 'sku'],
+								include: [
+									{
+										model: db.branch,
+										required: false,
+										through: { as: 'pvb' },
+									},
+								],
+							},
+							{
+								model: db.media,
+								required: false,
+								as: 'images',
+								attributes: ['url'],
+							},
+							{
+								model: db.media,
+								required: false,
+								as: 'thumbnailImage',
+								attributes: ['url'],
+							},
+							{
+								model: db.product_translation,
+								required: true,
+								attributes: ['title', 'excerpt', 'slug'],
+								where: { language_id: 1 },
+							},
+						],
+						distinct: true,
+					})
+				)
+			);
+
+			const seenIds = new Set();
+			const flat = [];
+			for (const rows of perCatResults)
+				for (const p of rows)
+					if (!seenIds.has(p.id)) {
+						seenIds.add(p.id);
+						flat.push(p);
+					}
+			for (let i = flat.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[flat[i], flat[j]] = [flat[j], flat[i]];
+			}
+			section.config.products = flat.slice(0, limit);
+		}
+	}
 
 	// 3. Store in Redis
 	await redisClient.set(

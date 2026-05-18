@@ -309,8 +309,132 @@ const getCategoryFilterProducts = async (req) => {
 	const { categoryIds } = await productFilterConditions(req);
 
 	const isMixed = filterQuery === 'mixed';
+
+	// ── MIXED: 2 products per category, shuffled ─────────────────────────────
+	if (isMixed) {
+		let poolCategoryIds = [];
+
+		// 1. Explicit ids from query param (website passing mixedCategoryIds)
+		if (req.query.mixedCategoryIds) {
+			const raw = req.query.mixedCategoryIds;
+			poolCategoryIds = (Array.isArray(raw) ? raw : raw.split(','))
+				.map(Number)
+				.filter(Boolean);
+		}
+
+		// 2. Look up from section config by sectionId (most reliable — no website change needed)
+		if (!poolCategoryIds.length && req.query.sectionId) {
+			const section = await db.homepage_sections.findByPk(
+				Number(req.query.sectionId),
+				{ attributes: ['config'], raw: true }
+			);
+			const ids = section?.config?.mixed_category_ids;
+			if (Array.isArray(ids) && ids.length) {
+				poolCategoryIds = ids.map(Number).filter(Boolean);
+			}
+		}
+
+		// 3. Fallback: all active root categories
+		if (!poolCategoryIds.length) {
+			const allCats = await db.category.scope('active').findAll({
+				attributes: ['id'],
+				where: { parent_id: null },
+			});
+			poolCategoryIds = allCats.map((c) => c.id);
+		}
+
+		const sharedIncludes = [
+			{
+				model: db.product_variant,
+				required: false,
+				attributes: ['id', 'sku'],
+				include: [
+					{
+						model: db.branch,
+						required: false,
+						through: { as: 'pvb' },
+					},
+				],
+			},
+			{
+				model: db.media,
+				required: false,
+				as: 'images',
+				attributes: ['url'],
+			},
+			{
+				model: db.media,
+				required: false,
+				as: 'thumbnailImage',
+				attributes: ['url'],
+			},
+			{
+				model: db.product_translation,
+				required: true,
+				attributes: ['title', 'excerpt', 'slug'],
+				where: { language_id: 1 },
+			},
+		];
+
+		const perCatResults = await Promise.all(
+			poolCategoryIds.map((catId) =>
+				db.product.scope({ method: ['active'] }).findAll({
+					limit: 2,
+					order: db.sequelize.random(),
+					attributes: [
+						'id',
+						'sku',
+						'base_price',
+						'base_discount_percentage',
+						'is_featured',
+					],
+					include: [
+						{
+							model: db.category.scope('active'),
+							attributes: ['id'],
+							required: true,
+							where: { id: catId },
+							include: [
+								{
+									model: db.category_translation,
+									separate: true,
+									as: 'translations',
+									attributes: ['title'],
+									include: [translationInclude(req)],
+								},
+							],
+						},
+						...sharedIncludes,
+					],
+					distinct: true,
+				})
+			)
+		);
+
+		// Flatten, dedupe, Fisher-Yates shuffle, apply limit
+		const seenIds = new Set();
+		const flat = [];
+		for (const rows of perCatResults)
+			for (const p of rows)
+				if (!seenIds.has(p.id)) {
+					seenIds.add(p.id);
+					flat.push(p);
+				}
+		for (let i = flat.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[flat[i], flat[j]] = [flat[j], flat[i]];
+		}
+		return {
+			total: flat.length,
+			records: flat.slice(0, limit),
+			limit,
+			page,
+		};
+	}
+
+	// ── NON-MIXED ─────────────────────────────────────────────────────────────
 	const isBestSelling = filterQuery === 'best-selling';
-	const fetchLimit = isMixed ? limit * 4 : limit;
+	const fetchLimit = isBestSelling ? limit * 4 : limit;
 
 	const bestSellingOrder = [
 		db.sequelize.literal(`(
@@ -328,11 +452,7 @@ const getCategoryFilterProducts = async (req) => {
 		.findAndCountAll({
 			offset,
 			limit: fetchLimit,
-			order: isBestSelling
-				? [bestSellingOrder]
-				: isMixed
-				? db.sequelize.random()
-				: [['id', 'DESC']],
+			order: isBestSelling ? [bestSellingOrder] : [['id', 'DESC']],
 			attributes: [
 				'id',
 				'sku',
@@ -394,34 +514,7 @@ const getCategoryFilterProducts = async (req) => {
 			col: 'id',
 		});
 
-	let records = products.rows;
-
-	if (isMixed) {
-		const seenCategories = new Set();
-		const dedupedRecords = [];
-
-		for (const product of products.rows) {
-			const categoryId = product.categories?.[0]?.id;
-			const key =
-				categoryId != null ? `cat_${categoryId}` : `prod_${product.id}`;
-
-			if (!seenCategories.has(key)) {
-				seenCategories.add(key);
-				dedupedRecords.push(product);
-			}
-
-			if (dedupedRecords.length >= limit) break;
-		}
-
-		records = dedupedRecords;
-	}
-
-	return {
-		total: products.count,
-		records,
-		limit,
-		page,
-	};
+	return { total: products.count, records: products.rows, limit, page };
 };
 const getProductsForFilterPage = async (req) => {
 	const { page: defaultPage, limit: defaultLimit } = config.pagination;

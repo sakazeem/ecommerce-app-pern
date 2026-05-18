@@ -105,7 +105,7 @@ const PrimaryButton = ({
 				${className}
 				max-md:text-light
 				max-md:bg-primary
-
+				disabled:border-gray-400 disabled:text-gray-400
 				md:hidden
 			`}
       >
