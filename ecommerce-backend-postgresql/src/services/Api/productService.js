@@ -387,7 +387,7 @@ const getCategoryFilterProducts = async (req) => {
 
 				const categoryIds = childCategories.map((c) => c.id);
 				return db.product.scope({ method: ['active'] }).findAll({
-					limit: 1,
+					limit: 2,
 					order: db.sequelize.random(),
 					attributes: [
 						'id',
