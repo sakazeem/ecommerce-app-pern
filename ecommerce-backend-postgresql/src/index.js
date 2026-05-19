@@ -18,7 +18,7 @@ const port = config.port || 3000;
 (async () => {
 	await redisClient.connect();
 
-	console.log('Redis ready');
+	// console.log('Redis ready');
 
 	server.listen(port, () => {
 		logger.info(`App is listening on port ${config.port}`);

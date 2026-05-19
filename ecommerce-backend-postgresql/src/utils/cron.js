@@ -16,7 +16,6 @@ const deleteExpiredTokens = cron.schedule('0 0 * * *', async () => {
 
 
 const executeCronJobs = () => {
-
 	deleteExpiredTokens.start()
 }
 module.exports = executeCronJobs

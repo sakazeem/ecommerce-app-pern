@@ -15,6 +15,11 @@ function transformHomepageSection(product, lang) {
 			product.config.category,
 			lang
 		);
+	} else if (product.config.mixed_categories) {
+		// Mixed products: transform the category pool for reference; keep raw ids
+		product.config.mixed_categories = product.config.mixed_categories.map(
+			(cat) => transformCategory(cat, lang)
+		);
 	} else if (product.config.images) {
 		// images is now [{imageId: mediaObj, categoryId, category}]
 		// Transform to [{imageId: url, categoryId, categorySlug}] for the website

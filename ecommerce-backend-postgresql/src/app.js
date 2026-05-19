@@ -28,24 +28,24 @@ if (config.env !== 'test') {
 
 // use this middlware to show images
 // app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use(
-	'/uploads',
-	express.static(path.join(__dirname, 'uploads'), {
-		setHeaders: (res, path) => {
-			res.set('X-Served-By', 'NodeJS');
-		},
-	})
-);
+// app.use(
+// 	'/uploads',
+// 	express.static(path.join(__dirname, 'uploads'), {
+// 		setHeaders: (res, path) => {
+// 			res.set('X-Served-By', 'NodeJS');
+// 		},
+// 	})
+// );
 // set security HTTP headers
 app.use(helmet());
 
 // parse json request body
 app.use((req, res, next) => {
-	if (req.originalUrl.includes('stripe')) {
-		next();
-	} else {
-		express.json({ limit: '150mb' })(req, res, next);
-	}
+	express.json({ limit: '150mb' })(req, res, next);
+	// if (req.originalUrl.includes('stripe')) {
+	// 	next();
+	// } else {
+	// }
 });
 
 // parse urlencoded request body
@@ -164,6 +164,6 @@ app.use(errorConverter);
 app.use(errorHandler);
 
 // execute cron jobs
-executeCronJobs();
+// executeCronJobs();
 
 module.exports = app;
