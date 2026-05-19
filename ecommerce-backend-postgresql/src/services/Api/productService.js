@@ -342,7 +342,6 @@ const getCategoryFilterProducts = async (req) => {
 			});
 			poolCategoryIds = allCats.map((c) => c.id);
 		}
-
 		const sharedIncludes = [
 			{
 				model: db.product_variant,
@@ -377,9 +376,18 @@ const getCategoryFilterProducts = async (req) => {
 		];
 
 		const perCatResults = await Promise.all(
-			poolCategoryIds.map((catId) =>
-				db.product.scope({ method: ['active'] }).findAll({
-					limit: 2,
+			poolCategoryIds.map(async (catId) => {
+				const childCategories = await db.category.findAll({
+					attributes: ['id'],
+					where: {
+						[Op.or]: [{ id: catId }, { parent_id: catId }],
+					},
+					raw: true,
+				});
+
+				const categoryIds = childCategories.map((c) => c.id);
+				return db.product.scope({ method: ['active'] }).findAll({
+					limit: 1,
 					order: db.sequelize.random(),
 					attributes: [
 						'id',
@@ -393,11 +401,14 @@ const getCategoryFilterProducts = async (req) => {
 							model: db.category.scope('active'),
 							attributes: ['id'],
 							required: true,
-							where: { id: catId },
+							where: {
+								id: {
+									[Op.in]: categoryIds,
+								},
+							},
 							include: [
 								{
 									model: db.category_translation,
-									separate: true,
 									as: 'translations',
 									attributes: ['title'],
 									include: [translationInclude(req)],
@@ -407,8 +418,8 @@ const getCategoryFilterProducts = async (req) => {
 						...sharedIncludes,
 					],
 					distinct: true,
-				})
-			)
+				});
+			})
 		);
 
 		// Flatten, dedupe, Fisher-Yates shuffle, apply limit

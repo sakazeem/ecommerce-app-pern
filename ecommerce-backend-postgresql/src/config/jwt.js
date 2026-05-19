@@ -70,6 +70,7 @@ function jwt() {
 			'/v1/admin/move-to-r2', // Exclude move-to-r2 route
 			'/v1/test/purge-cache', // Exclude purge-cache route
 			'/v1/test/health-check', // Exclude health-check route
+			'/favicon.ico', // Exclude favicon route
 			/^\/uploads(\/.*)?$/, // ✅ best version
 		],
 	});
