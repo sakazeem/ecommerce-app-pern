@@ -6,6 +6,10 @@ function transformHomepageSection(product, lang) {
 		product.config.categories = product.config.categories.map((cat) =>
 			transformCategory(cat, lang)
 		);
+	} else if (product.config.pool_categories) {
+		product.config.pool_categories = product.config.pool_categories.map((cat) =>
+			transformCategory(cat, lang)
+		);
 	} else if (product.config.tabs) {
 		product.config.tabs = product.config.tabs.map((cat) =>
 			transformCategory(cat, lang)

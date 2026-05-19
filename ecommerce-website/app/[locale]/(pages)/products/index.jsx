@@ -1,6 +1,6 @@
 "use client";
 
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -10,6 +10,7 @@ import ProductsSlider from "@/app/components/Themes/KidsTheme/ProductsSlider";
 import MobileFilterDrawer from "@/app/components/Shared/MobileFilterDrawer";
 import { useStore } from "@/app/providers/StoreProvider";
 import ProductServices from "@/app/services/ProductServices";
+import HomepageService from "@/app/services/HomepageServices";
 import { useScrollRestoration } from "@/app/hooks/useScrollRestoration";
 import { SlidersHorizontal } from "lucide-react";
 import { loadThemeComponents } from "@/app/components/Themes/autoLoader";
@@ -17,112 +18,159 @@ import { loadThemeComponents } from "@/app/components/Themes/autoLoader";
 const PRODUCTS_PER_PAGE = 8;
 
 const ProductsPage = () => {
-	const searchParams = useSearchParams();
-	const paramsCategory = searchParams.get("category");
-	const paramsBrand = searchParams.get("brand");
-	const paramsSearch = searchParams.get("search");
-	const store = useStore();
-	const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
-	const [resolvedCategory, setResolvedCategory] = useState(null);
-	const { getTargetProduct, clearTargetProduct, scrollToProduct } =
-		useScrollRestoration();
-	const { Footer } = loadThemeComponents(store.themeName);
-	const [isMobile, setIsMobile] = useState(false);
+  const searchParams = useSearchParams();
+  const paramsCategory = searchParams.get("category");
+  const paramsBrand = searchParams.get("brand");
+  const paramsSearch = searchParams.get("search");
+  const store = useStore();
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [resolvedCategory, setResolvedCategory] = useState(null);
+  const { getTargetProduct, clearTargetProduct, scrollToProduct } =
+    useScrollRestoration();
+  const { Footer } = loadThemeComponents(store.themeName);
+  const [isMobile, setIsMobile] = useState(false);
 
-	useEffect(() => {
-		const handleResize = () => {
-			setIsMobile(window.innerWidth <= 768);
-		};
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
 
-		handleResize();
-		window.addEventListener("resize", handleResize);
+    handleResize();
+    window.addEventListener("resize", handleResize);
 
-		return () => window.removeEventListener("resize", handleResize);
-	}, []);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-	const [selectedFilters, setSelectedFilters] = useState({
-		categories: [],
-		brands: [],
-		price: null,
-		size: null,
-		color: null,
-	});
+  const [selectedFilters, setSelectedFilters] = useState({
+    categories: [],
+    brands: [],
+    price: null,
+    size: null,
+    color: null,
+  });
 
-	const [defaultFilters, setDefaultFilters] = useState(null);
-	const loaderRef = useRef(null);
-	const category = paramsCategory || "";
-	const brand = paramsBrand || "";
-	const search = paramsSearch || "";
+  const [defaultFilters, setDefaultFilters] = useState(null);
+  const loaderRef = useRef(null);
+  const category = paramsCategory || "";
+  const brand = paramsBrand || "";
+  const search = paramsSearch || "";
+  const filterQuery =
+    searchParams.get("filterQuery") ||
+    (searchParams.has("mixed")
+      ? "mixed"
+      : searchParams.has("best-selling")
+        ? "best-selling"
+        : "");
 
-	const scrollAttempted = useRef(false);
+  // ✅ Fetch homepage sections to get the mixed product configuration (same source as homepage)
+  const { data: homepageSections } = useQuery({
+    queryKey: ["homepageSections"],
+    queryFn: HomepageService.getHomepageSections,
+    enabled: filterQuery === "mixed",
+    staleTime: 1000 * 60 * 30,
+    refetchOnWindowFocus: false,
+  });
 
-	const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
-		useInfiniteQuery({
-			queryKey: [
-				"filteredProducts",
-				JSON.stringify(selectedFilters || {}),
-				JSON.stringify(defaultFilters || {}),
-				search,
-				category,
-				brand,
-			],
-			queryFn: ({ pageParam = 1 }) =>
-				ProductServices.getFilteredProducts({
-					filters: selectedFilters,
-					defaultFilters,
-					search: paramsSearch,
-					page: pageParam,
-					limit: PRODUCTS_PER_PAGE,
-				}),
-			getNextPageParam: (lastPage, allPages) => {
-				const totalPages = Math.ceil(lastPage.total / PRODUCTS_PER_PAGE);
-				return allPages.length < totalPages ? allPages.length + 1 : undefined;
-			},
-			enabled: !!store.themeName && defaultFilters !== null,
-			staleTime: 1000 * 60 * 30,
-			gcTime: 1000 * 60 * 60,
-			refetchOnWindowFocus: false,
-			refetchOnMount: false, // 🔥 key fix
-			// placeholderData: (prev) => prev,
-		});
+  // ✅ Derive mixed config: find the first "products" section with category_id === "mixed"
+  const mixedSectionConfig =
+    filterQuery === "mixed"
+      ? (homepageSections?.find?.(
+          (s) => s.type === "products" && s.config?.category_id === "mixed",
+        )?.config ?? null)
+      : null;
 
-	const products = data?.pages.flatMap((page) => page.records) ?? [];
+  // Priority: selectedProductIds > poolCategoryIds > all categories (handled by BE)
+  const mixedSelectedProductIds = mixedSectionConfig?.selected_product_ids
+    ?.length
+    ? mixedSectionConfig.selected_product_ids
+    : null;
 
-	useEffect(() => {
-		if (scrollAttempted.current) return;
-		if (!data || defaultFilters === null || isLoading) return;
+  const mixedPoolCategoryIds =
+    !mixedSelectedProductIds && mixedSectionConfig?.pool_category_ids?.length
+      ? mixedSectionConfig.pool_category_ids
+      : null;
 
-		const targetId = getTargetProduct();
-		if (!targetId) return;
+  const scrollAttempted = useRef(false);
 
-		const isLoaded = products.some((p) => String(p.id) === String(targetId));
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
+    useInfiniteQuery({
+      queryKey: [
+        "filteredProducts",
+        JSON.stringify(selectedFilters || {}),
+        JSON.stringify(defaultFilters || {}),
+        search,
+        category,
+        brand,
+        filterQuery,
+        // ✅ Include mixed config params in cache key so results update when config loads
+        mixedSelectedProductIds ? mixedSelectedProductIds.join(",") : null,
+        mixedPoolCategoryIds ? mixedPoolCategoryIds.join(",") : null,
+      ],
+      queryFn: ({ pageParam = 1 }) =>
+        ProductServices.getFilteredProducts({
+          filters: selectedFilters,
+          defaultFilters,
+          search: paramsSearch,
+          filterQuery,
+          // ✅ Pass mixed config params — BE uses same logic as homepage section
+          selectedProductIds: mixedSelectedProductIds,
+          poolCategoryIds: mixedPoolCategoryIds,
+          page: pageParam,
+          limit: PRODUCTS_PER_PAGE,
+        }),
+      getNextPageParam: (lastPage, allPages) => {
+        const totalPages = Math.ceil(lastPage.total / PRODUCTS_PER_PAGE);
+        return allPages.length < totalPages ? allPages.length + 1 : undefined;
+      },
+      // ✅ For mixed: wait until homepage sections have loaded so we use the right config
+      enabled:
+        !!store.themeName &&
+        defaultFilters !== null &&
+        (filterQuery !== "mixed" || homepageSections !== undefined),
+      staleTime: 1000 * 60 * 30,
+      gcTime: 1000 * 60 * 60,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false, // 🔥 key fix
+      // placeholderData: (prev) => prev,
+    });
 
-		if (isLoaded) {
-			scrollAttempted.current = true;
-			scrollToProduct(targetId, clearTargetProduct);
-		} else if (hasNextPage && !isFetchingNextPage) {
-			fetchNextPage();
-		} else if (!hasNextPage) {
-			scrollAttempted.current = true;
-			clearTargetProduct();
-		}
-	}, [data?.pages.length, defaultFilters, isLoading, isFetchingNextPage]);
+  const products = data?.pages.flatMap((page) => page.records) ?? [];
 
-	useEffect(() => {
-		if (!loaderRef.current || isFetchingNextPage || !hasNextPage) return;
-		if (!scrollAttempted.current && getTargetProduct()) return; // wait for restore
+  useEffect(() => {
+    if (scrollAttempted.current) return;
+    if (!data || defaultFilters === null || isLoading) return;
 
-		const observer = new IntersectionObserver(
-			(entries) => {
-				if (entries[0].isIntersecting && hasNextPage) fetchNextPage();
-			},
-			{ rootMargin: "200px" },
-		);
-		observer.observe(loaderRef.current);
-		return () => observer.disconnect();
-	}, [isFetchingNextPage, hasNextPage, fetchNextPage, scrollAttempted.current]);
+    const targetId = getTargetProduct();
+    if (!targetId) return;
 
-	return (
+    const isLoaded = products.some((p) => String(p.id) === String(targetId));
+
+    if (isLoaded) {
+      scrollAttempted.current = true;
+      scrollToProduct(targetId, clearTargetProduct);
+    } else if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    } else if (!hasNextPage) {
+      scrollAttempted.current = true;
+      clearTargetProduct();
+    }
+  }, [data?.pages.length, defaultFilters, isLoading, isFetchingNextPage]);
+
+  useEffect(() => {
+    if (!loaderRef.current || isFetchingNextPage || !hasNextPage) return;
+    if (!scrollAttempted.current && getTargetProduct()) return; // wait for restore
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage) fetchNextPage();
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(loaderRef.current);
+    return () => observer.disconnect();
+  }, [isFetchingNextPage, hasNextPage, fetchNextPage, scrollAttempted.current]);
+
+  return (
     <>
       <main>
         <section className="container-layout section-layout">
@@ -189,9 +237,11 @@ const ProductsPage = () => {
                   )}
 
                   {/* End of results indicator */}
-                  {!hasNextPage && products.length > PRODUCTS_PER_PAGE && (
+                  {!hasNextPage && products.length > 0 && (
                     <p className="text-center text-muted py-6 p4">
-                      You've reached the end of the results
+                      {products.length === 1
+                        ? "Showing 1 product"
+                        : `Showing all ${products.length} product${products.length !== 1 ? "s" : ""}`}
                     </p>
                   )}
                 </>

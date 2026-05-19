@@ -65,6 +65,13 @@ async function getHomepageSections() {
 			categoryIds.add(Number(config.category_id));
 		}
 
+		// 🔀 Mixed product pool categories
+		if (Array.isArray(config.pool_category_ids)) {
+			config.pool_category_ids.forEach((id) =>
+				categoryIds.add(Number(id))
+			);
+		}
+
 		// Categories section
 		if (Array.isArray(config.category_ids)) {
 			config.category_ids.forEach((id) => categoryIds.add(Number(id)));
@@ -173,6 +180,14 @@ async function getHomepageSections() {
 			delete config.category_id;
 		}
 
+		// 🔀 Mixed product pool categories
+		if (Array.isArray(config.pool_category_ids)) {
+			config.pool_categories = config.pool_category_ids
+				.map((id) => categoryMap[Number(id)])
+				.filter(Boolean);
+			delete config.pool_category_ids;
+		}
+
 		// Categories
 		if (Array.isArray(config.category_ids)) {
 			config.categories = config.category_ids
@@ -187,6 +202,15 @@ async function getHomepageSections() {
 				.map((id) => categoryMap[Number(id)])
 				.filter(Boolean);
 			delete config.tab_categories;
+		}
+
+		// 🎯 Selected products — pass IDs through so the FE can fetch via /product/by-ids
+		if (
+			Array.isArray(config.selected_product_ids) &&
+			config.selected_product_ids.length
+		) {
+			config.selected_product_ids =
+				config.selected_product_ids.map(Number);
 		}
 
 		return {

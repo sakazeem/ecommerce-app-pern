@@ -9,6 +9,8 @@ router
 	.route('/category-filter')
 	.get(apiProductController.getCategoryFilterProducts);
 router.route('/suggestions').get(apiProductController.getProductsSuggestions);
+// Fetch a specific list of products by IDs (used by homepage sections with selected_product_ids)
+router.route('/by-ids').get(apiProductController.getProductsByIds);
 router.route('/:slug').get(apiProductController.getProductBySlug);
 
 module.exports = router;
