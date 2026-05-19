@@ -103,8 +103,6 @@ const PrimaryButton = ({
 				${textColor}
 				${isSmall ? "px-3 py-1 text-xs" : "px-5 py-2 text-sm"}
 				${className}
-				max-md:text-light
-				max-md:bg-primary
 				disabled:border-gray-400 disabled:text-gray-400
 				md:hidden
 			`}
