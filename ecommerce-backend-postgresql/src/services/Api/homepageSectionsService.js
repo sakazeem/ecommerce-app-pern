@@ -65,6 +65,13 @@ async function getHomepageSections() {
 			categoryIds.add(Number(config.category_id));
 		}
 
+		// 🔀 Mixed product pool categories
+		if (Array.isArray(config.pool_category_ids)) {
+			config.pool_category_ids.forEach((id) =>
+				categoryIds.add(Number(id))
+			);
+		}
+
 		// Categories section
 		if (Array.isArray(config.category_ids)) {
 			config.category_ids.forEach((id) => categoryIds.add(Number(id)));
@@ -180,23 +187,12 @@ async function getHomepageSections() {
 			delete config.category_id;
 		}
 
-		// For products sections, embed ready-made query params the website can forward
-		if (section.type === 'products') {
-			const filterQuery = config.category_id || '';
-			const qp = { filterQuery, limit: config.limit || 10 };
-			if (filterQuery === 'mixed') {
-				// Pass sectionId so BE can look up mixed_category_ids directly from DB
-				// This works even if the website doesn't know about mixedCategoryIds
-				qp.sectionId = section.id;
-				// Also pass mixedCategoryIds for clients that support it
-				if (
-					Array.isArray(config.mixed_category_ids) &&
-					config.mixed_category_ids.length > 0
-				) {
-					qp.mixedCategoryIds = config.mixed_category_ids.join(',');
-				}
-			}
-			config.query_params = qp;
+		// 🔀 Mixed product pool categories
+		if (Array.isArray(config.pool_category_ids)) {
+			config.pool_categories = config.pool_category_ids
+				.map((id) => categoryMap[Number(id)])
+				.filter(Boolean);
+			delete config.pool_category_ids;
 		}
 
 		// Categories
@@ -215,14 +211,13 @@ async function getHomepageSections() {
 			delete config.tab_categories;
 		}
 
-		// Mixed products category pool
+		// 🎯 Selected products — pass IDs through so the FE can fetch via /product/by-ids
 		if (
-			Array.isArray(config.mixed_category_ids) &&
-			config.mixed_category_ids.length > 0
+			Array.isArray(config.selected_product_ids) &&
+			config.selected_product_ids.length
 		) {
-			config.mixed_categories = config.mixed_category_ids
-				.map((id) => categoryMap[Number(id)])
-				.filter(Boolean);
+			config.selected_product_ids =
+				config.selected_product_ids.map(Number);
 		}
 
 		return {

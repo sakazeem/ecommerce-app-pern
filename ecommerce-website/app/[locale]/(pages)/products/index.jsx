@@ -1,6 +1,6 @@
 "use client";
 
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -10,6 +10,7 @@ import ProductsSlider from "@/app/components/Themes/KidsTheme/ProductsSlider";
 import MobileFilterDrawer from "@/app/components/Shared/MobileFilterDrawer";
 import { useStore } from "@/app/providers/StoreProvider";
 import ProductServices from "@/app/services/ProductServices";
+import HomepageService from "@/app/services/HomepageServices";
 import { useScrollRestoration } from "@/app/hooks/useScrollRestoration";
 import { SlidersHorizontal } from "lucide-react";
 import { loadThemeComponents } from "@/app/components/Themes/autoLoader";
@@ -21,12 +22,15 @@ const ProductsPage = () => {
   const paramsCategory = searchParams.get("category");
   const paramsBrand = searchParams.get("brand");
   const paramsSearch = searchParams.get("search");
+<<<<<<< HEAD
   const paramsFilterQuery =
     searchParams.get("best-selling") !== null
       ? "best-selling"
       : searchParams.get("mixed") !== null
         ? "mixed"
         : null;
+=======
+>>>>>>> 5f656b9e0b14988f38cf261b37d2624573796ea0
   const store = useStore();
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [resolvedCategory, setResolvedCategory] = useState(null);
@@ -59,6 +63,41 @@ const ProductsPage = () => {
   const category = paramsCategory || "";
   const brand = paramsBrand || "";
   const search = paramsSearch || "";
+  const filterQuery =
+    searchParams.get("filterQuery") ||
+    (searchParams.has("mixed")
+      ? "mixed"
+      : searchParams.has("best-selling")
+        ? "best-selling"
+        : "");
+
+  // ✅ Fetch homepage sections to get the mixed product configuration (same source as homepage)
+  const { data: homepageSections } = useQuery({
+    queryKey: ["homepageSections"],
+    queryFn: HomepageService.getHomepageSections,
+    enabled: filterQuery === "mixed",
+    staleTime: 1000 * 60 * 30,
+    refetchOnWindowFocus: false,
+  });
+
+  // ✅ Derive mixed config: find the first "products" section with category_id === "mixed"
+  const mixedSectionConfig =
+    filterQuery === "mixed"
+      ? (homepageSections?.find?.(
+          (s) => s.type === "products" && s.config?.category_id === "mixed",
+        )?.config ?? null)
+      : null;
+
+  // Priority: selectedProductIds > poolCategoryIds > all categories (handled by BE)
+  const mixedSelectedProductIds = mixedSectionConfig?.selected_product_ids
+    ?.length
+    ? mixedSectionConfig.selected_product_ids
+    : null;
+
+  const mixedPoolCategoryIds =
+    !mixedSelectedProductIds && mixedSectionConfig?.pool_category_ids?.length
+      ? mixedSectionConfig.pool_category_ids
+      : null;
 
   const scrollAttempted = useRef(false);
 
@@ -71,14 +110,20 @@ const ProductsPage = () => {
         search,
         category,
         brand,
-        paramsFilterQuery,
+        filterQuery,
+        // ✅ Include mixed config params in cache key so results update when config loads
+        mixedSelectedProductIds ? mixedSelectedProductIds.join(",") : null,
+        mixedPoolCategoryIds ? mixedPoolCategoryIds.join(",") : null,
       ],
       queryFn: ({ pageParam = 1 }) =>
         ProductServices.getFilteredProducts({
           filters: selectedFilters,
           defaultFilters,
           search: paramsSearch,
-          filterQuery: paramsFilterQuery,
+          filterQuery,
+          // ✅ Pass mixed config params — BE uses same logic as homepage section
+          selectedProductIds: mixedSelectedProductIds,
+          poolCategoryIds: mixedPoolCategoryIds,
           page: pageParam,
           limit: PRODUCTS_PER_PAGE,
         }),
@@ -86,7 +131,11 @@ const ProductsPage = () => {
         const totalPages = Math.ceil(lastPage.total / PRODUCTS_PER_PAGE);
         return allPages.length < totalPages ? allPages.length + 1 : undefined;
       },
-      enabled: !!store.themeName && defaultFilters !== null,
+      // ✅ For mixed: wait until homepage sections have loaded so we use the right config
+      enabled:
+        !!store.themeName &&
+        defaultFilters !== null &&
+        (filterQuery !== "mixed" || homepageSections !== undefined),
       staleTime: 1000 * 60 * 30,
       gcTime: 1000 * 60 * 60,
       refetchOnWindowFocus: false,
@@ -197,9 +246,11 @@ const ProductsPage = () => {
                   )}
 
                   {/* End of results indicator */}
-                  {!hasNextPage && products.length > PRODUCTS_PER_PAGE && (
+                  {!hasNextPage && products.length > 0 && (
                     <p className="text-center text-muted py-6 p4">
-                      You've reached the end of the results
+                      {products.length === 1
+                        ? "Showing 1 product"
+                        : `Showing all ${products.length} product${products.length !== 1 ? "s" : ""}`}
                     </p>
                   )}
                 </>

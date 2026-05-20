@@ -126,10 +126,22 @@ const productFilterConditions = async (req) => {
 
 const getProductsSuggestions = async (req) => {
 	const { page: defaultPage } = config.pagination;
-	const { page = defaultPage, limit = 5 } = req.query;
+	const { page = defaultPage, limit = 20 } = req.query;
 	const offset = getOffset(page, limit);
 
-	const { searchCondition } = await productFilterConditions(req);
+	const { searchCondition, categoryIds } = await productFilterConditions(req);
+
+	// When categoryIds are passed (e.g. from pool_category_ids in admin),
+	// restrict results to only those categories so the select only shows
+	// products that belong to the chosen pool.
+	const categoryInclude = {
+		model: db.category.scope('active'),
+		attributes: ['id'],
+		required: Boolean(categoryIds.length),
+		where: categoryIds.length
+			? { id: { [Op.in]: categoryIds } }
+			: undefined,
+	};
 
 	const products = await db.product
 		.scope(
@@ -147,6 +159,7 @@ const getProductsSuggestions = async (req) => {
 				'is_featured',
 			],
 			include: [
+				categoryInclude,
 				{
 					model: db.media,
 					required: false,
@@ -161,8 +174,8 @@ const getProductsSuggestions = async (req) => {
 				},
 			],
 			unique: true,
-			distinct: true, // to fix count
-			col: 'id', // to fix count
+			distinct: true,
+			col: 'id',
 		});
 
 	return {
@@ -170,8 +183,6 @@ const getProductsSuggestions = async (req) => {
 		limit: limit,
 		page: page,
 	};
-
-	return products;
 };
 const getProducts = async (req) => {
 	const { page: defaultPage, limit: defaultLimit } = config.pagination;
@@ -300,13 +311,13 @@ const getProducts = async (req) => {
 };
 const getCategoryFilterProducts = async (req) => {
 	const { page: defaultPage, limit: defaultLimit } = config.pagination;
-	const { filterQuery = false } = req.query;
+	const { filterQuery = false, poolCategoryIds = null } = req.query;
 
 	const page = Number(req.query.page ?? defaultPage);
 	const limit = Number(req.query.limit ?? defaultLimit);
 
 	const offset = getOffset(page, limit);
-	const { categoryIds } = await productFilterConditions(req);
+	let { categoryIds } = await productFilterConditions(req);
 
 	const isMixed = filterQuery === 'mixed';
 
@@ -445,7 +456,21 @@ const getCategoryFilterProducts = async (req) => {
 
 	// ── NON-MIXED ─────────────────────────────────────────────────────────────
 	const isBestSelling = filterQuery === 'best-selling';
-	const fetchLimit = isBestSelling ? limit * 4 : limit;
+
+	// 🔀 If mixed filter with pool categories, use pool categories instead of normal categoryIds
+	if (isMixed && poolCategoryIds) {
+		const poolIds = Array.isArray(poolCategoryIds)
+			? poolCategoryIds.map(Number)
+			: poolCategoryIds.split(',').map(Number);
+
+		// Get descendants for pool categories
+		const poolDescendantResults = await Promise.all(
+			poolIds.map((id) => getAllDescendantCategoryIds(id))
+		);
+		categoryIds = [...new Set(poolDescendantResults.flat().map(Number))];
+	}
+
+	const fetchLimit = isMixed ? limit * 4 : limit;
 
 	const bestSellingOrder = [
 		db.sequelize.literal(`(
@@ -525,7 +550,43 @@ const getCategoryFilterProducts = async (req) => {
 			col: 'id',
 		});
 
-	return { total: products.count, records: products.rows, limit, page };
+	let records = products.rows;
+
+	if (isMixed) {
+		// When pool categories are explicitly selected, skip per-category dedup —
+		// the admin chose those categories intentionally and wants `limit` products from them.
+		// Only apply one-per-category dedup in the default "all categories" mode.
+		if (poolCategoryIds) {
+			records = products.rows.slice(0, limit);
+		} else {
+			const seenCategories = new Set();
+			const dedupedRecords = [];
+
+			for (const product of products.rows) {
+				const categoryId = product.categories?.[0]?.id;
+				const key =
+					categoryId != null
+						? `cat_${categoryId}`
+						: `prod_${product.id}`;
+
+				if (!seenCategories.has(key)) {
+					seenCategories.add(key);
+					dedupedRecords.push(product);
+				}
+
+				if (dedupedRecords.length >= limit) break;
+			}
+
+			records = dedupedRecords;
+		}
+	}
+
+	return {
+		total: products.count,
+		records,
+		limit,
+		page,
+	};
 };
 const getProductsForFilterPage = async (req) => {
 	const { page: defaultPage, limit: defaultLimit } = config.pagination;
@@ -711,6 +772,78 @@ const getProductsForFilterPage = async (req) => {
 	};
 };
 
+/**
+ * getProductsByIds — fetch a specific list of products by IDs.
+ * Used when a homepage section has `selected_product_ids` configured.
+ */
+const getProductsByIds = async (req) => {
+	const { productIds } = req.query; // comma-separated or array
+	if (!productIds) return { total: 0, records: [], limit: 0, page: 1 };
+
+	const ids = (Array.isArray(productIds) ? productIds : productIds.split(','))
+		.map(Number)
+		.filter(Boolean);
+
+	if (!ids.length) return { total: 0, records: [], limit: 0, page: 1 };
+
+	const products = await db.product.scope({ method: ['active'] }).findAll({
+		where: { id: { [Op.in]: ids } },
+		attributes: [
+			'id',
+			'sku',
+			'base_price',
+			'base_discount_percentage',
+			'is_featured',
+		],
+		include: [
+			{
+				model: db.product_variant,
+				required: false,
+				attributes: ['id', 'sku'],
+				include: [
+					{
+						model: db.branch,
+						required: false,
+						through: { as: 'pvb' },
+					},
+				],
+			},
+			{
+				model: db.media,
+				required: false,
+				as: 'images',
+				attributes: ['url'],
+			},
+			{
+				model: db.media,
+				required: false,
+				as: 'thumbnailImage',
+				attributes: ['url'],
+			},
+			{
+				model: db.product_translation,
+				required: true,
+				attributes: ['title', 'excerpt', 'slug'],
+				where: { language_id: 1 },
+			},
+		],
+		distinct: true,
+		col: 'id',
+	});
+
+	// Preserve the order the admin selected
+	const orderedProducts = ids
+		.map((id) => products.find((p) => p.id === id))
+		.filter(Boolean);
+
+	return {
+		total: orderedProducts.length,
+		records: orderedProducts,
+		limit: orderedProducts.length,
+		page: 1,
+	};
+};
+
 module.exports = {
 	getProductBySlug: (req) => {
 		return productService.getBySlug(
@@ -723,6 +856,7 @@ module.exports = {
 	getProductsForFilterPage,
 	getCategoryFilterProducts,
 	getProductsSuggestions,
+	getProductsByIds,
 	// getProducts: (req) => {
 	// 	return productService.list(
 	// 		req,

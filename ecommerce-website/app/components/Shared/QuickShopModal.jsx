@@ -334,7 +334,8 @@ export default function QuickShopModal({ isOpen, setIsOpen, onClose, slug }) {
                               <span className="px-4">{quantity}</span>
                               <button
                                 onClick={() => setQuantity((q) => q + 1)}
-                                className="px-3 py-1 border-l text-lg"
+                                className="px-3 py-1 border-l text-lg disabled:opacity-30 disabled:bg-gray-400"
+                                disabled={quantity >= selectedVariant?.stock}
                               >
                                 +
                               </button>

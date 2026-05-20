@@ -21,21 +21,21 @@ const HeroSection = ({ slides = [], autoplay = false }) => {
 	const firstSlide = slides?.[0];
 
 	const renderImage = (slide, idx, isPriority = false) => (
-		// <div className="relative w-full h-auto max-md:min-h-[25vh] max-md:object-cover">
-		// <div className="relative w-full h-[200px] md:h-[250px] lg:h-[550px]">
-		<Image
-			src={slide?.src}
-			width={1920}
-			height={550}
-			// className="object-cover"
-			alt=""
-			unoptimized={!isPriority} // only priority image is optimized for better LCP
-			priority={isPriority}
-			sizes="100vw"
-			className="w-full h-auto max-h-[550px]/ max-md:min-h-[25vh] max-sm:min-h-[20vh]"
-		/>
-		// </div>
-	);
+    // <div className="relative w-full h-auto max-md:min-h-[25vh] max-md:object-cover">
+    // <div className="relative w-full h-[200px] md:h-[250px] lg:h-[550px]">
+    <Image
+      src={slide?.src}
+      width={1920}
+      height={550}
+      // className="object-cover"
+      alt=""
+      unoptimized={!isPriority} // only priority image is optimized for better LCP
+      priority={isPriority}
+      sizes="100vw"
+      className="w-full h-auto max-h-[550px] max-md:min-h-auto"
+    />
+    // </div>
+  );
 
 	const handleClick = (slide) => {
 		if (slide?.categorySlug) {
