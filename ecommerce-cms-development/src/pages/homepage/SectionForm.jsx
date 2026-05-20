@@ -4,7 +4,8 @@ import InputMultipleSelectField from "@/components/form/fields/InputMultipleSele
 import VideoSelector from "@/components/image-uploader/VideoSelector";
 import useUtilsFunction from "@/hooks/useUtilsFunction";
 import CategoryServices from "@/services/CategoryServices";
-import { useEffect, useMemo, useState } from "react";
+import ProductServices from "@/services/ProductServices";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Trash2,
@@ -21,6 +22,9 @@ import {
   ChevronDown,
   Eye,
   EyeOff,
+  Search,
+  X,
+  Package,
 } from "lucide-react";
 
 const SectionForm = ({
@@ -43,6 +47,23 @@ const SectionForm = ({
   const [videoError, setVideoError] = useState("");
   const { showingTranslateValue, showSelectedLanguageTranslation } =
     useUtilsFunction();
+
+  // ✅ Product search state for "Selected Products" field (mixed sections)
+  const [productSearch, setProductSearch] = useState("");
+  const [productSearchResults, setProductSearchResults] = useState([]);
+  const [productSearchLoading, setProductSearchLoading] = useState(false);
+  const [selectedProducts, setSelectedProducts] = useState(
+    section.config?.selected_product_ids
+      ? section.config.selected_product_ids.map((id) => {
+          // Try to use pre-resolved product data from CMS section config
+          const resolved = section.config?.selected_products?.find?.((p) => p.id === id);
+          return resolved
+            ? { id: resolved.id, name: resolved.product_translations?.[0]?.title || resolved.title || `Product #${resolved.id}` }
+            : { id, name: `Product #${id}` };
+        })
+      : []
+  );
+  const productSearchTimeout = useRef(null);
 
   const extractImageId = (img) =>
     typeof img === "object" && img !== null ? img.imageId : img;
@@ -101,6 +122,66 @@ const SectionForm = ({
       setCategories(data?.records || []),
     );
   }, []);
+
+  // ✅ Debounced product search — fires on every keystroke with 350ms delay
+  const handleProductSearchChange = (e) => {
+    const value = e.target.value;
+    setProductSearch(value);
+    clearTimeout(productSearchTimeout.current);
+    if (!value.trim()) {
+      setProductSearchResults([]);
+      return;
+    }
+    setProductSearchLoading(true);
+    productSearchTimeout.current = setTimeout(async () => {
+      try {
+        const data = await ProductServices.getProductSuggestions({ search: value.trim(), limit: 10 });
+        setProductSearchResults(data?.records || []);
+      } catch {
+        setProductSearchResults([]);
+      } finally {
+        setProductSearchLoading(false);
+      }
+    }, 350);
+  };
+
+  // ✅ Add a product to the selected list (deduplicated)
+  const handleAddProduct = (product) => {
+    const title =
+      product.product_translations?.[0]?.title ||
+      product.translations?.[0]?.title ||
+      product.title ||
+      `Product #${product.id}`;
+    setSelectedProducts((prev) => {
+      if (prev.find((p) => p.id === product.id)) return prev;
+      const next = [...prev, { id: product.id, name: title }];
+      onUpdate({
+        ...section,
+        config: {
+          ...section.config,
+          selected_product_ids: next.map((p) => p.id),
+        },
+      });
+      return next;
+    });
+    setProductSearch("");
+    setProductSearchResults([]);
+  };
+
+  // ✅ Remove a product from the selected list
+  const handleRemoveProduct = (productId) => {
+    setSelectedProducts((prev) => {
+      const next = prev.filter((p) => p.id !== productId);
+      onUpdate({
+        ...section,
+        config: {
+          ...section.config,
+          selected_product_ids: next.map((p) => p.id),
+        },
+      });
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (section.type === "slider") {
@@ -669,13 +750,160 @@ const SectionForm = ({
                     )}
                   </option>
                 ))}
-              </select>
-            </div>
-            <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
-                <LayoutGrid size={16} className="text-orange-600" /> Layout
-                Style
-              </label>
+               </select>
+             </div>
+
+             {section.config?.category_id === "mixed" && (
+               <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
+                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
+                   <Boxes size={16} className="text-orange-600" /> Product Pool
+                   Categories
+                 </label>
+                 <p className="text-xs text-gray-500 mb-3">
+                   Optional: Select specific categories to pool products from. Leave empty to use all categories.
+                 </p>
+                 <InputMultipleSelectField
+                   label=""
+                   inputName={`pool_categories_${section.id}`}
+                   options={categoriesOptions}
+                   setValue={setValue}
+                   defaultSelected={
+                     categoriesOptions.filter((cat) =>
+                       section.config?.pool_category_ids?.includes(cat.id),
+                     ) || []
+                   }
+                   isVertical
+                   isHandleChange={false}
+                   onChange={(selected) =>
+                     onUpdate({
+                       ...section,
+                       config: {
+                         ...section.config,
+                         pool_category_ids: selected.map((i) => i.id),
+                       },
+                     })
+                   }
+                 />
+               </div>
+             )}
+
+             {/* ✅ Selected Products — overrides category pool when present */}
+             {section.config?.category_id === "mixed" && (
+               <div className="bg-white p-4 rounded-lg border-2 border-orange-200">
+                 <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-1">
+                   <Package size={16} className="text-orange-600" /> Selected Products
+                   <span className="ml-1 text-xs font-normal text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full border border-orange-200">
+                     Overrides categories
+                   </span>
+                 </label>
+                 <p className="text-xs text-gray-500 mb-3">
+                   Optional: Manually pin specific products. When set, category pool is ignored. Search by product name or ID.
+                 </p>
+
+                 {/* Search input */}
+                 <div className="relative mb-3">
+                   <div className="flex items-center gap-2 border-2 border-gray-200 rounded-lg px-3 py-2 bg-gray-50 focus-within:border-orange-400 transition-colors">
+                     <Search size={15} className="text-gray-400 shrink-0" />
+                     <input
+                       type="text"
+                       value={productSearch}
+                       onChange={handleProductSearchChange}
+                       placeholder="Search by product name or ID…"
+                       className="flex-1 bg-transparent text-sm outline-none text-gray-700 placeholder-gray-400"
+                     />
+                     {productSearch && (
+                       <button
+                         type="button"
+                         onClick={() => { setProductSearch(""); setProductSearchResults([]); }}
+                         className="shrink-0 text-gray-400 hover:text-gray-600"
+                       >
+                         <X size={14} />
+                       </button>
+                     )}
+                   </div>
+
+                   {/* Search results dropdown */}
+                   {(productSearchResults.length > 0 || productSearchLoading) && (
+                     <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                       {productSearchLoading && (
+                         <div className="px-4 py-3 text-xs text-gray-500">Searching…</div>
+                       )}
+                       {productSearchResults.map((product) => {
+                         const title =
+                           product.product_translations?.[0]?.title ||
+                           product.translations?.[0]?.title ||
+                           product.title ||
+                           `Product #${product.id}`;
+                         const alreadyAdded = selectedProducts.find((p) => p.id === product.id);
+                         return (
+                           <button
+                             key={product.id}
+                             type="button"
+                             onClick={() => !alreadyAdded && handleAddProduct(product)}
+                             className={`w-full text-left flex items-center gap-3 px-4 py-2.5 text-sm hover:bg-orange-50 transition-colors border-b border-gray-100 last:border-0 ${alreadyAdded ? "opacity-40 cursor-default" : "cursor-pointer"}`}
+                           >
+                             {product.thumbnailImage?.url && (
+                               <img
+                                 src={`${import.meta.env.VITE_APP_CLOUDINARY_URL}${product.thumbnailImage.url}`}
+                                 alt={title}
+                                 className="w-9 h-9 object-cover rounded shrink-0 border border-gray-100"
+                               />
+                             )}
+                             <div className="min-w-0">
+                               <p className="font-medium text-gray-800 truncate">{title}</p>
+                               <p className="text-xs text-gray-400">ID: {product.id} · SKU: {product.sku || "—"}</p>
+                             </div>
+                             {alreadyAdded && (
+                               <span className="ml-auto shrink-0 text-xs text-green-600 font-semibold">Added</span>
+                             )}
+                           </button>
+                         );
+                       })}
+                     </div>
+                   )}
+                 </div>
+
+                 {/* Selected products list */}
+                 {selectedProducts.length > 0 ? (
+                   <div className="space-y-2">
+                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                       {selectedProducts.length} product{selectedProducts.length !== 1 ? "s" : ""} selected
+                     </p>
+                     {selectedProducts.map((product, idx) => (
+                       <div
+                         key={product.id}
+                         className="flex items-center gap-3 px-3 py-2 bg-orange-50 border border-orange-200 rounded-lg"
+                       >
+                         <span className="text-xs text-orange-400 font-mono w-5 shrink-0">#{idx + 1}</span>
+                         <div className="min-w-0 flex-1">
+                           <p className="text-sm text-gray-800 truncate font-medium">{product.name}</p>
+                           <p className="text-xs text-gray-400">ID: {product.id}</p>
+                         </div>
+                         <button
+                           type="button"
+                           onClick={() => handleRemoveProduct(product.id)}
+                           className="shrink-0 text-red-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition-colors"
+                           title="Remove product"
+                         >
+                           <X size={14} />
+                         </button>
+                       </div>
+                     ))}
+                   </div>
+                 ) : (
+                   <div className="text-center py-6 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
+                     <Package size={28} className="mx-auto mb-2 opacity-40" />
+                     <p className="text-xs">No products selected. Category pool will be used.</p>
+                   </div>
+                 )}
+               </div>
+             )}
+
+             <div className="bg-white p-4 rounded-lg border-2 border-gray-200">
+               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
+                 <LayoutGrid size={16} className="text-orange-600" /> Layout
+                 Style
+               </label>
               <select
                 className={`w-full border-2 border-gray-200 rounded-lg px-4 py-2.5 bg-white ${sectionConfig.focusColor} focus:outline-none transition-colors`}
                 value={section.config?.layout || "grid"}
