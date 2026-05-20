@@ -197,7 +197,9 @@ async function confirmOrder(req) {
 							item.selectedVariant
 								? item.selectedVariant.sku
 								: item.sku
-						}) is low on stock`
+						}) is low on stock`,
+						createdOrder.id,
+						item.id
 					).catch(() => {}); // non-blocking
 				}
 			} else {
@@ -236,7 +238,9 @@ async function confirmOrder(req) {
 							item.selectedVariant
 								? item.selectedVariant.sku
 								: item.sku
-						}) is low on stock`
+						}) is low on stock`,
+						createdOrder.id,
+						item.id
 					).catch(() => {}); // non-blocking
 				}
 			}
@@ -297,11 +301,11 @@ async function confirmOrder(req) {
 					// to: 'annasahmed1609@gmail.com',
 					// to: 'salmanazeemkhan@gmail.com',
 					// to: 'orders@babiesnbaba.com',
-					to: 'devsts26@gmail.com',
-					// to:
-					// 	config.env === 'development'
-					// 		? 'annasahmed1609@gmail.com'
-					// 		: 'babiesnbaba@gmail.com',
+					// to: 'devsts26@gmail.com',
+					to:
+						config.env === 'development'
+							? 'annasahmed1609@gmail.com'
+							: 'babiesnbaba@gmail.com',
 					subject: `New Order #${orderId}`,
 					html: orderConfirmationAdminTemplate({
 						orderId,

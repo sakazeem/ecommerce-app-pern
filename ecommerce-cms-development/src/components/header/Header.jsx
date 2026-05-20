@@ -15,7 +15,7 @@ import {
   FiTrash2,
   FiUser,
 } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
 //internal import
 import ellipse from "@/assets/img/icons/ellipse.svg";
@@ -41,6 +41,7 @@ const Header = () => {
   const currentLanguageCode = cookies.get("i18next") || "en";
   const { t } = useTranslation();
   const { updated, setUpdated } = useNotification();
+  const history = useHistory();
   const { showDateTimeFormat } = useUtilsFunction();
 
   const [data, setData] = useState([]);
@@ -253,9 +254,13 @@ const Header = () => {
                               >
                                 <div
                                   className="flex items-center border-b-2 border-gray-300 pb-5"
-                                  onClick={() =>
-                                    handleNotificationStatusChange(value.id)
-                                  }
+                                  onClick={() => {
+                                    handleNotificationStatusChange(value.id);
+                                    if (value.product_id) {
+                                      setNotificationOpen(false);
+                                      history.push(`/products?editId=${value.product_id}`);
+                                    }
+                                  }}
                                 >
                                   <div className="notification-content">
                                     <h6 className="font-medium text-customGray-500 text-wrap">
@@ -308,17 +313,15 @@ const Header = () => {
                         </ul>
                       )}
 
-                      {totalDoc > 5 && (
-                        <div className="text-center py-2">
-                          <Link
-                            onClick={() => setNotificationOpen(false)}
-                            to={"/notifications"}
-                            className="focus:outline-none hover:underline transition ease-out duration-200"
-                          >
-                            Show all notifications
-                          </Link>
-                        </div>
-                      )}
+                      <div className="text-center py-2 border-t border-customGray-100 dark:border-customGray-700">
+                        <Link
+                          onClick={() => setNotificationOpen(false)}
+                          to={"/notifications"}
+                          className="text-sm text-customTeal-600 dark:text-customTeal-400 focus:outline-none hover:underline transition ease-out duration-200"
+                        >
+                          View all notifications
+                        </Link>
+                      </div>
                     </Scrollbars>
                   </div>
                 </div>

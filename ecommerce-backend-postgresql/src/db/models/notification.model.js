@@ -17,6 +17,14 @@ module.exports = (sequelize, DataTypes) => {
 				allowNull: false,
 				defaultValue: false,
 			},
+			order_id: {
+				type: DataTypes.INTEGER,
+				allowNull: true,
+			},
+			product_id: {
+				type: DataTypes.INTEGER,
+				allowNull: true,
+			},
 		},
 		{
 			tableName: 'notification',

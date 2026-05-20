@@ -5,8 +5,8 @@ const { Op } = require('sequelize');
 
 const DEFAULT_LIMIT = 10;
 
-async function createNotification(message) {
-	return db.notification.create({ message });
+async function createNotification(message, order_id = null, product_id = null) {
+	return db.notification.create({ message, order_id, product_id });
 }
 
 async function getAllNotifications(req) {
@@ -35,7 +35,8 @@ async function getAllNotifications(req) {
 
 async function addNotification(req) {
 	const { message } = req.body;
-	if (!message) throw new ApiError(httpStatus.BAD_REQUEST, 'Message is required');
+	if (!message)
+		throw new ApiError(httpStatus.BAD_REQUEST, 'Message is required');
 	const notification = await createNotification(message);
 	return notification;
 }
@@ -49,7 +50,8 @@ async function updateNotificationStatus(req) {
 		{ is_read },
 		{ where: { id } }
 	);
-	if (!updated) throw new ApiError(httpStatus.NOT_FOUND, 'Notification not found');
+	if (!updated)
+		throw new ApiError(httpStatus.NOT_FOUND, 'Notification not found');
 	return { success: true };
 }
 
@@ -68,7 +70,8 @@ async function updateManyNotificationStatus(req) {
 async function deleteNotification(req) {
 	const { id } = req.params;
 	const deleted = await db.notification.destroy({ where: { id } });
-	if (!deleted) throw new ApiError(httpStatus.NOT_FOUND, 'Notification not found');
+	if (!deleted)
+		throw new ApiError(httpStatus.NOT_FOUND, 'Notification not found');
 	return { success: true };
 }
 
