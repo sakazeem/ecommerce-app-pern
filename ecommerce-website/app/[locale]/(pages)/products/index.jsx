@@ -22,15 +22,6 @@ const ProductsPage = () => {
   const paramsCategory = searchParams.get("category");
   const paramsBrand = searchParams.get("brand");
   const paramsSearch = searchParams.get("search");
-<<<<<<< HEAD
-  const paramsFilterQuery =
-    searchParams.get("best-selling") !== null
-      ? "best-selling"
-      : searchParams.get("mixed") !== null
-        ? "mixed"
-        : null;
-=======
->>>>>>> 5f656b9e0b14988f38cf261b37d2624573796ea0
   const store = useStore();
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [resolvedCategory, setResolvedCategory] = useState(null);
