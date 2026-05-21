@@ -629,14 +629,15 @@ function getProductIncludes(req) {
 		},
 		{
 			model: db.product_translation,
-			required: req.query.search ? true : false,
+			required: false,
+			// required: req.query.search ? true : false,
 			where: req.query.search
 				? {
 						title: {
 							[Op.iLike]: `%${req.query.search}%`,
 						},
 				  }
-				: {},
+				: undefined,
 		},
 		{
 			model: db.brand,
@@ -1384,11 +1385,13 @@ async function getProducts(req) {
 		sortOrder = 'DESC',
 		status,
 		sku,
+		search,
 	} = req.query;
 
 	const offset = getOffset(page, limit);
 	const sort = [['id', 'DESC']]; // default sort
 	let finalSort = sort;
+	const orConditions = [];
 
 	if (sortBy === 'stock') {
 		finalSort = [
@@ -1429,16 +1432,28 @@ async function getProducts(req) {
 			(v) => v.product_id
 		);
 
-		whereCondition[Op.or] = [
+		orConditions.push(
 			// Match on product-level SKU (if product table has a sku column)
 			{ sku: { [Op.iLike]: `%${sku}%` } },
 			// Match on variant-level SKU via subquery result
 			...(productIdsFromVariants.length
 				? [{ id: { [Op.in]: productIdsFromVariants } }]
-				: []),
-		];
+				: [])
+		);
 	}
-
+	if (search) {
+		orConditions.push(
+			{ sku: { [Op.iLike]: `%${search}%` } },
+			{
+				'$product_translations.title$': {
+					[Op.iLike]: `%${search}%`,
+				},
+			}
+		);
+	}
+	if (orConditions.length > 0) {
+		whereCondition[Op.or] = orConditions;
+	}
 	const data = await db.product.findAndCountAll({
 		offset,
 		limit,
