@@ -59,9 +59,15 @@ const getOrderByTrackingId = catchAsync(async (req, res) => {
 	res.send(transformOrderResponse(order));
 });
 
+const getOrderForReview = catchAsync(async (req, res) => {
+	const order = await apiOrderService.getOrderForReview(req);
+	res.send(transformOrderResponse(order));
+});
+
 module.exports = {
 	confirmOrder,
 	trackOrder,
 	myOrders,
 	getOrderByTrackingId,
+	getOrderForReview,
 };

@@ -10,6 +10,9 @@ const { sendEmail } = require('../email.service');
 const {
 	orderInProcessCustomerTemplate,
 } = require('../../config/emailTemplates/orderInprocessUser');
+const {
+	orderDeliveredReviewTemplate,
+} = require('../../config/emailTemplates/orderDeliveredReview');
 
 async function getOrderById(req) {
 	const { orderId } = req.params;
@@ -340,6 +343,11 @@ async function updateOrderStatus(req) {
 
 		order.status = newStatus;
 
+		// Send review request email when order is marked as delivered
+		if (newStatus === 'delivered') {
+			await sendDeliveredReviewEmail(order);
+		}
+
 		await order.save({ transaction });
 
 		await transaction.commit();
@@ -455,6 +463,33 @@ async function sendInprocessEmailToUser(order, courierTrackingId) {
 	});
 
 	return true;
+}
+
+async function sendDeliveredReviewEmail(order) {
+	const email = order.app_user_id
+		? order.app_user?.email
+		: order.guest_email || null;
+
+	if (!email) return;
+
+	const customerName = order.app_user_id
+		? order.app_user?.name
+		: `${order.guest_first_name || ''} ${
+				order.guest_last_name || ''
+		  }`.trim() || 'Customer';
+
+	const reviewUrl = `${config.websiteUrl}/orders/review/${order.tracking_id}`;
+
+	await sendEmail({
+		to: email,
+		subject: `How was your order #${order.tracking_id}? Leave a review`,
+		html: orderDeliveredReviewTemplate({
+			customerName,
+			trackingId: order.tracking_id,
+			reviewUrl,
+		}),
+		attachments: [],
+	});
 }
 
 async function exportOrders(req, res) {
@@ -699,7 +734,7 @@ async function updateOrderDetails(req) {
 		}
 
 		if (add_items && add_items.length > 0) {
-			console.log("ADD ITEM", add_items)
+			console.log('ADD ITEM', add_items);
 			for (const {
 				product_id,
 				product_variant_id,
