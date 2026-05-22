@@ -1,47 +1,51 @@
 import requests from "./httpService";
 
 const AdminServices = {
-	registerAdmin: async (body) => {
-		return requests.post("/admin/register", body);
-	},
+  registerAdmin: async (body) => {
+    return requests.post("/admin/register", body);
+  },
 
-	loginAdmin: async (body) => {
-		return requests.post(`/auth/login`, body);
-	},
+  sendLoginOtp: async (body) => {
+    return requests.post("/auth/send-otp", body);
+  },
 
-	forgetPassword: async (body) => {
-		return requests.put("/admin/forget-password", body);
-	},
+  loginAdmin: async (body) => {
+    return requests.post(`/auth/login`, body);
+  },
 
-	resetPassword: async (body) => {
-		return requests.put("/admin/reset-password", body);
-	},
+  forgetPassword: async (body) => {
+    return requests.put("/admin/forget-password", body);
+  },
 
-	signUpWithProvider: async (body) => {
-		return requests.post("/admin/signup", body);
-	},
+  resetPassword: async (body) => {
+    return requests.put("/admin/reset-password", body);
+  },
 
-	addStaff: async (body) => {
-		return requests.post("/admin/add", body);
-	},
-	getAllStaff: async (body) => {
-		return requests.get("/admin", body);
-	},
-	getStaffById: async (id, body) => {
-		return requests.post(`/admin/${id}`, body);
-	},
+  signUpWithProvider: async (body) => {
+    return requests.post("/admin/signup", body);
+  },
 
-	updateStaff: async (id, body) => {
-		return requests.put(`/admin/${id}`, body);
-	},
+  addStaff: async (body) => {
+    return requests.post("/admin/add", body);
+  },
+  getAllStaff: async (body) => {
+    return requests.get("/admin", body);
+  },
+  getStaffById: async (id, body) => {
+    return requests.post(`/admin/${id}`, body);
+  },
 
-	updateStaffStatus: async (id, body) => {
-		return requests.put(`/admin/update-status/${id}`, body);
-	},
+  updateStaff: async (id, body) => {
+    return requests.put(`/admin/${id}`, body);
+  },
 
-	deleteStaff: async (id) => {
-		return requests.delete(`/admin/${id}`);
-	},
+  updateStaffStatus: async (id, body) => {
+    return requests.put(`/admin/update-status/${id}`, body);
+  },
+
+  deleteStaff: async (id) => {
+    return requests.delete(`/admin/${id}`);
+  },
 };
 
 export default AdminServices;

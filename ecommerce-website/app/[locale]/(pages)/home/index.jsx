@@ -18,32 +18,39 @@ import { useStore } from "@/app/providers/StoreProvider";
 import HomepageService from "@/app/services/HomepageServices";
 // import ParentCategoryServices from "@/app/services/ParentCategoryServices";
 // import ProductServices from "@/app/services/ProductServices";
+import { useEffect } from "react";
 
 const HomePage = () => {
-	const store = useStore();
-	const { FeaturesSection } = loadThemeComponents(store.themeName);
+  const store = useStore();
+  const { FeaturesSection } = loadThemeComponents(store.themeName);
 
-	const { data: homepageSections, isLoading: homepageSectionsLoading } =
-		useFetchReactQuery(
-			() => HomepageService.getHomepageSections(),
-			["homepageSections"],
-			{ enabled: true },
-		);
+  const { data: homepageSections, isLoading: homepageSectionsLoading } =
+    useFetchReactQuery(
+      () => HomepageService.getHomepageSections(),
+      ["homepageSections"],
+      { enabled: true },
+    );
 
-	if (homepageSectionsLoading) return <Loader />;
+  useEffect(() => {
+    if (!homepageSectionsLoading && homepageSections) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [homepageSectionsLoading]);
 
-	return (
-		<main>
-			<section className="flex flex-col gap-18 section-layout-top/ max-md:gap-10">
-				{homepageSections?.map((section, idx) => {
-					return <HomepageSection section={section} key={idx} />;
-				})}
-				<FeaturesSection />
-				<AboutUsSection />
-			</section>
-			<Newsletter />
-		</main>
-	);
+  if (homepageSectionsLoading) return <Loader />;
+
+  return (
+    <main>
+      <section className="flex flex-col gap-18 section-layout-top/ max-md:gap-10">
+        {homepageSections?.map((section, idx) => {
+          return <HomepageSection section={section} key={idx} />;
+        })}
+        <FeaturesSection />
+        <AboutUsSection />
+      </section>
+      <Newsletter />
+    </main>
+  );
 };
 
 export default HomePage;

@@ -211,7 +211,7 @@ const Footer = ({ showOnMobile = true }) => {
 					<p className="p4 text-sm md:text-base text-light/80">
 						Powered by:{" "}
 						<Link
-							href={"https://bananastudios.digital"}
+							href={"https://www.bananastudios.de"}
 							target="_blank"
 							className=" text-light hover:border-b ">
 							Banana Studios Digital
