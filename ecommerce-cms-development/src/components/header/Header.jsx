@@ -15,7 +15,7 @@ import {
   FiTrash2,
   FiUser,
 } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
 //internal import
 import ellipse from "@/assets/img/icons/ellipse.svg";
@@ -27,6 +27,7 @@ import useUtilsFunction from "@/hooks/useUtilsFunction";
 import NotificationServices from "@/services/NotificationServices";
 import SettingServices from "@/services/SettingServices";
 import { notifyError, notifySuccess } from "@/utils/toast";
+import { formatDate } from "@/utils/globals";
 
 const Header = () => {
   const { toggleSidebar, handleLanguageChange, setNavBar, navBar, currLang } =
@@ -40,6 +41,7 @@ const Header = () => {
   const currentLanguageCode = cookies.get("i18next") || "en";
   const { t } = useTranslation();
   const { updated, setUpdated } = useNotification();
+  const history = useHistory();
   const { showDateTimeFormat } = useUtilsFunction();
 
   const [data, setData] = useState([]);
@@ -84,11 +86,7 @@ const Header = () => {
       await NotificationServices.updateStatusNotification(id, {
         status: "read",
       });
-
-      const getAllRes = await NotificationServices.getAllNotification();
-      setData(getAllRes?.notifications);
-      setTotalUnreadDoc(getAllRes?.totalUnreadDoc);
-      window.location.reload(false);
+      await handleGetAllNotifications();
     } catch (err) {
       notifyError(err?.response?.data?.message || err?.message);
     }
@@ -109,12 +107,16 @@ const Header = () => {
 
   //handle get notifications
   const handleGetAllNotifications = async () => {
-    return;
     try {
       const res = await NotificationServices.getAllNotification();
-      setData(res?.notifications);
-      setTotalUnreadDoc(res?.totalUnreadDoc);
-      setTotalDoc(res?.totalDoc);
+      const normalized = (res?.notifications || []).map((n) => ({
+        ...n,
+        status: n.is_read ? "read" : "unread",
+        createdAt: n.createdAt || n.created_at,
+      }));
+      setData(normalized);
+      setTotalUnreadDoc(res?.totalUnreadDoc ?? 0);
+      setTotalDoc(res?.total ?? 0);
       setUpdated(false);
     } catch (err) {
       setUpdated(false);
@@ -136,11 +138,9 @@ const Header = () => {
 
   // notification api calling
   useEffect(() => {
-    // handleGetAllNotifications(); //tempComment by Annas
+    if (updated) handleGetAllNotifications();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updated]);
-
-  console.log(adminInfo, "chkking admin info");
 
   return (
     <>
@@ -239,7 +239,8 @@ const Header = () => {
                         <NotFoundTwo title="No new notification" />
                       ) : (
                         <ul className="block text-sm border-t border-customGray-100 dark:border-customGray-700 rounded-md">
-                          {data?.map((value, index) => {
+                            {data?.map((value, index) => {
+                            console.log("notif data", data)
                             return (
                               <li
                                 key={index + 1}
@@ -251,38 +252,29 @@ const Header = () => {
                                   "dark:bg-customGray-800"
                                 } dark:hover:bg-customGray-900  dark:hover:text-customGray-100 cursor-pointer`}
                               >
-                                <Link
-                                  to={
-                                    value.productId
-                                      ? `/product/${value.productId}`
-                                      : value.orderId
-                                        ? `/order/${value.orderId}`
-                                        : "/our-staff"
-                                  }
-                                  className="flex items-center"
-                                  onClick={() =>
-                                    handleNotificationStatusChange(value.id)
-                                  }
+                                <div
+                                  className="flex items-center border-b-2 border-gray-300 pb-5"
+                                  onClick={() => {
+                                    handleNotificationStatusChange(value.id);
+                                    if (value.product_id) {
+                                      setNotificationOpen(false);
+                                      history.push(`/products?editId=${value.product_id}`);
+                                    }
+                                  }}
                                 >
-                                  <Avatar
-                                    className="mr-2 md:block bg-customGray-50 border border-customGray-200"
-                                    src={value.image}
-                                    alt="image"
-                                  />
-
                                   <div className="notification-content">
-                                    <h6 className="font-medium text-customGray-500">
+                                    <h6 className="font-medium text-customGray-500 text-wrap">
                                       {value?.message}
                                     </h6>
 
                                     <p className="flex items-center text-xs text-customGray-400">
-                                      {value.productId ? (
+                                      {value?.message?.includes("low") ? (
                                         <Badge type="danger">Stock Out</Badge>
                                       ) : (
                                         <Badge type="success">New Order</Badge>
                                       )}
                                       <span className="ml-2">
-                                        {showDateTimeFormat(value.createdAt)}
+                                        {formatDate(value.createdAt)}
                                       </span>
                                     </p>
                                   </div>
@@ -298,7 +290,7 @@ const Header = () => {
                                       />
                                     </span>
                                   )}
-                                </Link>
+                                </div>
 
                                 <div className="group inline-block relative">
                                   <button
@@ -321,17 +313,15 @@ const Header = () => {
                         </ul>
                       )}
 
-                      {totalDoc > 5 && (
-                        <div className="text-center py-2">
-                          <Link
-                            onClick={() => setNotificationOpen(false)}
-                            to={"/notifications"}
-                            className="focus:outline-none hover:underline transition ease-out duration-200"
-                          >
-                            Show all notifications
-                          </Link>
-                        </div>
-                      )}
+                      <div className="text-center py-2 border-t border-customGray-100 dark:border-customGray-700">
+                        <Link
+                          onClick={() => setNotificationOpen(false)}
+                          to={"/notifications"}
+                          className="text-sm text-customTeal-600 dark:text-customTeal-400 focus:outline-none hover:underline transition ease-out duration-200"
+                        >
+                          View all notifications
+                        </Link>
+                      </div>
                     </Scrollbars>
                   </div>
                 </div>
