@@ -283,21 +283,53 @@ export default function QuickViewModal({ isOpen, onClose, slug }) {
 																			Select {name}:
 																		</span>
 																		<div className="flex gap-2 flex-wrap">
-																			{values.map((value) => (
-																				<button
-																					key={value}
-																					onClick={() =>
-																						handleSelectAttribute(name, value)
-																					}
-																					className={`px-3 py-1 border rounded-md capitalize transition
-                          							${
-																					selectedAttributes[name] === value
-																						? "bg-light border-primary"
-																						: "bg-light text-gray-700 border-gray-300 hover:bg-gray-100"
-																				}`}>
-																					{value}
-																				</button>
-																			))}
+																			{values.map((value) => {
+																				const matchingVariant =
+																					product.variants?.find((variant) =>
+																						variant.attributes?.every((attr) =>
+																							attr.name === name
+																								? attr.value === value
+																								: selectedAttributes[
+																										attr.name
+																									] === attr.value,
+																						),
+																					);
+																				const isVariantOutOfStock =
+																					matchingVariant?.stock === 0 ||
+																					!matchingVariant?.stock;
+																				return (
+																					<div
+																						key={value}
+																						className="flex flex-col items-center gap-0.5">
+																						<button
+																							key={value}
+																							onClick={() => {
+																								!isVariantOutOfStock &&
+																									handleSelectAttribute(
+																										name,
+																										value,
+																									);
+																							}}
+																							disabled={isVariantOutOfStock}
+																							className={`px-3 py-1 border rounded-md capitalize transition
+                          							 ${
+																						isVariantOutOfStock
+																							? "opacity-40 cursor-not-allowed line-through border-gray-200 text-gray-400"
+																							: selectedAttributes[name] ===
+																								  value
+																								? "bg-light border-primary"
+																								: "bg-light text-gray-700 border-gray-300 hover:bg-gray-100"
+																					}`}>
+																							{value}
+																						</button>
+																						{isVariantOutOfStock && (
+																							<span className="text-[10px] text-red-400">
+																								Sold Out
+																							</span>
+																						)}
+																					</div>
+																				);
+																			})}
 																		</div>
 																	</div>
 																),
