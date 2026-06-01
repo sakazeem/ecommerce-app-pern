@@ -478,7 +478,7 @@ async function sendDeliveredReviewEmail(order) {
 				order.guest_last_name || ''
 		  }`.trim() || 'Customer';
 
-	const reviewUrl = `${config.websiteUrl}/orders/review/${order.tracking_id}`;
+	const reviewUrl = `${config.websiteUrl}/orders/${order.id}/review/${order.tracking_id}`;
 
 	await sendEmail({
 		to: email,
@@ -489,7 +489,9 @@ async function sendDeliveredReviewEmail(order) {
 			reviewUrl,
 		}),
 		attachments: [],
-	});
+	})
+		.then(() => console.log('email sent!'))
+		.catch((e) => console.log('email error:', e));
 }
 
 async function exportOrders(req, res) {

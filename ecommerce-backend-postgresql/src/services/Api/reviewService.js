@@ -38,13 +38,15 @@ async function createReview(req, userId) {
 		const productIds = new Set();
 		for (const r of reviews) {
 			const { product_id, order_item_id, rating, title, comment } = r;
-			const existingReview = await db.review.findOne({
-				where: {
-					product_id,
-					app_user_id: userId,
-				},
-				transaction,
-			});
+			const existingReview = userId
+				? await db.review.findOne({
+						where: {
+							product_id,
+							app_user_id: userId,
+						},
+						transaction,
+				  })
+				: null;
 			let review;
 			if (existingReview) {
 				// 2. Update review instead of creating new
