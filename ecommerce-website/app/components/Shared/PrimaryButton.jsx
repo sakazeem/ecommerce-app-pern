@@ -47,6 +47,7 @@ const PrimaryButton = ({
 				${className}
 				disabled:border-gray-400 disabled:text-gray-400
 				max-md:hidden
+				active:opacity-50
 			`}
       >
         {/* 🔥 Hover sliding background */}
@@ -105,6 +106,7 @@ const PrimaryButton = ({
 				${className}
 				disabled:border-gray-400 disabled:text-gray-400
 				md:hidden
+				active:opacity-50
 			`}
       >
         {/* Content */}

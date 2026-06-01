@@ -2,56 +2,65 @@ import { useContext, useEffect, useState } from "react";
 import { SidebarContext } from "@/context/SidebarContext";
 
 const useToggleDrawer = () => {
-	const [serviceId, setServiceId] = useState("");
-	const [allId, setAllId] = useState([]);
-	const [title, setTitle] = useState("");
-	const {
-		toggleDrawer,
-		isDrawerOpen,
-		toggleModal,
-		toggleBulkDrawer,
-		closeDrawer,
-	} = useContext(SidebarContext);
+  const [serviceId, setServiceId] = useState("");
+  const [allId, setAllId] = useState([]);
+  const [title, setTitle] = useState("");
+  const {
+    toggleDrawer,
+    isDrawerOpen,
+    toggleModal,
+    toggleBulkDrawer,
+    closeDrawer,
+    setIsDrawerOpen,
+  } = useContext(SidebarContext);
 
-	const handleUpdate = (id) => {
-		setServiceId(id);
-		toggleDrawer();
-	};
+  const handleUpdate = (id) => {
+    setServiceId(id);
+    toggleDrawer();
+  };
 
-	const handleUpdateMany = (id) => {
-		setAllId(id);
-		toggleBulkDrawer();
-	};
+  // Opens the drawer for a specific id without toggling.
+  // Safe to call even when drawer is already open or closed.
+  const openDrawerWithId = (id) => {
+    setServiceId(id);
+    setIsDrawerOpen(true);
+  };
 
-	const handleModalOpen = (id, title) => {
-		setServiceId(id);
-		toggleModal();
-		setTitle(title);
-	};
+  const handleUpdateMany = (id) => {
+    setAllId(id);
+    toggleBulkDrawer();
+  };
 
-	useEffect(() => {
-		if (!isDrawerOpen) {
-			setServiceId();
-		}
-	}, [isDrawerOpen]);
+  const handleModalOpen = (id, title) => {
+    setServiceId(id);
+    toggleModal();
+    setTitle(title);
+  };
 
-	const handleDeleteMany = async (id, products) => {
-		setAllId(id);
-		toggleModal();
-		setTitle("Selected Products");
-	};
+  useEffect(() => {
+    if (!isDrawerOpen) {
+      setServiceId();
+    }
+  }, [isDrawerOpen]);
 
-	return {
-		title,
-		allId,
-		serviceId,
-		isDrawerOpen, // 👈 IMPORTANT
-		handleUpdate,
-		setServiceId,
-		handleModalOpen,
-		handleDeleteMany,
-		handleUpdateMany,
-	};
+  const handleDeleteMany = async (id, products) => {
+    setAllId(id);
+    toggleModal();
+    setTitle("Selected Products");
+  };
+
+  return {
+    title,
+    allId,
+    serviceId,
+    isDrawerOpen,
+    handleUpdate,
+    openDrawerWithId,
+    setServiceId,
+    handleModalOpen,
+    handleDeleteMany,
+    handleUpdateMany,
+  };
 };
 
 export default useToggleDrawer;

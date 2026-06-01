@@ -32,7 +32,7 @@ const HeroSection = ({ slides = [], autoplay = false }) => {
       unoptimized={!isPriority} // only priority image is optimized for better LCP
       priority={isPriority}
       sizes="100vw"
-      className="w-full h-auto max-h-[550px] max-md:min-h-auto"
+      className="w-full h-auto"
     />
     // </div>
   );

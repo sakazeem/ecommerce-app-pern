@@ -235,7 +235,145 @@ async function migrate() {
 // RUN
 // migrate();
 
+async function fixImageNamesAndConvertToWebP() {
+	const sharp = require('sharp');
+	const path = require('path');
+	const slugify = require('slugify');
+
+	const {
+		S3Client,
+		PutObjectCommand,
+		GetObjectCommand,
+		DeleteObjectCommand,
+	} = require('@aws-sdk/client-s3');
+
+	const db = require('../db/models');
+
+	// R2 Client
+	const s3 = new S3Client({
+		region: 'auto',
+		endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+		credentials: {
+			accessKeyId: process.env.R2_ACCESS_KEY,
+			secretAccessKey: process.env.R2_SECRET_KEY,
+		},
+	});
+
+	const BUCKET = process.env.R2_BUCKET_NAME;
+
+	// clean filename
+	function cleanFileName(name) {
+		const base = name.replace(/\.[^/.]+$/, '');
+
+		return (
+			slugify(base, {
+				lower: true,
+				strict: true,
+				trim: true,
+			}) + '.webp'
+		);
+	}
+
+	// stream -> buffer
+	async function streamToBuffer(stream) {
+		return new Promise((resolve, reject) => {
+			const chunks = [];
+
+			stream.on('data', (chunk) => chunks.push(chunk));
+			stream.on('error', reject);
+			stream.on('end', () => resolve(Buffer.concat(chunks)));
+		});
+	}
+
+	const medias = await db.media.findAll({
+		attributes: ['id', 'url'],
+	});
+
+	console.log(`📦 Found ${medias.length} images`);
+
+	for (const media of medias) {
+		try {
+			if (!media.url) continue;
+
+			const oldKey = media.url.replace(/^\/+/, '');
+
+			const ext = path.extname(oldKey).toLowerCase();
+
+			const allowed = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+
+			if (!allowed.includes(ext)) continue;
+
+			const dir = path.dirname(oldKey);
+			const fileName = path.basename(oldKey);
+
+			const cleanedName = cleanFileName(fileName);
+
+			const newKey = dir === '.' ? cleanedName : `${dir}/${cleanedName}`;
+
+			// already correct
+			if (oldKey === newKey && ext === '.webp') {
+				continue;
+			}
+
+			console.log(`🔄 Processing: ${oldKey}`);
+
+			// get old image from R2
+			const file = await s3.send(
+				new GetObjectCommand({
+					Bucket: BUCKET,
+					Key: oldKey,
+				})
+			);
+
+			const inputBuffer = await streamToBuffer(file.Body);
+
+			// convert to webp
+			const outputBuffer = await sharp(inputBuffer)
+				.webp({ quality: 80 })
+				.toBuffer();
+
+			// upload new image
+			await s3.send(
+				new PutObjectCommand({
+					Bucket: BUCKET,
+					Key: newKey,
+					Body: outputBuffer,
+					ContentType: 'image/webp',
+				})
+			);
+
+			// update DB
+			await db.media.update(
+				{ url: newKey },
+				{
+					where: {
+						id: media.id,
+					},
+				}
+			);
+
+			// delete old file
+			if (oldKey !== newKey) {
+				await s3.send(
+					new DeleteObjectCommand({
+						Bucket: BUCKET,
+						Key: oldKey,
+					})
+				);
+			}
+
+			console.log(`✅ Done: ${newKey}`);
+		} catch (err) {
+			console.log(`❌ Failed: ${media.url}`);
+			console.log(err.message);
+		}
+	}
+
+	console.log('🎉 All done');
+}
+
 module.exports = {
 	mediaUpload,
 	migrate,
+	fixImageNamesAndConvertToWebP,
 };

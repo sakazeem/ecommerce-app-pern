@@ -20,40 +20,34 @@ router
 		upload.single('file'),
 		adminMediaController.createMedia
 	);
-router
-	.route('/deleteAllProductsMedia')
-	.delete(
-		// checkPermission('delete_media'),
-		adminMediaController.deleteAllProductsMedia
-	);
-router
-	.route('/bulk-upload')
-	.post(
-		upload.array('file', 50),
-		// checkPermission('create_media'),
-		adminMediaController.bulkUploadMedia
-	);
-router
-	.route('/:mediaId')
-	.delete(
-		// checkPermission('delete_media'),
-		validate(adminMediaValidation.deleteMedia),
-		adminMediaController.softDeleteMedia
-	);
+router.route('/deleteAllProductsMedia').delete(
+	// checkPermission('delete_media'),
+	adminMediaController.deleteAllProductsMedia
+);
+router.route('/bulk-upload').post(
+	upload.array('file', 50),
+	// checkPermission('create_media'),
+	adminMediaController.bulkUploadMedia
+);
+router.route('/:mediaId').delete(
+	// checkPermission('delete_media'),
+	validate(adminMediaValidation.deleteMedia),
+	adminMediaController.softDeleteMedia
+);
 
-router
-	.route('/bulk-soft-delete/:mediaId')
-	.delete(
-		// checkPermission('delete_media'),
-		adminMediaController.softBulkDeleteMediaById
-	);
+router.route('/bulk-soft-delete/:mediaId').delete(
+	// checkPermission('delete_media'),
+	adminMediaController.softBulkDeleteMediaById
+);
+router.route('/fix-image-names-and-convert-to-webp').patch(
+	// checkPermission('delete_media'),
+	adminMediaController.fixImageNamesAndConvertToWebPController
+);
 
-router
-	.route('/permanent/:mediaId')
-	.delete(
-		// checkPermission('delete_media'),
-		validate(adminMediaValidation.deleteMedia),
-		adminMediaController.permanentDeleteMedia
-	);
+router.route('/permanent/:mediaId').delete(
+	// checkPermission('delete_media'),
+	validate(adminMediaValidation.deleteMedia),
+	adminMediaController.permanentDeleteMedia
+);
 
 module.exports = router;

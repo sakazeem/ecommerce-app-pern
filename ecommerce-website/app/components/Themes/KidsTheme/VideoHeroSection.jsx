@@ -120,7 +120,13 @@ function VideoCard({ slide, idx, isMobileActive }) {
   useEffect(() => {
     if (!videoRef.current) return;
     if (isMobileActive) {
-      videoRef.current.play().catch(() => {});
+      const scrollY = window.scrollY;
+      videoRef.current
+        .play()
+        .catch(() => {})
+        .finally(() => {
+          window.scrollTo({ top: scrollY, behavior: "smooth" });
+        });
     } else {
       videoRef.current.pause();
       videoRef.current.currentTime = 0;

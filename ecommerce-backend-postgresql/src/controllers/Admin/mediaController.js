@@ -2,6 +2,9 @@ const catchAsync = require('../../utils/catchAsync');
 const { adminMediaService } = require('../../services/Admin');
 const ApiError = require('../../utils/ApiError');
 const httpStatus = require('http-status');
+const {
+	fixImageNamesAndConvertToWebP,
+} = require('../../services/imageService');
 
 const getMedias = catchAsync(async (req, res) => {
 	const medias = await adminMediaService.getMedias(req);
@@ -45,6 +48,10 @@ const permanentDeleteMedia = catchAsync(async (req, res) => {
 	await adminMediaService.permanentDeleteMediaById(req);
 	res.send({ success: true });
 });
+const fixImageNamesAndConvertToWebPController = catchAsync(async (req, res) => {
+	fixImageNamesAndConvertToWebP(req);
+	res.send({ success: true });
+});
 
 module.exports = {
 	getMedias,
@@ -54,4 +61,5 @@ module.exports = {
 	bulkUploadMedia,
 	softBulkDeleteMediaById,
 	deleteAllProductsMedia,
+	fixImageNamesAndConvertToWebPController,
 };

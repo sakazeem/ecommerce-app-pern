@@ -195,7 +195,8 @@ export const useCartStore = create(
 
       // ─── CART ─────────────────────────────────────────────────────
       addToCart: async (product, quantity = 1, isAuthenticated = false) => {
-        const maxStock = product.selectedVariant?.stock ?? Infinity;
+        const maxStock = product.selectedVariant?.stock ?? 0;
+        // const maxStock = product.selectedVariant?.stock ?? Infinity;
 
         if (isAuthenticated) {
           set({ addToCartLoading: true });
