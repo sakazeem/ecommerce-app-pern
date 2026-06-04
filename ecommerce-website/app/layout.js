@@ -177,8 +177,36 @@ export default async function RootLayout({ children }) {
 	return (
 		<html lang="en">
 			<head>
-				<link rel="preconnect" href="https://cdn.babiesnbaba.com" />
+				<link
+					rel="preconnect"
+					href="https://cdn.babiesnbaba.com"
+					crossOrigin="anonymous"
+				/>
 				<link rel="dns-prefetch" href="https://cdn.babiesnbaba.com" />
+				<link
+					rel="preload"
+					as="image"
+					href="/_next/image?url=https%3A%2F%2Fcdn.babiesnbaba.com%2Fweb-3-1778582352761.webp&w=1920&q=75"
+					fetchPriority="high"
+				/>
+				{/* <link
+					rel="preload"
+					as="image"
+					href={"https://cdn.babiesnbaba.com/web-3-1778582352761.webp"}
+					fetchPriority="high"
+				/>
+				<link
+					rel="preload"
+					as="image"
+					href={"https://cdn.babiesnbaba.com/summer-arrival-1779191900854.webp"}
+					fetchPriority="high"
+				/>
+				<link
+					rel="preload"
+					as="image"
+					href={"https://cdn.babiesnbaba.com/web-1-1778582375270.webp"}
+					fetchPriority="high"
+				/> */}
 				<meta
 					name="facebook-domain-verification"
 					content="7gy9rr0f107zjr8thk3ggeebs7v3ty"
