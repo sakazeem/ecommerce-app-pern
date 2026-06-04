@@ -15,47 +15,36 @@ const HeroSection = ({
 }) => {
 	const router = useRouter();
 
-	const [index, setIndex] = useState(1); // start at 1 because of clone
+	const [index, setIndex] = useState(1);
 	const [isPaused, setIsPaused] = useState(false);
-	const [mounted, setMounted] = useState(false);
 	const [isAnimating, setIsAnimating] = useState(false);
 
 	const trackRef = useRef(null);
 	const intervalRef = useRef(null);
 
 	const slidesCount = slides.length;
-
 	if (!slidesCount) return null;
 
-	// ---------------------------
-	// CREATE CLONES (for infinite loop)
-	// ---------------------------
 	const extendedSlides = [
 		slides[slidesCount - 1], // last clone
 		...slides,
 		slides[0], // first clone
 	];
 
-	// ---------------------------
-	// INIT (LCP safe)
-	// ---------------------------
-	useEffect(() => {
-		const t = setTimeout(() => setMounted(true), 50);
-		return () => clearTimeout(t);
-	}, []);
+	// ✅ REMOVED mounted/setTimeout delay — no longer needed
 
 	// ---------------------------
 	// AUTOPLAY
 	// ---------------------------
 	useEffect(() => {
-		if (!mounted || !autoPlay || isPaused || isAnimating) return;
+		if (!autoPlay || isPaused || isAnimating) return; // ✅ removed mounted check
 
 		intervalRef.current = setInterval(() => {
 			next();
 		}, autoPlayDelay);
 
 		return () => clearInterval(intervalRef.current);
-	}, [mounted, isPaused, index, isAnimating]);
+	}, [isPaused, index, isAnimating]);
 
 	// ---------------------------
 	// SLIDE LOGIC
@@ -78,9 +67,7 @@ const HeroSection = ({
 		setIsAnimating(true);
 
 		trackRef.current.style.transition = `transform ${speed}ms ease-out`;
-		// trackRef.current.style.transform = `translateX(-${index * 100}%)`;
 
-		// reset logic (infinite loop illusion)
 		const timeout = setTimeout(() => {
 			if (index === slidesCount + 1) {
 				trackRef.current.style.transition = "none";
@@ -106,26 +93,6 @@ const HeroSection = ({
 	};
 
 	// ---------------------------
-	// LCP FAST FIRST LOAD
-	// ---------------------------
-	// if (!mounted) {
-	// 	const first = slides[0];
-
-	// 	return (
-	// 		<div onClick={() => handleClick(first)}>
-	// 			<Image
-	// 				src={first?.src}
-	// 				width={1920}
-	// 				height={550}
-	// 				priority
-	// 				className="w-full h-auto"
-	// 				alt=""
-	// 			/>
-	// 		</div>
-	// 	);
-	// }
-
-	// ---------------------------
 	// RENDER
 	// ---------------------------
 	return (
@@ -149,36 +116,40 @@ const HeroSection = ({
 							src={slide.src}
 							width={1920}
 							height={550}
+							// ✅ i === 1 is the real first visible slide (index starts at 1)
+							// ✅ Also mark i === 0 (last-clone) as it may flash during loop reset
 							priority={i === 1}
+							// ✅ Only eager-load first 3 slides; lazy-load the rest
+							loading={i <= 2 ? "eager" : "lazy"}
+							// ✅ Tell browser this is full-width for correct srcset selection
+							sizes="100vw"
 							className="w-full h-auto"
-							alt=""
+							alt={slide.alt || `Banner ${i}`}
+							// ✅ Boost fetch priority on the actual LCP image
+							fetchPriority={i === 1 ? "high" : "low"}
 						/>
 					</div>
 				))}
 			</div>
 
-			{/* ---------------- NAVIGATION ---------------- */}
+			{/* NAVIGATION */}
 			{showNavigation && (
 				<>
 					<button
 						onClick={prev}
-						className={`absolute ${
-							false === "outside" ? "-left-12" : "left-6 max-md:left-2"
-						} top-1/2 transform -translate-y-1/2 z-10 cursor-pointer text-light bg-secondary/85 hover:brightness-95 shadow-md rounded-full p-1 max-md:p-0.5 text-xl select-none`}>
+						className="absolute left-6 max-md:left-2 top-1/2 -translate-y-1/2 z-10 cursor-pointer text-light bg-secondary/85 hover:brightness-95 shadow-md rounded-full p-1 max-md:p-0.5 select-none">
 						<ChevronRight className="rotate-180 size-6 max-md:size-5" />
 					</button>
 
 					<button
 						onClick={next}
-						className={`absolute ${
-							false === "outside" ? "-right-12" : "right-6 max-md:right-2"
-						} top-1/2 transform -translate-y-1/2 z-10 cursor-pointer text-light bg-secondary/85 hover:brightness-95 shadow-md rounded-full p-1 max-md:p-0.5 text-xl select-none`}>
+						className="absolute right-6 max-md:right-2 top-1/2 -translate-y-1/2 z-10 cursor-pointer text-light bg-secondary/85 hover:brightness-95 shadow-md rounded-full p-1 max-md:p-0.5 select-none">
 						<ChevronRight className="size-6 max-md:size-5" />
 					</button>
 				</>
 			)}
 
-			{/* ---------------- DOTS ---------------- */}
+			{/* DOTS */}
 			{showPagination && (
 				<div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
 					{slides.map((_, i) => {
