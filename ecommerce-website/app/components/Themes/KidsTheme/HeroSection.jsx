@@ -108,22 +108,22 @@ const HeroSection = ({
 	// ---------------------------
 	// LCP FAST FIRST LOAD
 	// ---------------------------
-	if (!mounted) {
-		const first = slides[0];
+	// if (!mounted) {
+	// 	const first = slides[0];
 
-		return (
-			<div onClick={() => handleClick(first)}>
-				<Image
-					src={first?.src}
-					width={1920}
-					height={550}
-					priority
-					className="w-full h-auto"
-					alt=""
-				/>
-			</div>
-		);
-	}
+	// 	return (
+	// 		<div onClick={() => handleClick(first)}>
+	// 			<Image
+	// 				src={first?.src}
+	// 				width={1920}
+	// 				height={550}
+	// 				priority
+	// 				className="w-full h-auto"
+	// 				alt=""
+	// 			/>
+	// 		</div>
+	// 	);
+	// }
 
 	// ---------------------------
 	// RENDER
