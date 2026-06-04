@@ -1,12 +1,14 @@
-import requests from "./httpServices";
-
+import { serverGet } from "./serverFetch";
 const HomepageService = {
 	getHomepageSections: async () => {
 		try {
-			const data = await requests.get("/homepage-sections");
-			return data;
+			return await serverGet("/homepage-sections", {
+				revalidate: 300, // cache for 5 minutes
+				tags: ["homepage"],
+			});
 		} catch (err) {
 			console.error("API error:", err);
+			return null;
 		}
 	},
 };

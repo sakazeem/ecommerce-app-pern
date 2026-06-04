@@ -8,6 +8,7 @@ import ProductCard from "./ProductCard";
 import { useState } from "react";
 import SectionTitle from "../../Shared/SectionTitle";
 import SpinLoader from "../../Shared/SpinLoader";
+import { ProductsGridSkeleton } from "../../home/HomepageSection";
 
 const PopularCatTabs = ({ title, tabs, productsPerTab }) => {
 	const store = useStore();
@@ -37,7 +38,8 @@ const PopularCatTabs = ({ title, tabs, productsPerTab }) => {
 				tabs={popularTabs.map((tab) => ({
 					label: tab.title,
 					content: () => {
-						if (isLoading && activeTab?.id === tab.id) return <SpinLoader />;
+						if (isLoading && activeTab?.id === tab.id)
+							return <ProductsGridSkeleton columns="grid-cols-5" count={5} />;
 
 						const products = data?.records || [];
 						if (products.length === 0) {
