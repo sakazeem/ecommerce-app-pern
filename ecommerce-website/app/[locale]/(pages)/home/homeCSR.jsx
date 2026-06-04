@@ -1,8 +1,16 @@
 // "use client";
+import dynamic from "next/dynamic";
 import HomepageSection from "@/app/components/home/HomepageSection";
-import AboutUsSection from "@/app/components/Themes/KidsTheme/AboutUsSection";
-import FeaturesSection from "@/app/components/Themes/KidsTheme/FeaturesSection";
-import Newsletter from "@/app/components/Themes/KidsTheme/Newsletter";
+
+const FeaturesSection = dynamic(
+	() => import("@/app/components/Themes/KidsTheme/FeaturesSection"),
+);
+const AboutUsSection = dynamic(
+	() => import("@/app/components/Themes/KidsTheme/AboutUsSection"),
+);
+const Newsletter = dynamic(
+	() => import("@/app/components/Themes/KidsTheme/Newsletter"),
+);
 // import { useEffect } from "react";
 
 const HomePage = ({ homepageSections }) => {

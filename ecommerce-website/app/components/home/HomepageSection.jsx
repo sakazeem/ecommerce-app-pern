@@ -1,12 +1,48 @@
+import dynamic from "next/dynamic";
 import { ENV_VARIABLES } from "@/app/constants/env_variables";
-import CategorySlider from "../CategorySlider";
-import CategoriesSection from "../Themes/KidsTheme/CategoriesSection";
 import HeroSection from "../Themes/KidsTheme/HeroSection";
-import ParentCategoriesGrid from "../Themes/KidsTheme/ParentCategoriesGrid";
-import PopularCatTabs from "../Themes/KidsTheme/PopularCatTabs";
-import ProductsSlider from "../Themes/KidsTheme/ProductsSlider";
-import VideoHeroSection from "../Themes/KidsTheme/VideoHeroSection";
-import ProductsSliderClient from "../Themes/KidsTheme/ServerSideComponents/ProductsSliderComp/ProductsSlider.server";
+const VideoHeroSection = dynamic(
+	() => import("../Themes/KidsTheme/VideoHeroSection"),
+	{ loading: () => <SectionSkeleton height="h-[500px]" /> },
+);
+
+const CategorySlider = dynamic(() => import("../CategorySlider"), {
+	loading: () => <SectionSkeleton height="h-48" />,
+});
+
+const CategoriesSection = dynamic(
+	() => import("../Themes/KidsTheme/CategoriesSection"),
+	{
+		loading: () => (
+			<>
+				<div className="flex gap-5">
+					{Array.from({ length: 7 }).map((_, i) => (
+						<div key={i} className="flex-1">
+							<div className="w-full aspect-square rounded-full bg-gray-100 animate-pulse" />
+							<div className="h-3 mt-2 mx-auto w-3/4 rounded bg-gray-100 animate-pulse" />
+						</div>
+					))}
+				</div>
+			</>
+		),
+	},
+);
+
+const ParentCategoriesGrid = dynamic(
+	() => import("../Themes/KidsTheme/ParentCategoriesGrid"),
+	{ loading: () => <SectionSkeleton height="h-64" /> },
+);
+
+const PopularCatTabs = dynamic(
+	() => import("../Themes/KidsTheme/PopularCatTabs"),
+	{ loading: () => <SectionSkeleton height="h-96" /> },
+);
+
+const ProductsSliderClient = dynamic(
+	() =>
+		import("../Themes/KidsTheme/ServerSideComponents/ProductsSliderComp/ProductsSlider.server"),
+	{ loading: () => <SectionSkeleton height="h-72" /> },
+);
 
 export default function HomepageSection({ section }) {
 	const { type, config, title } = section;
@@ -102,4 +138,12 @@ export default function HomepageSection({ section }) {
 		default:
 			return null;
 	}
+}
+
+export function SectionSkeleton({ height = "h-48" }) {
+	return (
+		<div
+			className={`w-full h-48 bg-gray-100/80 py-4 backdrop-blur-sm animate-pulse rounded-md`}
+		/>
+	);
 }
