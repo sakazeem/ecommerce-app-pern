@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import "@/app/styles/defaultPages.css";
 
 const ShippingPolicyPage = () => {
 	const [content, setContent] = useState("");
