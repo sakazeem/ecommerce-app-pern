@@ -6,8 +6,10 @@ import "./globals.css";
 import "@/app/styles/headings.css";
 import "@/app/styles/layout.css";
 import "@/app/styles/paragraphs.css";
-import "react-toastify/dist/ReactToastify.css";
-import "@fancyapps/ui/dist/fancybox/fancybox.css";
+// import "react-toastify/dist/ReactToastify.css";
+// import "@fancyapps/ui/dist/fancybox/fancybox.css";
+import ToastProvider from "@/app/providers/ToastProvider";
+import FancyboxProvider from "@/app/providers/FancyboxProvider";
 import "@/app/styles/defaultPages.css";
 
 import localFont from "next/font/local";
@@ -251,7 +253,8 @@ export default async function RootLayout({ children }) {
 						style={{ display: "none", visibility: "hidden" }}></iframe>
 				</noscript>
 				<RouteTrackerProvider />
-
+				<ToastProvider />
+				<FancyboxProvider />
 				{children}
 			</body>
 		</html>
