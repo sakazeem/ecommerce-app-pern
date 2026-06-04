@@ -1,3 +1,4 @@
+"use client";
 import SubscriberService from "@/app/services/SubscriberService";
 import { useState } from "react";
 import { toast } from "react-toastify";
