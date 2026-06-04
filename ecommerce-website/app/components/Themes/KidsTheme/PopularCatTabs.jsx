@@ -2,13 +2,11 @@
 import { useFetchReactQuery } from "@/app/hooks/useFetchReactQuery";
 import { useStore } from "@/app/providers/StoreProvider";
 import ProductServices from "@/app/services/ProductServices";
-import BaseTab from "../../BaseComponents/BaseTabs";
-import Loader from "../../Shared/Loader";
-import ProductCard from "./ProductCard";
 import { useState } from "react";
+import BaseTab from "../../BaseComponents/BaseTabs";
 import SectionTitle from "../../Shared/SectionTitle";
-import SpinLoader from "../../Shared/SpinLoader";
-import { ProductsGridSkeleton } from "../../home/HomepageSection";
+import ProductCard from "./ProductCard";
+import { ProductsGridSkeleton } from "./SkeletonLoaders";
 
 const PopularCatTabs = ({ title, tabs, productsPerTab }) => {
 	const store = useStore();
@@ -38,9 +36,14 @@ const PopularCatTabs = ({ title, tabs, productsPerTab }) => {
 				tabs={popularTabs.map((tab) => ({
 					label: tab.title,
 					content: () => {
-						if (isLoading && activeTab?.id === tab.id)
-							return <ProductsGridSkeleton columns="grid-cols-5" count={5} />;
-
+						if (isLoading && activeTab?.id === tab.id) {
+							return (
+								<ProductsGridSkeleton
+									columns="grid-cols-5"
+									count={productsPerTab || 5}
+								/>
+							);
+						}
 						const products = data?.records || [];
 						if (products.length === 0) {
 							return <p className="text-center p4">No products available.</p>;

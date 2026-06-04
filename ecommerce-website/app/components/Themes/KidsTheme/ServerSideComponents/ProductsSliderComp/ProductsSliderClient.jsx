@@ -4,7 +4,6 @@ import clsx from "clsx";
 import BaseSlider from "../../../../BaseComponents/BaseSlider";
 import SectionTitle from "../../../../Shared/SectionTitle";
 import ProductCard from "../../ProductCard";
-import SpinLoader from "../../../../Shared/SpinLoader";
 
 const ProductsSliderClient = ({
 	title,
