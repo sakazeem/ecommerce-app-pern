@@ -20,7 +20,7 @@ const HeroSection = ({ slides = [], autoplay = false }) => {
 
 	const firstSlide = slides?.[0];
 
-	const renderImage = (slide, idx, isPriority = false) => (
+	const renderImage = (slide, idx, isPriority = true) => (
     // <div className="relative w-full h-auto max-md:min-h-[25vh] max-md:object-cover">
     // <div className="relative w-full h-[200px] md:h-[250px] lg:h-[550px]">
     <Image
@@ -31,6 +31,7 @@ const HeroSection = ({ slides = [], autoplay = false }) => {
       alt=""
       unoptimized={!isPriority} // only priority image is optimized for better LCP
       priority={isPriority}
+      fetchPriority="high"
       sizes="100vw"
       className="w-full h-auto"
     />
