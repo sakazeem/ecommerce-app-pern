@@ -6,7 +6,6 @@ export default async function HomePage() {
 
 	return (
 		<>
-			
 			<HomepageContent homepageSections={homepageSections} />
 		</>
 	);

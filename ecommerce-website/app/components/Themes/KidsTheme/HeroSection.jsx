@@ -112,22 +112,32 @@ const HeroSection = ({
 						key={i}
 						className="min-w-full cursor-pointer"
 						onClick={() => handleClick(slide)}>
-						<Image
+						<img
 							src={slide.src}
 							width={1920}
 							height={550}
+							// Only the first real slide is LCP
+							loading={i === 1 ? "eager" : "lazy"}
+							fetchPriority={i === 1 ? "high" : "auto"}
+							className="w-full h-auto"
+							alt={slide.alt || `Banner ${i}`}
+						/>
+						{/* <img
+							src={slide.src}
+							// width={1920}
+							// height={550}
 							// ✅ i === 1 is the real first visible slide (index starts at 1)
 							// ✅ Also mark i === 0 (last-clone) as it may flash during loop reset
 							priority={i === 1}
 							// ✅ Only eager-load first 3 slides; lazy-load the rest
 							loading={i <= 2 ? "eager" : "lazy"}
 							// ✅ Tell browser this is full-width for correct srcset selection
-							sizes="100vw"
+							// sizes="100vw"
 							className="w-full h-auto"
 							alt={slide.alt || `Banner ${i}`}
 							// ✅ Boost fetch priority on the actual LCP image
 							fetchPriority={i === 1 ? "high" : "low"}
-						/>
+						/> */}
 					</div>
 				))}
 			</div>
