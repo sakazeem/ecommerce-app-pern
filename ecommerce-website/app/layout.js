@@ -1,11 +1,11 @@
-import "@/app/styles/headings.css";
-import "@/app/styles/layout.css";
-import "@/app/styles/paragraphs.css";
 import Script from "next/script";
 // import "swiper/css";
 // import "swiper/css/navigation";
 // import "swiper/css/pagination";
 import "./globals.css";
+import "@/app/styles/headings.css";
+import "@/app/styles/layout.css";
+import "@/app/styles/paragraphs.css";
 
 import localFont from "next/font/local";
 import { getTheme } from "./lib/getTheme";
@@ -172,6 +172,8 @@ export default async function RootLayout({ children }) {
 	return (
 		<html lang="en">
 			<head>
+				<link rel="preconnect" href="https://cdn.babiesnbaba.com" />
+				<link rel="dns-prefetch" href="https://cdn.babiesnbaba.com" />
 				<meta
 					name="facebook-domain-verification"
 					content="7gy9rr0f107zjr8thk3ggeebs7v3ty"

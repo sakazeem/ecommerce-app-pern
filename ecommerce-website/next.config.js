@@ -99,6 +99,15 @@ const nextConfig = {
 	},
 	experimental: {
 		optimizeCss: true,
+		optimizePackageImports: [
+			"lucide-react", // you're already using this
+			"@radix-ui/react-*", // add any UI lib you use
+			"framer-motion",
+		],
+	},
+	// ✅ Add this — reduces JS/CSS bundle sizes
+	compiler: {
+		removeConsole: process.env.NODE_ENV === "production",
 	},
 };
 
