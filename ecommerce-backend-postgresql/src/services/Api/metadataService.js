@@ -282,7 +282,7 @@ async function getNavCategories(req) {
 		where: {
 			parent_id: null,
 		},
-		attributes: ['id'],
+		attributes: ['id', 'weight'],
 		include: [
 			{
 				model: db.category.scope('active'),
