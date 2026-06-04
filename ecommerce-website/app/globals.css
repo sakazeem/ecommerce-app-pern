@@ -1,7 +1,4 @@
 @import "tailwindcss";
-@source "../app/**/*.{js,ts,jsx,tsx}";
-@source "../components/**/*.{js,ts,jsx,tsx}";
-@source not "../node_modules";
 
 :root {
 	--background: #ffffff;
@@ -456,7 +453,6 @@ body,
 .animate-blink {
 	animation: blink 1s infinite;
 }
-
 
 /* removing swiper glitch issue */
 .swiper {
