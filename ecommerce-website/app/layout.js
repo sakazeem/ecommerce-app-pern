@@ -12,195 +12,192 @@ import { getTheme } from "./lib/getTheme";
 import RouteTrackerProvider from "./providers/RouteTrackerProvider";
 
 const champagne = localFont({
-	//changing font family its not champagne itlaic
-	src: [
-		{
-			path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Bold-Italic.ttf",
-			weight: "700",
-			style: "italic",
-		},
-		{
-			path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Bold.ttf",
-			weight: "700",
-			style: "normal",
-		},
-		{
-			path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Bold-Italic.ttf",
-			weight: "400",
-			style: "italic",
-		},
-		{
-			path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Bold.ttf",
-			weight: "400",
-			style: "normal",
-		},
-		{
-			path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Italic.ttf",
-			weight: "300",
-			style: "italic",
-		},
-		{
-			path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines.ttf",
-			weight: "300",
-			style: "normal",
-		},
-	],
-	variable: "--font-champagne", // CSS Variable
-	display: "swap",
+  //changing font family its not champagne itlaic
+  src: [
+    {
+      path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Bold-Italic.ttf",
+      weight: "700",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Bold-Italic.ttf",
+      weight: "400",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Bold.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Italic.ttf",
+      weight: "300",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines.ttf",
+      weight: "300",
+      style: "normal",
+    },
+  ],
+  variable: "--font-champagne", // CSS Variable
+  display: "swap",
 });
 
 const konnect = localFont({
-	//changing font family its not konnect itlaic
-	src: [
-		{
-			path: "./fonts/Konnect/KonnectRegular.otf",
-			weight: "400",
-			style: "normal",
-		},
-		{
-			path: "./fonts/Konnect/KonnectItalic.otf",
-			weight: "400",
-			style: "italic",
-		},
-		{
-			path: "./fonts/Konnect/KonnectMedium.otf",
-			weight: "500",
-			style: "normal",
-		},
-		{
-			path: "./fonts/Konnect/KonnectMediumItalic.otf",
-			weight: "500",
-			style: "italic",
-		},
-		{
-			path: "./fonts/Konnect/KonnectLight.otf",
-			weight: "300",
-			style: "normal",
-		},
-		{
-			path: "./fonts/Konnect/KonnectLightItalic.otf",
-			weight: "300",
-			style: "italic",
-		},
-		{
-			path: "./fonts/Konnect/KonnectSemiBold.otf",
-			weight: "600",
-			style: "normal",
-		},
-		{
-			path: "./fonts/Konnect/KonnectSemiBoldItalic.otf",
-			weight: "600",
-			style: "italic",
-		},
-		{
-			path: "./fonts/Konnect/KonnectBold.otf",
-			weight: "700",
-			style: "normal",
-		},
-		{
-			path: "./fonts/Konnect/KonnectBoldItalic.otf",
-			weight: "700",
-			style: "italic",
-		},
-	],
-	variable: "--font-konnect", // CSS Variable
-	display: "swap",
+  //changing font family its not konnect itlaic
+  src: [
+    {
+      path: "./fonts/Konnect/KonnectRegular.otf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Konnect/KonnectItalic.otf",
+      weight: "400",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Konnect/KonnectMedium.otf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Konnect/KonnectMediumItalic.otf",
+      weight: "500",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Konnect/KonnectLight.otf",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Konnect/KonnectLightItalic.otf",
+      weight: "300",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Konnect/KonnectSemiBold.otf",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Konnect/KonnectSemiBoldItalic.otf",
+      weight: "600",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Konnect/KonnectBold.otf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Konnect/KonnectBoldItalic.otf",
+      weight: "700",
+      style: "italic",
+    },
+  ],
+  variable: "--font-konnect", // CSS Variable
+  display: "swap",
 });
 
-let cachedTheme = null;
-
-// to avoid duplicate API calls
+// Theme is fetched fresh each request; Next.js fetch cache handles dedup within a request
 async function getCachedTheme() {
-	if (!cachedTheme) cachedTheme = await getTheme();
-	return cachedTheme;
+  return getTheme();
 }
 
 const defaultMetaTags = {
-	title: "BabiesNBaba - Online Baby Store for Clothes, Toys & Essentials",
-	description:
-		"Discover a wide range of baby products at BabiesNBaba. From cute clothes to toys and essentials, shop quality items for your little one with ease.",
+  title: "BabiesNBaba - Online Baby Store for Clothes, Toys & Essentials",
+  description:
+    "Discover a wide range of baby products at BabiesNBaba. From cute clothes to toys and essentials, shop quality items for your little one with ease.",
 };
 
 export async function generateMetadata() {
-	const store = await getCachedTheme();
+  const store = await getCachedTheme();
 
-	const meta = store?.metaTags || {};
+  const meta = store?.metaTags || {};
 
-	return {
-		title: meta.title || defaultMetaTags.title,
-		description: meta.description || defaultMetaTags.description,
-		keywords: meta.keywords || "shop, ecommerce, default",
-		openGraph: {
-			title: meta.ogTitle || meta.title || defaultMetaTags.title,
-			description:
-				meta.ogDescription || meta.description || defaultMetaTags.description,
-			images: meta.ogImage ? [meta.ogImage] : [store.content.logo],
-		},
-		twitter: {
-			card: "summary_large_image",
-			title: meta.twitterTitle || meta.title || defaultMetaTags.title,
-			description:
-				meta.twitterDescription ||
-				meta.description ||
-				defaultMetaTags.description,
-			images: meta.twitterImage ? [meta.twitterImage] : [store.content.logo],
-		},
-		icons: {
-			icon: store.favicon || "/favicon.ico", // fallback
-		},
-	};
+  return {
+    title: meta.title || defaultMetaTags.title,
+    description: meta.description || defaultMetaTags.description,
+    keywords: meta.keywords || "shop, ecommerce, default",
+    openGraph: {
+      title: meta.ogTitle || meta.title || defaultMetaTags.title,
+      description:
+        meta.ogDescription || meta.description || defaultMetaTags.description,
+      images: meta.ogImage ? [meta.ogImage] : [store.content.logo],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: meta.twitterTitle || meta.title || defaultMetaTags.title,
+      description:
+        meta.twitterDescription ||
+        meta.description ||
+        defaultMetaTags.description,
+      images: meta.twitterImage ? [meta.twitterImage] : [store.content.logo],
+    },
+    icons: {
+      icon: store.favicon || "/favicon.ico", // fallback
+    },
+  };
 }
 
 export default async function RootLayout({ children }) {
-	const store = await getCachedTheme();
-	const fontMap = {
-		champagne: champagne.variable,
-		konnect: konnect.variable,
-	};
+  const store = await getCachedTheme();
+  const fontMap = {
+    champagne: champagne.variable,
+    konnect: konnect.variable,
+  };
 
-	const fontClasses = [fontMap.champagne, fontMap.konnect].join(" ");
+  const fontClasses = [fontMap.champagne, fontMap.konnect].join(" ");
 
-	const colors = store.theme || {
-		primary: "#1E40AF",
-		secondary: "#9333EA",
-		background: "#F9FAFB",
-		text: "#111827",
-	};
-	// const fontClasses =
-	// 	fontMap[store?.fontFamily?.toLowerCase()] || fontMap.inter;
+  const colors = store.theme || {
+    primary: "#1E40AF",
+    secondary: "#9333EA",
+    background: "#F9FAFB",
+    text: "#111827",
+  };
+  // const fontClasses =
+  // 	fontMap[store?.fontFamily?.toLowerCase()] || fontMap.inter;
 
-	return (
-		<html lang="en">
-			<head>
-				<meta
-					name="facebook-domain-verification"
-					content="7gy9rr0f107zjr8thk3ggeebs7v3ty"
-				/>
-				<Script id="gtm-head" strategy="afterInteractive">
-					{`
+  return (
+    <html lang="en">
+      <head>
+        <meta
+          name="facebook-domain-verification"
+          content="7gy9rr0f107zjr8thk3ggeebs7v3ty"
+        />
+        <Script id="gtm-head" strategy="afterInteractive">
+          {`
     (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-K72ZT6HR');
   `}
-				</Script>
-				<Script
-					src="https://www.googletagmanager.com/gtag/js?id=G-V6M9W091WE"
-					strategy="afterInteractive"
-				/>
-				<Script id="google-analytics" strategy="afterInteractive">
-					{`
+        </Script>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-V6M9W091WE"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
 					window.dataLayer = window.dataLayer || [];
 					function gtag(){dataLayer.push(arguments);}
 					gtag('js', new Date());
 					gtag('config', 'G-V6M9W091WE');
 					`}
-				</Script>
+        </Script>
 
-				{/* Meta Pixel */}
-				<Script id="meta-pixel" strategy="afterInteractive">
-					{`
+        {/* Meta Pixel */}
+        <Script id="meta-pixel" strategy="afterInteractive">
+          {`
             !function(f,b,e,v,n,t,s)
             {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
             n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -212,24 +209,25 @@ export default async function RootLayout({ children }) {
             fbq('init', '1371248501158222');
             fbq('track', 'PageView');
           `}
-				</Script>
-			</head>
-			<body
-				className={`${fontClasses} antialiased`}
-				style={{
-					// need to define theme colors here and in app/globals.css in @theme <-- for new colors
+        </Script>
+      </head>
+      <body
+        className={`${fontClasses} antialiased`}
+        style={{
+          // need to define theme colors here and in app/globals.css in @theme <-- for new colors
 
-					["--color-header"]: colors.header,
-					["--color-headerText"]: colors.headerText,
-					["--color-primary"]: colors.primary,
-					["--color-footer"]: colors.footer,
-					["--color-cardsBg"]: colors.cardsBg,
-					["--color-secondary"]: colors.secondary,
-					["--color-background"]: colors.background,
-					["--color-text"]: colors.text,
-				}}>
-				{/* Meta Pixel noscript */}
-				{/* <noscript>
+          ["--color-header"]: colors.header,
+          ["--color-headerText"]: colors.headerText,
+          ["--color-primary"]: colors.primary,
+          ["--color-footer"]: colors.footer,
+          ["--color-cardsBg"]: colors.cardsBg,
+          ["--color-secondary"]: colors.secondary,
+          ["--color-background"]: colors.background,
+          ["--color-text"]: colors.text,
+        }}
+      >
+        {/* Meta Pixel noscript */}
+        {/* <noscript>
 					<Image
 						height="1"
 						width="1"
@@ -238,17 +236,18 @@ export default async function RootLayout({ children }) {
 						src="https://www.facebook.com/tr?id=1371248501158222&ev=PageView&noscript=1"
 					/>
 				</noscript> */}
-				<noscript>
-					<iframe
-						src="https://www.googletagmanager.com/ns.html?id=GTM-K72ZT6HR"
-						height="0"
-						width="0"
-						style={{ display: "none", visibility: "hidden" }}></iframe>
-				</noscript>
-				<RouteTrackerProvider />
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-K72ZT6HR"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          ></iframe>
+        </noscript>
+        <RouteTrackerProvider />
 
-				{children}
-			</body>
-		</html>
-	);
+        {children}
+      </body>
+    </html>
+  );
 }

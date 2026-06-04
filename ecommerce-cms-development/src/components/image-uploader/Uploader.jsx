@@ -3,12 +3,39 @@ import { useContext, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { FiUploadCloud } from "react-icons/fi";
 
-// Internal imports
 import useUtilsFunction from "@/hooks/useUtilsFunction";
 import MediaServices from "@/services/MediaServices";
 import { notifyError, notifySuccess } from "@/utils/toast";
 import { SidebarContext } from "@/context/SidebarContext";
 import { Card } from "@windmill/react-ui";
+
+// mediaType options:
+//   undefined / null  → standard image (jpeg/png/webp) + video
+//   "video"           → video only
+//   "logo"            → image + svg (for logos)
+//   "favicon"         → image + svg + ico (for favicons)
+
+const ACCEPT_BY_TYPE = {
+  video: { "video/*": [".mp4", ".mov", ".webm", ".avi", ".mkv"] },
+  logo: {
+    "image/*": [".jpeg", ".jpg", ".png", ".webp", ".svg"],
+    "image/svg+xml": [".svg"],
+  },
+  favicon: {
+    "image/*": [".jpeg", ".jpg", ".png", ".webp", ".svg", ".ico"],
+    "image/svg+xml": [".svg"],
+    "image/x-icon": [".ico"],
+  },
+};
+
+const HINT_BY_TYPE = {
+  video: "MP4, MOV, WEBM up to 50MB",
+  logo: "JPEG, PNG, WEBP, SVG up to 1MB",
+  favicon: "PNG, SVG, ICO up to 1MB (16×16 or 32×32 recommended)",
+  default:
+    "Images (JPEG, PNG, WEBP) up to 1MB or Videos (MP4, MOV, WEBM) up to 50MB",
+  image: "JPEG, PNG, WEBP up to 1MB",
+};
 
 const Uploader = ({ setImageUrl, imageUrl, product, mediaType }) => {
   const [files, setFiles] = useState([]);
@@ -18,25 +45,42 @@ const Uploader = ({ setImageUrl, imageUrl, product, mediaType }) => {
   const { setIsUpdate } = useContext(SidebarContext);
 
   const isVideo = mediaType === "video";
+  const isLogo = mediaType === "logo";
+  const isFavicon = mediaType === "favicon";
   const isAny = !mediaType;
+
+  const accept = isVideo
+    ? ACCEPT_BY_TYPE.video
+    : isLogo
+      ? ACCEPT_BY_TYPE.logo
+      : isFavicon
+        ? ACCEPT_BY_TYPE.favicon
+        : isAny
+          ? {
+              "image/*": [".jpeg", ".jpg", ".png", ".webp"],
+              "video/*": [".mp4", ".mov", ".webm", ".avi", ".mkv"],
+            }
+          : { "image/*": [".jpeg", ".jpg", ".png", ".webp"] };
+
+  const hint = isVideo
+    ? HINT_BY_TYPE.video
+    : isLogo
+      ? HINT_BY_TYPE.logo
+      : isFavicon
+        ? HINT_BY_TYPE.favicon
+        : isAny
+          ? HINT_BY_TYPE.default
+          : HINT_BY_TYPE.image;
+
   const { getRootProps, getInputProps, fileRejections } = useDropzone({
-    accept: isAny
-      ? {
-          "image/*": [".jpeg", ".jpg", ".png", ".webp"],
-          "video/*": [".mp4", ".mov", ".webm", ".avi", ".mkv"],
-        }
-      : isVideo
-        ? { "video/*": [".mp4", ".mov", ".webm", ".avi", ".mkv"] }
-        : { "image/*": [".jpeg", ".jpg", ".png", ".webp"] },
+    accept,
     multiple: product ? true : isVideo ? true : false,
     maxSize: isVideo ? 50 * 1024 * 1024 : 1024 * 1024,
     maxFiles: isVideo ? 20 : globalSetting?.number_of_image_per_product || 2,
     onDrop: async (acceptedFiles) => {
       setFiles(
         acceptedFiles.map((file) =>
-          Object.assign(file, {
-            preview: URL.createObjectURL(file),
-          }),
+          Object.assign(file, { preview: URL.createObjectURL(file) }),
         ),
       );
     },
@@ -78,9 +122,6 @@ const Uploader = ({ setImageUrl, imageUrl, product, mediaType }) => {
         const formData = new FormData();
         formData.append("file", file);
         formData.append("media_type", isVideo ? "video" : "image");
-        for (let pair of formData.entries()) {
-          console.log("TEST =>", pair[0], pair[1]);
-        }
         MediaServices.addMedia(formData)
           .then((res) => {
             notifySuccess(
@@ -122,15 +163,8 @@ const Uploader = ({ setImageUrl, imageUrl, product, mediaType }) => {
             ? "Drag your video here or click to browse"
             : t("DragYourImage")}
         </p>
-        <em className="text-xs text-customGray-400">
-          {isAny
-            ? "Images (JPEG, PNG, WEBP) up to 1MB or Videos (MP4, MOV, WEBM) up to 50MB"
-            : isVideo
-              ? "MP4, MOV, WEBM up to 50MB"
-              : t("imageFormat")}
-        </em>
+        <em className="text-xs text-customGray-400">{hint}</em>
       </div>
-
       <div className="text-customTeal-500">{loading && err}</div>
     </Card>
   );

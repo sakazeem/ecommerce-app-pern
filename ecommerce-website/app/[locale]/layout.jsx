@@ -13,86 +13,84 @@ import { ToastContainerProvider } from "../providers/ToastContainer";
 import { NextIntlClientProvider } from "next-intl";
 import { AuthProvider } from "../providers/AuthProvider";
 
-let cachedTheme = null;
-
-// to avoid duplicate API calls
+// Theme is fetched fresh each request; Next.js fetch cache handles dedup within a request
 async function getCachedTheme() {
-	if (!cachedTheme) cachedTheme = await getTheme();
-	return cachedTheme;
+  return getTheme();
 }
 
 const defaultMetaTags = {
-	title: "BabiesNBaba - Online Baby Store for Clothes, Toys & Essentials",
-	description:
-		"Discover a wide range of baby products at BabiesNBaba. From cute clothes to toys and essentials, shop quality items for your little one with ease.",
+  title: "BabiesNBaba - Online Baby Store for Clothes, Toys & Essentials",
+  description:
+    "Discover a wide range of baby products at BabiesNBaba. From cute clothes to toys and essentials, shop quality items for your little one with ease.",
 };
 
 export async function generateMetadata() {
-	const store = await getCachedTheme();
+  const store = await getCachedTheme();
 
-	const meta = store?.metaTags || {};
+  const meta = store?.metaTags || {};
 
-	return {
-		title: meta.title || defaultMetaTags.title,
-		description: meta.description || defaultMetaTags.description,
-		keywords: meta.keywords || "shop, ecommerce, default",
-		openGraph: {
-			title: meta.ogTitle || meta.title || defaultMetaTags.title,
-			description:
-				meta.ogDescription || meta.description || defaultMetaTags.description,
-			images: meta.ogImage ? [meta.ogImage] : [],
-		},
-		twitter: {
-			card: "summary_large_image",
-			title: meta.twitterTitle || meta.title || defaultMetaTags.title,
-			description:
-				meta.twitterDescription ||
-				meta.description ||
-				defaultMetaTags.description,
-			images: meta.twitterImage ? [meta.twitterImage] : [],
-		},
-		icons: {
-			icon: store.favicon || "/favicon.ico", // fallback
-		},
-	};
+  return {
+    title: meta.title || defaultMetaTags.title,
+    description: meta.description || defaultMetaTags.description,
+    keywords: meta.keywords || "shop, ecommerce, default",
+    openGraph: {
+      title: meta.ogTitle || meta.title || defaultMetaTags.title,
+      description:
+        meta.ogDescription || meta.description || defaultMetaTags.description,
+      images: meta.ogImage ? [meta.ogImage] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: meta.twitterTitle || meta.title || defaultMetaTags.title,
+      description:
+        meta.twitterDescription ||
+        meta.description ||
+        defaultMetaTags.description,
+      images: meta.twitterImage ? [meta.twitterImage] : [],
+    },
+    icons: {
+      icon: store.favicon || "/favicon.ico", // fallback
+    },
+  };
 }
 
 export default async function RootLayout({ children }) {
-	const store = await getCachedTheme();
+  const store = await getCachedTheme();
 
-	// const fontClasses =
-	// 	fontMap[store?.fontFamily?.toLowerCase()] || fontMap.inter;
+  // const fontClasses =
+  // 	fontMap[store?.fontFamily?.toLowerCase()] || fontMap.inter;
 
-	const colors = store.theme || {
-		primary: "#1E40AF",
-		secondary: "#9333EA",
-		background: "#F9FAFB",
-		text: "#111827",
-	};
+  const colors = store.theme || {
+    primary: "#1E40AF",
+    secondary: "#9333EA",
+    background: "#F9FAFB",
+    text: "#111827",
+  };
 
-	return (
-		<div
-			className="main-layout-container"
-			style={{
-				// need to define theme colors here and in app/globals.css in @theme <-- for new colors
-				["--color-header"]: colors.header,
-				["--color-headerText"]: colors.headerText,
-				["--color-primary"]: colors.primary,
-				["--color-footer"]: colors.footer,
-				["--color-cardsBg"]: colors.cardsBg,
-				["--color-secondary"]: colors.secondary,
-				["--color-background"]: colors.background,
-				["--color-text"]: colors.text,
-				// backgroundImage: `url(${backgroundPattern.src})`,
-				// backgroundRepeat: "repeat",
-				// backgroundSize: "contain",
-			}}>
-			<ToastContainerProvider />
-			<NextIntlClientProvider>
-				<AuthProvider>
-					<StoreProvider value={store}>{children}</StoreProvider>
-				</AuthProvider>
-			</NextIntlClientProvider>
-		</div>
-	);
+  return (
+    <div
+      className="main-layout-container"
+      style={{
+        // need to define theme colors here and in app/globals.css in @theme <-- for new colors
+        ["--color-header"]: colors.header,
+        ["--color-headerText"]: colors.headerText,
+        ["--color-primary"]: colors.primary,
+        ["--color-footer"]: colors.footer,
+        ["--color-cardsBg"]: colors.cardsBg,
+        ["--color-secondary"]: colors.secondary,
+        ["--color-background"]: colors.background,
+        ["--color-text"]: colors.text,
+        // backgroundImage: `url(${backgroundPattern.src})`,
+        // backgroundRepeat: "repeat",
+        // backgroundSize: "contain",
+      }}
+    >
+      <ToastContainerProvider />
+      <NextIntlClientProvider>
+        <AuthProvider>
+          <StoreProvider value={store}>{children}</StoreProvider>
+        </AuthProvider>
+      </NextIntlClientProvider>
+    </div>
+  );
 }
