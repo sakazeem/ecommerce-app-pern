@@ -11,6 +11,7 @@ import "swiper/css";
 import "swiper/css/free-mode";
 import "swiper/css/navigation";
 import "swiper/css/thumbs";
+import "swiper/css/pagination";
 
 // import required modules
 import { ENV_VARIABLES } from "@/app/constants/env_variables";
