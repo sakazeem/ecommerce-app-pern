@@ -323,6 +323,7 @@ async function getNavCategories(req) {
 		],
 		// ✅ ORDER EVERYTHING
 		order: [
+			['weight', 'ASC'], // parent
 			['id', 'ASC'], // parent
 
 			// level 2 children by title

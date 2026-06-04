@@ -45,6 +45,11 @@ module.exports = (sequelize, DataTypes) => {
 				defaultValue: 'baby',
 			},
 			icon: { ...mediaField, field: 'icon', as: 'cat_icon' },
+			weight: {
+				type: DataTypes.INTEGER,
+				allowNull: false,
+				defaultValue: 0,
+			},
 			user_id: {
 				type: DataTypes.INTEGER,
 				allowNull: true,
