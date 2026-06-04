@@ -6,6 +6,7 @@ import ParentCategoriesGrid from "../Themes/KidsTheme/ParentCategoriesGrid";
 import PopularCatTabs from "../Themes/KidsTheme/PopularCatTabs";
 import ProductsSlider from "../Themes/KidsTheme/ProductsSlider";
 import VideoHeroSection from "../Themes/KidsTheme/VideoHeroSection";
+import ProductsSliderClient from "../Themes/KidsTheme/ServerSideComponents/ProductsSliderComp/ProductsSlider.server";
 
 export default function HomepageSection({ section }) {
 	const { type, config, title } = section;
@@ -76,7 +77,7 @@ export default function HomepageSection({ section }) {
 		case "products":
 			return (
 				<section className="container-layout">
-					<ProductsSlider
+					<ProductsSliderClient
 						title={title}
 						slug=""
 						limit={config.limit}

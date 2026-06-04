@@ -453,3 +453,14 @@ body,
 .animate-blink {
 	animation: blink 1s infinite;
 }
+
+
+/* removing swiper glitch issue */
+.swiper {
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+.swiper-initialized {
+	opacity: 1;
+}

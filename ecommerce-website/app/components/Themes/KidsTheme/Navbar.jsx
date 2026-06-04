@@ -14,6 +14,8 @@ import { SOCIAL_CONFIG } from "./Footer";
 import { useRouter } from "next/navigation";
 import { useAuthUIStore } from "@/app/store/useAuthUIStore";
 import BaseDrawer from "../../BaseComponents/BaseDrawer";
+import NavigationMenuClient from "./Navigation/NavigationMenuClient";
+import NavigationMenuServer from "./Navigation/NavigationMenu.server";
 
 const Navbar = () => {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
