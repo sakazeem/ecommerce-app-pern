@@ -192,8 +192,9 @@ const ProductCard = ({ product }) => {
 					<BaseImage
 						src={thumbnailImage}
 						alt={product.title}
-						width={600}
-						height={600}
+						width={280}
+						height={280}
+						quality={75}
 						onLoad={() => setImageLoaded(true)}
 						className={`
     absolute inset-0 w-full h-full object-cover rounded-t-md
@@ -207,8 +208,9 @@ const ProductCard = ({ product }) => {
 					<BaseImage
 						src={hoverImage}
 						alt={product.title}
-						width={600}
-						height={600}
+						width={280}
+						height={280}
+						quality={75}
 						className={`
     absolute inset-0 w-full h-full object-cover rounded-t-md
     transition-all duration-700 ease-in-out transform

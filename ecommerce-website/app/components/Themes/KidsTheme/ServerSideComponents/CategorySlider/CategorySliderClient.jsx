@@ -71,7 +71,9 @@ export default function CategorySliderClient({ categories = [], isStoreData }) {
 									isStoreData
 										? category.icon
 										: category.icons
-											? ENV_VARIABLES.IMAGE_BASE_URL + category.icons
+											? ENV_VARIABLES.IMAGE_BASE_URL +
+												"sm-image-" +
+												category.icons
 											: noImage
 								}
 								width={300}

@@ -162,7 +162,7 @@ function CategoryCard({ category }) {
 			<BaseImage
 				src={
 					category.icons
-						? ENV_VARIABLES.IMAGE_BASE_URL + category.icons
+						? ENV_VARIABLES.IMAGE_BASE_URL  + "sm-image-" + category.icons
 						: category.icon
 				}
 				className="w-full rounded-full h-auto"
