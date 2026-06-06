@@ -30,7 +30,7 @@ const ParentCategoriesGrid = ({
 							<BaseImage
 								src={
 									pCat.icons
-										? ENV_VARIABLES.IMAGE_BASE_URL + pCat.icons
+										? ENV_VARIABLES.IMAGE_BASE_URL + "sm-image-" + pCat.icons
 										: pCat.icon
 								}
 								key={idx}

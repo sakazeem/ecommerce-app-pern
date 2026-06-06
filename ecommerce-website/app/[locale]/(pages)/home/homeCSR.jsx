@@ -1,15 +1,19 @@
 // "use client";
 import dynamic from "next/dynamic";
 import HomepageSection from "@/app/components/home/HomepageSection";
+import { SectionSkeleton } from "@/app/components/Themes/KidsTheme/SkeletonLoaders";
 
 const FeaturesSection = dynamic(
 	() => import("@/app/components/Themes/KidsTheme/FeaturesSection"),
+	{ loading: () => <SectionSkeleton height="h-[500px]" /> },
 );
 const AboutUsSection = dynamic(
 	() => import("@/app/components/Themes/KidsTheme/AboutUsSection"),
+	{ loading: () => <SectionSkeleton height="h-[500px]" /> },
 );
 const Newsletter = dynamic(
 	() => import("@/app/components/Themes/KidsTheme/Newsletter"),
+	{ loading: () => <SectionSkeleton height="h-[500px]" /> },
 );
 // import { useEffect } from "react";
 
