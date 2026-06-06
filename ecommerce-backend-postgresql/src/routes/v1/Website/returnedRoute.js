@@ -1,6 +1,6 @@
 const express = require('express');
 const { apiReturnedController } = require('../../../controllers/Api');
-const upload = require('../../../middlewares/multerUpload');
+const { upload } = require('../../../middlewares/multerUpload');
 
 const router = express.Router();
 

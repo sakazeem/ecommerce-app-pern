@@ -15,7 +15,12 @@ const path = require('path');
 const sharp = require('sharp');
 const slugify = require('slugify');
 const mime = require('mime-types');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const {
+	S3Client,
+	ListObjectsV2Command,
+	GetObjectCommand,
+	PutObjectCommand,
+} = require('@aws-sdk/client-s3');
 const db = require('../db/models');
 
 // 🔐 R2 CONFIG
@@ -372,8 +377,217 @@ async function fixImageNamesAndConvertToWebP() {
 	console.log('🎉 All done');
 }
 
+const RESIZE_DIMENSION = 280;
+const PREFIX = 'sm-image-';
+const s3Client = new S3Client({
+	region: 'auto',
+	endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+	credentials: {
+		accessKeyId: process.env.R2_ACCESS_KEY,
+		secretAccessKey: process.env.R2_SECRET_KEY,
+	},
+});
+
+async function resizeR2Images() {
+	const {
+		S3Client,
+		ListObjectsV2Command,
+		GetObjectCommand,
+		PutObjectCommand,
+		HeadObjectCommand,
+	} = require('@aws-sdk/client-s3');
+	try {
+		console.log('🚀 Starting R2 image resize process...');
+		console.log(`📦 Bucket: ${BUCKET}`);
+		console.log(
+			`📐 Target dimension: ${RESIZE_DIMENSION}x${RESIZE_DIMENSION}`
+		);
+		console.log(`🔤 Prefix: ${PREFIX}\n`);
+
+		const allObjects = [];
+		let continuationToken = undefined;
+
+		// ✅ Handle pagination (S3 returns max 1000 objects per request)
+		console.log('📋 Listing all objects in bucket...');
+		do {
+			const listParams = {
+				Bucket: BUCKET,
+				ContinuationToken: continuationToken,
+			};
+
+			const command = new ListObjectsV2Command(listParams);
+			const response = await s3Client.send(command);
+
+			if (response.Contents) {
+				allObjects.push(...response.Contents);
+			}
+
+			continuationToken = response.NextContinuationToken;
+			console.log(
+				`   Found ${response.Contents?.length || 0} objects...`
+			);
+		} while (continuationToken);
+
+		if (allObjects.length === 0) {
+			console.log('❌ No images found in bucket');
+			return;
+		}
+
+		// ✅ Filter image files only
+		const imageFiles = allObjects.filter((obj) => {
+			const ext = path.extname(obj.Key).toLowerCase();
+			return ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext);
+		});
+
+		console.log(`✅ Total objects in bucket: ${allObjects.length}`);
+		console.log(`📸 Image files to process: ${imageFiles.length}\n`);
+
+		let successCount = 0;
+		let errorCount = 0;
+		let skippedCount = 0;
+
+		// ✅ Process each image
+		for (const [index, file] of imageFiles.entries()) {
+			try {
+				// Skip if already resized version exists
+				if (file.Key.includes(PREFIX)) {
+					console.log(
+						`⏭️  [${index + 1}/${imageFiles.length}] SKIP: ${
+							file.Key
+						} (already resized)`
+					);
+					skippedCount++;
+					continue;
+				}
+				// ✅ NEW - checks if sm-image- version exists in R2
+				const ext = path.extname(file.Key);
+				const nameWithoutExt = file.Key.substring(
+					0,
+					file.Key.lastIndexOf('.')
+				);
+				const newKey = `${PREFIX}${nameWithoutExt}${ext}`;
+
+				try {
+					const headCommand = new HeadObjectCommand({
+						Bucket: BUCKET,
+						Key: newKey,
+					});
+					await s3Client.send(headCommand);
+
+					// File exists, skip it
+					console.log(
+						`⏭️  [${index + 1}/${imageFiles.length}] SKIP: ${
+							file.Key
+						} (sm- version exists)`
+					);
+					skippedCount++;
+					continue;
+				} catch (err) {
+					// File doesn't exist, continue processing
+					if (err.name !== 'NotFound') throw err;
+				}
+
+				console.log(
+					`⏳ [${index + 1}/${imageFiles.length}] Processing: ${
+						file.Key
+					}`
+				);
+
+				// ✅ Download original image from R2
+				const getCommand = new GetObjectCommand({
+					Bucket: BUCKET,
+					Key: file.Key,
+				});
+
+				const response = await s3Client.send(getCommand);
+
+				// Convert stream to buffer
+				const originalBuffer = await streamToBuffer(response.Body);
+				console.log(
+					`   ✓ Downloaded (${(originalBuffer.length / 1024).toFixed(
+						2
+					)} KB)`
+				);
+
+				// ✅ Resize image to 280x280
+				const resizedBuffer = await sharp(originalBuffer)
+					.resize(RESIZE_DIMENSION, RESIZE_DIMENSION, {
+						fit: 'cover', // ✅ Changed from 'contain' to 'cover'
+						position: 'center',
+						background: { r: 255, g: 255, b: 255, alpha: 1 }, // White background
+					})
+					.webp({ quality: 80 }) // Convert to WebP for better compression
+					.toBuffer();
+
+				console.log(
+					`   ✓ Resized to ${RESIZE_DIMENSION}x${RESIZE_DIMENSION} (${(
+						resizedBuffer.length / 1024
+					).toFixed(2)} KB)`
+				);
+
+				// ✅ Generate new key with prefix
+				// const ext = path.extname(file.Key);
+				// const nameWithoutExt = file.Key.substring(
+				// 	0,
+				// 	file.Key.lastIndexOf('.')
+				// );
+				// const newKey = `${PREFIX}${nameWithoutExt}${ext}`;
+
+				// ✅ Upload resized image back to R2
+				const uploadCommand = new PutObjectCommand({
+					Bucket: BUCKET,
+					Key: newKey,
+					Body: resizedBuffer,
+					ContentType: 'image/webp', // ✅ Set to webp since we converted it
+					CacheControl: 'public, max-age=31536000', // 1 year cache
+					Metadata: {
+						'original-key': file.Key,
+						'resized-at': new Date().toISOString(),
+					},
+				});
+
+				await s3Client.send(uploadCommand);
+				console.log(`   ✓ Uploaded as: ${newKey}\n`);
+
+				successCount++;
+			} catch (error) {
+				console.error(
+					`   ❌ Error processing ${file.Key}: ${error.message}\n`
+				);
+				errorCount++;
+			}
+		}
+
+		// Summary
+		console.log('\n' + '='.repeat(60));
+		console.log('✅ RESIZE COMPLETE');
+		console.log('='.repeat(60));
+		console.log(`✓ Successful: ${successCount}`);
+		console.log(`✗ Errors: ${errorCount}`);
+		console.log(`⏭️  Skipped: ${skippedCount}`);
+		console.log('='.repeat(60));
+	} catch (error) {
+		console.error('❌ Fatal error:', error);
+		process.exit(1);
+	}
+}
+
+/**
+ * Convert Node.js stream to buffer
+ * ✅ Needed because AWS SDK v3 returns a readable stream
+ */
+async function streamToBuffer(stream) {
+	const chunks = [];
+	return new Promise((resolve, reject) => {
+		stream.on('data', (chunk) => chunks.push(chunk));
+		stream.on('error', (err) => reject(err));
+		stream.on('end', () => resolve(Buffer.concat(chunks)));
+	});
+}
+
 module.exports = {
 	mediaUpload,
 	migrate,
 	fixImageNamesAndConvertToWebP,
+	resizeR2Images,
 };
