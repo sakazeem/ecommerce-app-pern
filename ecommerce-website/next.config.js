@@ -95,9 +95,7 @@ const nextConfig = {
 			},
 		],
 		formats: ["image/avif", "image/webp"],
-		minimumCacheTTL: 60 * 60 * 24 * 365, // ✅ 1 year cache
-		deviceSizes: [320, 375, 425, 640, 750, 1024, 1280],
-		imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+		minimumCacheTTL: 60 * 60 * 24 * 30,
 	},
 	experimental: {
 		optimizeCss: true,
@@ -107,7 +105,7 @@ const nextConfig = {
 			"framer-motion",
 		],
 	},
-	// ✅ reduces JS/CSS bundle sizes
+	// ✅ Add this — reduces JS/CSS bundle sizes
 	compiler: {
 		removeConsole: process.env.NODE_ENV === "production",
 	},

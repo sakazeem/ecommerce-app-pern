@@ -57,14 +57,14 @@ const ProductCard = ({ product }) => {
 	).toFixed(2);
 
 	const thumbnailImage = product.thumbnail
-		? ENV_VARIABLES.IMAGE_BASE_URL + "sm-image-" + product.thumbnail
+		? ENV_VARIABLES.IMAGE_BASE_URL + product.thumbnail
 		: product.image || null;
 
 	const hoverImage =
 		product.images?.length > 1
-			? ENV_VARIABLES.IMAGE_BASE_URL + "sm-image-" + product.images[1]
+			? ENV_VARIABLES.IMAGE_BASE_URL + product.images[1]
 			: product.thumbnail
-				? ENV_VARIABLES.IMAGE_BASE_URL + "sm-image-" + product.thumbnail
+				? ENV_VARIABLES.IMAGE_BASE_URL + product.thumbnail
 				: product.image || null;
 
 	const navigateToProduct = () => {
@@ -167,21 +167,6 @@ const ProductCard = ({ product }) => {
 		product.variants?.filter((v) => v.stock === 0).length ===
 		product.variants?.length;
 
-	// ✅ Proper sizes for product card images
-	// Mobile: 100vw (full width)
-	// Tablet: 50vw (half width in grid)
-	// Desktop: 25vw (quarter width in 4-column grid) or 319px for specific layout
-	const productImageSizes = `
-    (max-width: 768px) 50vw,
-    20vw
-  `;
-	// 	const productImageSizes = `
-	//     (max-width: 768px) 50vw,
-	//     (max-width: 1024px) 50vw,
-	//     (max-width: 1280px) 33vw,
-	//     20vw
-	//   `;
-
 	if (!product) return null;
 
 	return (
@@ -207,10 +192,8 @@ const ProductCard = ({ product }) => {
 					<BaseImage
 						src={thumbnailImage}
 						alt={product.title}
-						width={280}
-						height={280}
-						quality={75} // ✅ Reduced from 85 for smaller file size
-						sizes={productImageSizes} // ✅ Responsive sizes
+						width={600}
+						height={600}
 						onLoad={() => setImageLoaded(true)}
 						className={`
     absolute inset-0 w-full h-full object-cover rounded-t-md
@@ -224,10 +207,8 @@ const ProductCard = ({ product }) => {
 					<BaseImage
 						src={hoverImage}
 						alt={product.title}
-						width={280}
-						height={280}
-						quality={75} // ✅ Reduced quality
-						sizes={productImageSizes} // ✅ Responsive sizes
+						width={600}
+						height={600}
 						className={`
     absolute inset-0 w-full h-full object-cover rounded-t-md
     transition-all duration-700 ease-in-out transform
