@@ -3,17 +3,40 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 
-import FilterSidebar from "@/app/components/Shared/FiltersSidebar";
 import SpinLoader from "@/app/components/Shared/SpinLoader";
-import ProductsSlider from "@/app/components/Themes/KidsTheme/ProductsSlider";
-import MobileFilterDrawer from "@/app/components/Shared/MobileFilterDrawer";
+
 import { useStore } from "@/app/providers/StoreProvider";
 import ProductServices from "@/app/services/ProductServices";
 import HomepageService from "@/app/services/HomepageServices";
 import { useScrollRestoration } from "@/app/hooks/useScrollRestoration";
 import { SlidersHorizontal } from "lucide-react";
 import { loadThemeComponents } from "@/app/components/Themes/autoLoader";
+import { ProductsGridSkeleton } from "@/app/components/Themes/KidsTheme/SkeletonLoaders";
+
+const FilterSidebar = dynamic(
+	() => import("../../../components/Shared/FiltersSidebar"),
+	{
+		ssr: false,
+	},
+);
+const ProductsSlider = dynamic(
+	() => import("../../../components/Themes/KidsTheme/ProductsSlider"),
+	{
+		loading: () => <ProductsGridSkeleton columns="grid-cols-4" count={4} />,
+		ssr: false,
+	},
+);
+const MobileFilterDrawer = dynamic(
+	() => import("../../../components/Shared/MobileFilterDrawer"),
+	{
+		ssr: false,
+	},
+);
+// import FilterSidebar from "@/app/components/Shared/FiltersSidebar";
+// import ProductsSlider from "@/app/components/Themes/KidsTheme/ProductsSlider";
+// import MobileFilterDrawer from "@/app/components/Shared/MobileFilterDrawer";
 
 const PRODUCTS_PER_PAGE = 8;
 
