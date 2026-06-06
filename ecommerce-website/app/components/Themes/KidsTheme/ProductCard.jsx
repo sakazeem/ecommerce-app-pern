@@ -175,12 +175,12 @@ const ProductCard = ({ product }) => {
     (max-width: 768px) 50vw,
     20vw
   `;
-// 	const productImageSizes = `
-//     (max-width: 768px) 50vw,
-//     (max-width: 1024px) 50vw,
-//     (max-width: 1280px) 33vw,
-//     20vw
-//   `;
+	// 	const productImageSizes = `
+	//     (max-width: 768px) 50vw,
+	//     (max-width: 1024px) 50vw,
+	//     (max-width: 1280px) 33vw,
+	//     20vw
+	//   `;
 
 	if (!product) return null;
 
