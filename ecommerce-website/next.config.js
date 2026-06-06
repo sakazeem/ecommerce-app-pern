@@ -111,18 +111,6 @@ const nextConfig = {
 	compiler: {
 		removeConsole: process.env.NODE_ENV === "production",
 	},
-	// ✅ Output as standalone (smaller bundle)
-	output: "standalone",
-	// ✅ Compress static files
-	compress: true,
-	// ✅ PoweredBy header removal (security)
-	poweredByHeader: false,
-
-	// ✅ React strict mode
-	reactStrictMode: true,
-
-	// ✅ SWC minification (faster)
-	swcMinify: true,
 };
 
 module.exports = withNextIntl(nextConfig);
