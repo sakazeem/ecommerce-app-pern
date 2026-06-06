@@ -95,7 +95,9 @@ const nextConfig = {
 			},
 		],
 		formats: ["image/avif", "image/webp"],
-		minimumCacheTTL: 60 * 60 * 24 * 30,
+		minimumCacheTTL: 60 * 60 * 24 * 365, // ✅ 1 year cache
+		deviceSizes: [320, 375, 425, 640, 750, 1024, 1280],
+		imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
 	},
 	experimental: {
 		optimizeCss: true,
@@ -105,10 +107,22 @@ const nextConfig = {
 			"framer-motion",
 		],
 	},
-	// ✅ Add this — reduces JS/CSS bundle sizes
+	// ✅ reduces JS/CSS bundle sizes
 	compiler: {
 		removeConsole: process.env.NODE_ENV === "production",
 	},
+	// ✅ Output as standalone (smaller bundle)
+	output: "standalone",
+	// ✅ Compress static files
+	compress: true,
+	// ✅ PoweredBy header removal (security)
+	poweredByHeader: false,
+
+	// ✅ React strict mode
+	reactStrictMode: true,
+
+	// ✅ SWC minification (faster)
+	swcMinify: true,
 };
 
 module.exports = withNextIntl(nextConfig);
