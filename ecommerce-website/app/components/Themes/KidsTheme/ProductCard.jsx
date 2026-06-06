@@ -57,14 +57,14 @@ const ProductCard = ({ product }) => {
 	).toFixed(2);
 
 	const thumbnailImage = product.thumbnail
-		? ENV_VARIABLES.IMAGE_BASE_URL + product.thumbnail
+		? ENV_VARIABLES.IMAGE_BASE_URL + "sm-image-" + product.thumbnail
 		: product.image || null;
 
 	const hoverImage =
 		product.images?.length > 1
-			? ENV_VARIABLES.IMAGE_BASE_URL + product.images[1]
+			? ENV_VARIABLES.IMAGE_BASE_URL + "sm-image-" + product.images[1]
 			: product.thumbnail
-				? ENV_VARIABLES.IMAGE_BASE_URL + product.thumbnail
+				? ENV_VARIABLES.IMAGE_BASE_URL + "sm-image-" + product.thumbnail
 				: product.image || null;
 
 	const navigateToProduct = () => {
