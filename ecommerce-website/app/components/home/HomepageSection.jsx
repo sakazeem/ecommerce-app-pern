@@ -1,18 +1,20 @@
-import dynamic from "next/dynamic";
 import { ENV_VARIABLES } from "@/app/constants/env_variables";
-import HeroSection from "../Themes/KidsTheme/HeroSection";
+import dynamic from "next/dynamic";
 import CategoriesSection from "../Themes/KidsTheme/CategoriesSection";
+import HeroSection from "../Themes/KidsTheme/HeroSection";
 import PopularCatTabs from "../Themes/KidsTheme/PopularCatTabs";
 import {
 	ProductsGridSkeleton,
 	SectionSkeleton,
 } from "../Themes/KidsTheme/SkeletonLoaders";
-import HomeBanner from "../Themes/KidsTheme/HomeBanner";
 const VideoHeroSection = dynamic(
 	() => import("../Themes/KidsTheme/VideoHeroSection"),
 	{ loading: () => <SectionSkeleton height="h-[500px]" /> },
 );
 
+const HomeBanner = dynamic(() => import("../Themes/KidsTheme/HomeBanner"), {
+	loading: () => <SectionSkeleton height="h-48" />,
+});
 const CategorySlider = dynamic(() => import("../CategorySlider"), {
 	loading: () => <SectionSkeleton height="h-48" />,
 });
@@ -45,6 +47,10 @@ const ParentCategoriesGrid = dynamic(
 // 	// { loading: () => <ProductsGridSkeleton columns="grid-cols-5" count={5} /> },
 // );
 
+const ProductsSlider = dynamic(
+	() => import("../Themes/KidsTheme/ProductsSlider"),
+	{ loading: () => <ProductsGridSkeleton columns="grid-cols-5" count={5} /> },
+);
 const ProductsSliderClient = dynamic(
 	() =>
 		import("../Themes/KidsTheme/ServerSideComponents/ProductsSliderComp/ProductsSlider.server"),
@@ -120,7 +126,7 @@ export default function HomepageSection({ section }) {
 		case "products":
 			return (
 				<section className="container-layout">
-					<ProductsSliderClient
+					<ProductsSlider
 						title={title}
 						slug=""
 						limit={config.limit}

@@ -1,8 +1,10 @@
+"use client";
 import { Star } from "lucide-react";
 import React from "react";
 
 const Ratings = ({ rating, max = 5 }) => {
-	const randomRating = rating || Math.floor(Math.random() * 9 + 2) / 2;
+	const randomRating = rating;
+	// const randomRating = rating || Math.floor(Math.random() * 9 + 2) / 2;
 	return (
 		<div className="flex text-yellow-500">
 			{[...Array(max)].map((_, i) => {

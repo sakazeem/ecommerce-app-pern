@@ -193,7 +193,7 @@ export default async function RootLayout({ children }) {
 				<link
 					rel="preload"
 					as="image"
-					href={"https://cdn.babiesnbaba.com/web-3-1778582352761.webp"}
+					href={"https://cdn.babiesnbaba.com/summer-arrival-1779191900854.webp"}
 					fetchPriority="high"
 				/>
 				{/* 	<link
@@ -205,7 +205,7 @@ export default async function RootLayout({ children }) {
 				<link
 					rel="preload"
 					as="image"
-					href={"https://cdn.babiesnbaba.com/web-1-1778582375270.webp"}
+					href={"https://cdn.babiesnbaba.com/web-3-1778582352761.webp"}
 					fetchPriority="high"
 				/> 
 				<meta

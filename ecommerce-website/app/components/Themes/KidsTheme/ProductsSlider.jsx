@@ -7,6 +7,7 @@ import ProductServices from "@/app/services/ProductServices";
 import SpinLoader from "../../Shared/SpinLoader";
 import { useFetchReactQuery } from "@/app/hooks/useFetchReactQuery";
 import { useMemo } from "react";
+import { ProductsGridSkeleton } from "./SkeletonLoaders";
 
 const ProductsSlider = ({
 	title = "",
@@ -84,7 +85,7 @@ const ProductsSlider = ({
 		<>
 			{showTitle && <SectionTitle title={title} href={viewAllParam} />}
 			{isLoading ? (
-				<SpinLoader />
+				<ProductsGridSkeleton />
 			) : isSlider ? (
 				<BaseSlider
 					slides={slidesData}
