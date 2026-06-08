@@ -7,6 +7,7 @@ import {
 	ProductsGridSkeleton,
 	SectionSkeleton,
 } from "../Themes/KidsTheme/SkeletonLoaders";
+import HomeBanner from "../Themes/KidsTheme/HomeBanner";
 const VideoHeroSection = dynamic(
 	() => import("../Themes/KidsTheme/VideoHeroSection"),
 	{ loading: () => <SectionSkeleton height="h-[500px]" /> },
