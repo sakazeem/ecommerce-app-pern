@@ -220,7 +220,7 @@ const ProductCard = ({ product }) => {
 					/>
 
 					<img
-						src="/bnb-logo-loader.webp"
+						src="/bnb-logo-loader-new.webp"
 						alt="loading"
 						className={`
             absolute inset-0 m-auto
