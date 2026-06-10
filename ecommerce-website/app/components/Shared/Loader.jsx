@@ -5,12 +5,11 @@ export default function Loader({ cols = 4 }) {
 	// ensure cols is between 1 and 6
 	const columns = Math.max(1, Math.min(cols, 6));
 	const productPlaceholders = Array.from({ length: 8 });
-
 	return (
 		<div
 			role="status"
 			aria-live="polite"
-			className="min-h-screen w-full bg-gray-50 /dark:bg-gray-900 text-gray-900 /dark:text-gray-100">
+			className="min-h-screen w-full bg-gray-50/80 backdrop-blur-sm /dark:bg-gray-900 text-gray-900 /dark:text-gray-100 transition-all">
 			{/* Top bar / nav */}
 			{/* <header className="w-full border-b border-gray-200 /dark:border-gray-800 bg-white /dark:bg-gray-900 sticky top-0 z-40">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

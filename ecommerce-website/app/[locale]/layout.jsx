@@ -1,17 +1,13 @@
 import { getTheme } from "@/app/lib/getTheme";
 import { StoreProvider } from "@/app/providers/StoreProvider";
-import "@/app/styles/headings.css";
-import "@/app/styles/layout.css";
-import "@/app/styles/paragraphs.css";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
+// import "swiper/css";
+// import "swiper/css/navigation";
+// import "swiper/css/pagination";
 // Import some common Google Fonts (extend this list as needed)
 
-import backgroundPattern from "@/app/assets/themes/kidsTheme/background-pattern.png";
-import { ToastContainerProvider } from "../providers/ToastContainer";
 import { NextIntlClientProvider } from "next-intl";
 import { AuthProvider } from "../providers/AuthProvider";
+import { ToastContainerProvider } from "../providers/ToastContainer";
 
 let cachedTheme = null;
 

@@ -1,11 +1,17 @@
-import "@/app/styles/headings.css";
-import "@/app/styles/layout.css";
-import "@/app/styles/paragraphs.css";
 import Script from "next/script";
 // import "swiper/css";
 // import "swiper/css/navigation";
 // import "swiper/css/pagination";
 import "./globals.css";
+import "@/app/styles/headings.css";
+import "@/app/styles/layout.css";
+import "@/app/styles/paragraphs.css";
+// import "react-toastify/dist/ReactToastify.css";
+// import "@fancyapps/ui/dist/fancybox/fancybox.css";
+
+import ToastProvider from "@/app/providers/ToastProvider";
+import FancyboxProvider from "@/app/providers/FancyboxProvider";
+import "@/app/styles/defaultPages.css";
 
 import localFont from "next/font/local";
 import { getTheme } from "./lib/getTheme";
@@ -172,11 +178,41 @@ export default async function RootLayout({ children }) {
 	return (
 		<html lang="en">
 			<head>
+				<link
+					rel="preconnect"
+					href="https://cdn.babiesnbaba.com"
+					crossOrigin="anonymous"
+				/>
+				<link rel="dns-prefetch" href="https://cdn.babiesnbaba.com" />
+				{/* <link
+					rel="preload"
+					as="image"
+					href="/_next/image?url=https%3A%2F%2Fcdn.babiesnbaba.com%2Fweb-3-1778582352761.webp&w=1920&q=75"
+					fetchPriority="high"
+				/> */}
+				<link
+					rel="preload"
+					as="image"
+					href={"https://cdn.babiesnbaba.com/summer-arrival-1779191900854.webp"}
+					fetchPriority="high"
+				/>
+				{/* 	<link
+					rel="preload"
+					as="image"
+					href={"https://cdn.babiesnbaba.com/summer-arrival-1779191900854.webp"}
+					fetchPriority="high"
+				/>
+				<link
+					rel="preload"
+					as="image"
+					href={"https://cdn.babiesnbaba.com/web-3-1778582352761.webp"}
+					fetchPriority="high"
+				/> 
 				<meta
 					name="facebook-domain-verification"
 					content="7gy9rr0f107zjr8thk3ggeebs7v3ty"
 				/>
-				<Script id="gtm-head" strategy="afterInteractive">
+				<Script id="gtm-head" strategy="lazyOnload">
 					{`
     (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -187,9 +223,9 @@ export default async function RootLayout({ children }) {
 				</Script>
 				<Script
 					src="https://www.googletagmanager.com/gtag/js?id=G-V6M9W091WE"
-					strategy="afterInteractive"
+					strategy="lazyOnload"
 				/>
-				<Script id="google-analytics" strategy="afterInteractive">
+				<Script id="google-analytics" strategy="lazyOnload">
 					{`
 					window.dataLayer = window.dataLayer || [];
 					function gtag(){dataLayer.push(arguments);}
@@ -199,7 +235,7 @@ export default async function RootLayout({ children }) {
 				</Script>
 
 				{/* Meta Pixel */}
-				<Script id="meta-pixel" strategy="afterInteractive">
+				<Script id="meta-pixel" strategy="lazyOnload">
 					{`
             !function(f,b,e,v,n,t,s)
             {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -246,7 +282,8 @@ export default async function RootLayout({ children }) {
 						style={{ display: "none", visibility: "hidden" }}></iframe>
 				</noscript>
 				<RouteTrackerProvider />
-
+				<ToastProvider />
+				<FancyboxProvider />
 				{children}
 			</body>
 		</html>

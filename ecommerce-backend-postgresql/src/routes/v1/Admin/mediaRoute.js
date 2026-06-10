@@ -3,7 +3,10 @@ const validate = require('../../../middlewares/validate');
 const { adminMediaController } = require('../../../controllers/Admin');
 const { adminMediaValidation } = require('../../../validations/Admin');
 const checkPermission = require('../../../middlewares/checkPermission');
-const upload = require('../../../middlewares/multerUpload');
+const {
+	upload,
+	withThumbnailCreation,
+} = require('../../../middlewares/multerUpload');
 
 const router = express.Router();
 
@@ -17,7 +20,7 @@ router
 	.post(
 		// checkPermission('create_media'),
 		validate(adminMediaValidation.createMedia),
-		upload.single('file'),
+		withThumbnailCreation('file'),
 		adminMediaController.createMedia
 	);
 router.route('/deleteAllProductsMedia').delete(
@@ -25,7 +28,7 @@ router.route('/deleteAllProductsMedia').delete(
 	adminMediaController.deleteAllProductsMedia
 );
 router.route('/bulk-upload').post(
-	upload.array('file', 50),
+	withThumbnailCreation('file'),
 	// checkPermission('create_media'),
 	adminMediaController.bulkUploadMedia
 );

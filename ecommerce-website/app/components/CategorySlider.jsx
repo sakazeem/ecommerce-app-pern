@@ -1,12 +1,12 @@
-import React, { useRef, useState } from "react";
+"use client";
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
 
 // Import Swiper styles
 import "swiper/css";
 import "swiper/css/effect-coverflow";
-import "swiper/css/pagination";
 import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 // import required modules
 import {
@@ -15,11 +15,11 @@ import {
 	Navigation,
 	Pagination,
 } from "swiper/modules";
-import BaseLink from "./BaseComponents/BaseLink";
-import BaseImage from "./BaseComponents/BaseImage";
-import { useStore } from "../providers/StoreProvider";
-import { ENV_VARIABLES } from "../constants/env_variables";
 import noImage from "../assets/no-image.webp";
+import { ENV_VARIABLES } from "../constants/env_variables";
+import { useStore } from "../providers/StoreProvider";
+import BaseImage from "./BaseComponents/BaseImage";
+import BaseLink from "./BaseComponents/BaseLink";
 
 export default function CategorySlider({ data = [], isStoreData }) {
 	const store = useStore();
@@ -63,7 +63,9 @@ export default function CategorySlider({ data = [], isStoreData }) {
 										isStoreData
 											? category.icon
 											: category.icons
-												? ENV_VARIABLES.IMAGE_BASE_URL + category.icons
+												? ENV_VARIABLES.IMAGE_BASE_URL +
+													"sm-image-" +
+													category.icons
 												: noImage
 									}
 									width={300}

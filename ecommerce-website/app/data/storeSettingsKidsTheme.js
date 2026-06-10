@@ -1,16 +1,15 @@
+import heroBanner from "@/app/assets/themes/furnitureTheme/hero-banner.png";
+import footerBg from "@/app/assets/themes/kidsTheme/footer-pattern-02.webp";
 import logo from "@/app/assets/themes/kidsTheme/logo/logo-bnb-color.svg";
 import logoWhite from "@/app/assets/themes/kidsTheme/logo/logo-bnb-white.svg";
-import logoBlack from "@/app/assets/themes/kidsTheme/logo/logo-bnb-black.svg";
-import footerBg from "@/app/assets/themes/kidsTheme/footer-bg.webp";
-import heroBanner from "@/app/assets/themes/furnitureTheme/hero-banner.png";
 
 // category images
-import golfBat from "@/app/assets/themes/sportsTheme/categories/golf-bat.png";
-import golfBall from "@/app/assets/themes/sportsTheme/categories/golf-ball.png";
-import golfBag from "@/app/assets/themes/sportsTheme/categories/golf-bag.png";
-import tshirt from "@/app/assets/themes/sportsTheme/categories/t-shirt.png";
-import shoes from "@/app/assets/themes/sportsTheme/categories/shoes.png";
 import gloves from "@/app/assets/themes/sportsTheme/categories/gloves.png";
+import golfBag from "@/app/assets/themes/sportsTheme/categories/golf-bag.png";
+import golfBall from "@/app/assets/themes/sportsTheme/categories/golf-ball.png";
+import golfBat from "@/app/assets/themes/sportsTheme/categories/golf-bat.png";
+import shoes from "@/app/assets/themes/sportsTheme/categories/shoes.png";
+import tshirt from "@/app/assets/themes/sportsTheme/categories/t-shirt.png";
 import { KIDSTHEME_DATA } from "./KidsTheme/data";
 
 export const storeSettingsKidsTheme = {

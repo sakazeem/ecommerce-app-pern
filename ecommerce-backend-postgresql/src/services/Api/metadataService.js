@@ -282,7 +282,7 @@ async function getNavCategories(req) {
 		where: {
 			parent_id: null,
 		},
-		attributes: ['id'],
+		attributes: ['id', 'weight'],
 		include: [
 			{
 				model: db.category.scope('active'),
@@ -323,6 +323,7 @@ async function getNavCategories(req) {
 		],
 		// ✅ ORDER EVERYTHING
 		order: [
+			['weight', 'ASC'], // parent
 			['id', 'ASC'], // parent
 
 			// level 2 children by title

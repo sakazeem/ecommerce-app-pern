@@ -61,13 +61,14 @@ const Footer = ({ showOnMobile = true }) => {
 
 	return (
 		<footer
-			className={`relative bg-footer text-light bg-no-repeat bg-cover bg-center ${showOnMobile ? "" : "max-md:hidden"}`}
+			className={`relative bg-footer text-light/90 bg-repeat  bg-center ${showOnMobile ? "" : "max-md:hidden"}`}
 			style={{
 				backgroundImage: footerContent.background
 					? `url('${footerContent.background.src}')`
 					: "none",
+				backgroundSize: "initial",
 			}}>
-			<OverlayContainer opacity={0.15} />
+			<OverlayContainer opacity={0.2} />
 			<div className="container-layout relative">
 				{/* Top Section */}
 				<section className="section-layout-top flex flex-wrap justify-between gap-10 md:gap-16 lg:flex-nowrap">

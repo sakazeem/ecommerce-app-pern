@@ -21,7 +21,7 @@ const NavigationMenu = ({ isMenuOpen, setIsMenuOpen }) => {
 		{ enabled: true },
 	);
 
-	if (isLoading || isBrandsLoading) return null;
+	// if (isLoading || isBrandsLoading) return null;
 
 	return (
 		<nav className="bg-primary text-light shadow-sm overflow-auto/">

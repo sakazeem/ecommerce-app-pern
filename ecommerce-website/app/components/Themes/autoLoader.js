@@ -24,11 +24,11 @@ export function loadThemeComponents(theme) {
 			ProductsSlider: dynamic(() => import(`./${theme}/ProductsSlider`)),
 			FeaturesSection: dynamic(() => import(`./${theme}/FeaturesSection`)),
 			AboutUsSection: dynamic(() => import(`./${theme}/AboutUsSection`)),
-			ParentCategoriesGrid: dynamic(() =>
-				import(`./${theme}/ParentCategoriesGrid`),
+			ParentCategoriesGrid: dynamic(
+				() => import(`./${theme}/ParentCategoriesGrid`),
 			),
-			TrendingCategoriesSection: dynamic(() =>
-				import(`./${theme}/TrendingCategoriesSection`),
+			TrendingCategoriesSection: dynamic(
+				() => import(`./${theme}/TrendingCategoriesSection`),
 			),
 			Newsletter: dynamic(() => import(`./${theme}/Newsletter`)),
 		};
@@ -46,8 +46,8 @@ export function loadThemeComponents(theme) {
 			PopularCatTabs: dynamic(() => import("./KidsTheme/PopularCatTabs")),
 			ProductsSlider: dynamic(() => import("./KidsTheme/ProductsSlider")),
 			FeaturesSection: dynamic(() => import("./KidsTheme/FeaturesSection")),
-			TrendingCategoriesSection: dynamic(() =>
-				import("./KidsTheme/TrendingCategoriesSection"),
+			TrendingCategoriesSection: dynamic(
+				() => import("./KidsTheme/TrendingCategoriesSection"),
 			),
 		};
 	}

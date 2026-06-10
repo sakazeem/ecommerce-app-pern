@@ -16,8 +16,8 @@ const BaseImage = ({
 	return isNetworkImage ? (
 		<Image
 			src={validSrc}
-			width={600}
-			height={600}
+			width={300}
+			height={300}
 			sizes={sizes}
 			className={className}
 			alt={alt}

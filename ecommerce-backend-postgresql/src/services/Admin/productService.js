@@ -629,7 +629,10 @@ function getProductIncludes(req) {
 		},
 		{
 			model: db.product_translation,
-			required: req.query.search ? true : false,
+			// Only INNER JOIN on title when searching by name AND not searching by SKU alone.
+			// If sku is also present, keep it as a LEFT JOIN so SKU-matched products aren't
+			// excluded just because their title doesn't match the same string.
+			required: req.query.search && !req.query.sku ? true : false,
 			where: req.query.search
 				? {
 						title: {

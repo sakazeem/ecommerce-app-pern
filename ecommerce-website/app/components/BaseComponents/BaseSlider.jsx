@@ -5,6 +5,9 @@ import { useEffect, useRef } from "react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import SliderArrows from "./SliderArrows";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 const BaseSlider = ({
   slides = [],

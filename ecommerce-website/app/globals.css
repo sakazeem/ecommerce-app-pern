@@ -429,7 +429,8 @@ img {
 
 body,
 .main-layout-container {
-	background-image: url("./assets/themes/kidsTheme/background-pattern.png");
+	background-image: url("./assets/themes/kidsTheme/background-pattern-new.webp");
+	/* background-image: url("./assets/themes/kidsTheme/background-pattern.png"); */
 	background-repeat: repeat;
 	background-size: contain;
 }
@@ -452,4 +453,14 @@ body,
 
 .animate-blink {
 	animation: blink 1s infinite;
+}
+
+/* removing swiper glitch issue */
+.swiper {
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+.swiper-initialized {
+	opacity: 1;
 }
