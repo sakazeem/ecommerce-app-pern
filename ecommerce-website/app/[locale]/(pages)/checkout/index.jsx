@@ -28,7 +28,7 @@ const calculateShippingFee = (subtotal, city) => {
 		.replace(/[^a-z\s]/g, "");
 	const isKarachi =
 		normalizedCity.includes("karachi") || normalizedCity === "khi";
-	return subtotal > 3000 ? (isKarachi ? 150 : 220) : isKarachi ? 150 : 220;
+	return subtotal > 3000 ? (isKarachi ? 180 : 250) : isKarachi ? 180 : 250;
 };
 
 export default function CheckoutPage() {
@@ -115,33 +115,40 @@ export default function CheckoutPage() {
 	const [orderSummary, setOrderSummary] = useState(null);
 	const [selectedShippingAddressId, setSelectedShippingAddressId] =
 		useState(null);
-	const [selectedBillingAddressId, setSelectedBillingAddressId] = useState(null);
+	const [selectedBillingAddressId, setSelectedBillingAddressId] =
+		useState(null);
 
 	const userAddresses = user?.addresses || [];
 	const shippingAddresses = useMemo(
 		() =>
 			userAddresses
 				.filter((item) => item.type === "shipping")
-				.sort((a, b) => (a.is_default === b.is_default ? a.id - b.id : a.is_default ? -1 : 1)),
+				.sort((a, b) =>
+					a.is_default === b.is_default ? a.id - b.id : a.is_default ? -1 : 1,
+				),
 		[userAddresses],
 	);
 	const billingAddresses = useMemo(
 		() =>
 			userAddresses
 				.filter((item) => item.type === "billing")
-				.sort((a, b) => (a.is_default === b.is_default ? a.id - b.id : a.is_default ? -1 : 1)),
+				.sort((a, b) =>
+					a.is_default === b.is_default ? a.id - b.id : a.is_default ? -1 : 1,
+				),
 		[userAddresses],
 	);
 	const selectedShippingAddress = useMemo(
 		() =>
-			userAddresses.find((item) => item.id === Number(selectedShippingAddressId)) ||
-			null,
+			userAddresses.find(
+				(item) => item.id === Number(selectedShippingAddressId),
+			) || null,
 		[userAddresses, selectedShippingAddressId],
 	);
 	const selectedBillingAddress = useMemo(
 		() =>
-			userAddresses.find((item) => item.id === Number(selectedBillingAddressId)) ||
-			null,
+			userAddresses.find(
+				(item) => item.id === Number(selectedBillingAddressId),
+			) || null,
 		[userAddresses, selectedBillingAddressId],
 	);
 	const [formData, setFormData] = useState({
@@ -168,7 +175,8 @@ export default function CheckoutPage() {
 
 	useEffect(() => {
 		const preferredShipping =
-			pickDefaultAddress(shippingAddresses) || pickDefaultAddress(userAddresses);
+			pickDefaultAddress(shippingAddresses) ||
+			pickDefaultAddress(userAddresses);
 		const preferredBilling = pickDefaultAddress(billingAddresses);
 
 		setSelectedShippingAddressId((prev) => {
@@ -530,9 +538,7 @@ export default function CheckoutPage() {
 											}>
 											{shippingAddresses.map((address) => (
 												<option key={address.id} value={address.id}>
-													{address.title
-														? `${address.title} - `
-														: ""}
+													{address.title ? `${address.title} - ` : ""}
 													{address.address}, {address.city}
 													{address.is_default ? " (Default)" : ""}
 												</option>
@@ -749,13 +755,9 @@ export default function CheckoutPage() {
 														}>
 														{billingAddresses.map((address) => (
 															<option key={address.id} value={address.id}>
-																{address.title
-																	? `${address.title} - `
-																	: ""}
+																{address.title ? `${address.title} - ` : ""}
 																{address.address}, {address.city}
-																{address.is_default
-																	? " (Default)"
-																	: ""}
+																{address.is_default ? " (Default)" : ""}
 															</option>
 														))}
 													</select>
