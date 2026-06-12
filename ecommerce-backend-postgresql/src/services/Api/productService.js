@@ -157,8 +157,16 @@ const getProductsSuggestions = async (req) => {
 				'base_price',
 				'base_discount_percentage',
 				'is_featured',
+				'avg_rating',
+				'total_reviews',
 			],
 			include: [
+				{
+					model: db.review,
+					required: false,
+					attributes: ['id', 'rating'],
+					as: 'reviews',
+				},
 				categoryInclude,
 				{
 					model: db.media,
@@ -216,8 +224,16 @@ const getProducts = async (req) => {
 				'base_price',
 				'base_discount_percentage',
 				'is_featured',
+				'avg_rating',
+				'total_reviews',
 			],
 			include: [
+				{
+					model: db.review,
+					required: false,
+					attributes: ['id', 'rating'],
+					as: 'reviews',
+				},
 				// {
 				// 	model: db.category.scope('active'),
 				// 	attributes: ['id'],
@@ -406,8 +422,16 @@ const getCategoryFilterProducts = async (req) => {
 						'base_price',
 						'base_discount_percentage',
 						'is_featured',
+						'avg_rating',
+						'total_reviews',
 					],
 					include: [
+						{
+							model: db.review,
+							required: false,
+							attributes: ['id', 'rating'],
+							as: 'reviews',
+						},
 						{
 							model: db.category.scope('active'),
 							attributes: ['id'],
@@ -495,8 +519,16 @@ const getCategoryFilterProducts = async (req) => {
 				'base_price',
 				'base_discount_percentage',
 				'is_featured',
+				'avg_rating',
+				'total_reviews',
 			],
 			include: [
+				{
+					model: db.review,
+					required: false,
+					attributes: ['id', 'rating'],
+					as: 'reviews',
+				},
 				{
 					model: db.category.scope('active'),
 					attributes: ['id'],
@@ -645,8 +677,16 @@ const getProductsForFilterPage = async (req) => {
 				'base_price',
 				'base_discount_percentage',
 				'is_featured',
+				'avg_rating',
+				'total_reviews',
 			],
 			include: [
+				{
+					model: db.review,
+					required: false,
+					attributes: ['id', 'rating'],
+					as: 'reviews',
+				},
 				{
 					model: db.category.scope('active'),
 					attributes: ['id'],
@@ -794,8 +834,16 @@ const getProductsByIds = async (req) => {
 			'base_price',
 			'base_discount_percentage',
 			'is_featured',
+			'avg_rating',
+			'total_reviews',
 		],
 		include: [
+			{
+				model: db.review,
+				required: false,
+				attributes: ['id', 'rating'],
+				as: 'reviews',
+			},
 			{
 				model: db.product_variant,
 				required: false,
