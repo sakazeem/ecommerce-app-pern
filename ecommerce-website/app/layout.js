@@ -18,185 +18,203 @@ import { getTheme } from "./lib/getTheme";
 import RouteTrackerProvider from "./providers/RouteTrackerProvider";
 
 const champagne = localFont({
-	//changing font family its not champagne itlaic
-	src: [
-		{
-			path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Bold-Italic.ttf",
-			weight: "700",
-			style: "italic",
-		},
-		{
-			path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Bold.ttf",
-			weight: "700",
-			style: "normal",
-		},
-		{
-			path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Bold-Italic.ttf",
-			weight: "400",
-			style: "italic",
-		},
-		{
-			path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Bold.ttf",
-			weight: "400",
-			style: "normal",
-		},
-		{
-			path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Italic.ttf",
-			weight: "300",
-			style: "italic",
-		},
-		{
-			path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines.ttf",
-			weight: "300",
-			style: "normal",
-		},
-	],
-	variable: "--font-champagne", // CSS Variable
-	display: "swap",
+  //changing font family its not champagne itlaic
+  src: [
+    {
+      path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Bold-Italic.ttf",
+      weight: "700",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Bold-Italic.ttf",
+      weight: "400",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Bold.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines-Italic.ttf",
+      weight: "300",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Champagne-and-Limousines/Champagne-and-Limousines.ttf",
+      weight: "300",
+      style: "normal",
+    },
+  ],
+  variable: "--font-champagne", // CSS Variable
+  display: "swap",
 });
 
 const konnect = localFont({
-	//changing font family its not konnect itlaic
-	src: [
-		{
-			path: "./fonts/Konnect/KonnectRegular.otf",
-			weight: "400",
-			style: "normal",
-		},
-		{
-			path: "./fonts/Konnect/KonnectItalic.otf",
-			weight: "400",
-			style: "italic",
-		},
-		{
-			path: "./fonts/Konnect/KonnectMedium.otf",
-			weight: "500",
-			style: "normal",
-		},
-		{
-			path: "./fonts/Konnect/KonnectMediumItalic.otf",
-			weight: "500",
-			style: "italic",
-		},
-		{
-			path: "./fonts/Konnect/KonnectLight.otf",
-			weight: "300",
-			style: "normal",
-		},
-		{
-			path: "./fonts/Konnect/KonnectLightItalic.otf",
-			weight: "300",
-			style: "italic",
-		},
-		{
-			path: "./fonts/Konnect/KonnectSemiBold.otf",
-			weight: "600",
-			style: "normal",
-		},
-		{
-			path: "./fonts/Konnect/KonnectSemiBoldItalic.otf",
-			weight: "600",
-			style: "italic",
-		},
-		{
-			path: "./fonts/Konnect/KonnectBold.otf",
-			weight: "700",
-			style: "normal",
-		},
-		{
-			path: "./fonts/Konnect/KonnectBoldItalic.otf",
-			weight: "700",
-			style: "italic",
-		},
-	],
-	variable: "--font-konnect", // CSS Variable
-	display: "swap",
+  //changing font family its not konnect itlaic
+  src: [
+    {
+      path: "./fonts/Konnect/KonnectRegular.otf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Konnect/KonnectItalic.otf",
+      weight: "400",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Konnect/KonnectMedium.otf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Konnect/KonnectMediumItalic.otf",
+      weight: "500",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Konnect/KonnectLight.otf",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Konnect/KonnectLightItalic.otf",
+      weight: "300",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Konnect/KonnectSemiBold.otf",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Konnect/KonnectSemiBoldItalic.otf",
+      weight: "600",
+      style: "italic",
+    },
+    {
+      path: "./fonts/Konnect/KonnectBold.otf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Konnect/KonnectBoldItalic.otf",
+      weight: "700",
+      style: "italic",
+    },
+  ],
+  variable: "--font-konnect", // CSS Variable
+  display: "swap",
 });
 
 let cachedTheme = null;
 
 // to avoid duplicate API calls
 async function getCachedTheme() {
-	if (!cachedTheme) cachedTheme = await getTheme();
-	return cachedTheme;
+  if (!cachedTheme) cachedTheme = await getTheme();
+  return cachedTheme;
 }
 
 const defaultMetaTags = {
-	title: "BabiesNBaba - Online Baby Store for Clothes, Toys & Essentials",
-	description:
-		"Discover a wide range of baby products at BabiesNBaba. From cute clothes to toys and essentials, shop quality items for your little one with ease.",
+  title: "BabiesNBaba - Online Baby Store for Clothes, Toys & Essentials",
+  description:
+    "Discover a wide range of baby products at BabiesNBaba. From cute clothes to toys and essentials, shop quality items for your little one with ease.",
 };
 
+// Absolute, public URL to a real raster image (PNG/JPG) for link previews.
+// WhatsApp/Facebook/etc. cannot use locally-imported SVG modules or relative paths.
+const DEFAULT_OG_IMAGE = "https://cdn.babiesnbaba.com/og-default.jpg";
+
 export async function generateMetadata() {
-	const store = await getCachedTheme();
+  const store = await getCachedTheme();
 
-	const meta = store?.metaTags || {};
+  const meta = store?.metaTags || {};
 
-	return {
-		title: meta.title || defaultMetaTags.title,
-		description: meta.description || defaultMetaTags.description,
-		keywords: meta.keywords || "shop, ecommerce, default",
-		openGraph: {
-			title: meta.ogTitle || meta.title || defaultMetaTags.title,
-			description:
-				meta.ogDescription || meta.description || defaultMetaTags.description,
-			images: meta.ogImage ? [meta.ogImage] : [store.content.logo],
-		},
-		twitter: {
-			card: "summary_large_image",
-			title: meta.twitterTitle || meta.title || defaultMetaTags.title,
-			description:
-				meta.twitterDescription ||
-				meta.description ||
-				defaultMetaTags.description,
-			images: meta.twitterImage ? [meta.twitterImage] : [store.content.logo],
-		},
-		icons: {
-			icon: store.favicon || "/favicon.ico", // fallback
-		},
-	};
+  const ogImage = meta.ogImage || DEFAULT_OG_IMAGE;
+  const twitterImage = meta.twitterImage || ogImage;
+
+  return {
+    metadataBase: new URL("https://babiesnbaba.com"),
+    title: meta.title || defaultMetaTags.title,
+    description: meta.description || defaultMetaTags.description,
+    keywords: meta.keywords || "shop, ecommerce, default",
+    openGraph: {
+      title: meta.ogTitle || meta.title || defaultMetaTags.title,
+      description:
+        meta.ogDescription || meta.description || defaultMetaTags.description,
+      url: "https://babiesnbaba.com",
+      siteName: "BabiesNBaba",
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: meta.title || defaultMetaTags.title,
+        },
+      ],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: meta.twitterTitle || meta.title || defaultMetaTags.title,
+      description:
+        meta.twitterDescription ||
+        meta.description ||
+        defaultMetaTags.description,
+      images: [twitterImage],
+    },
+    icons: {
+      icon: meta.favicon || "/favicon.ico", // fallback
+    },
+  };
 }
 
 export default async function RootLayout({ children }) {
-	const store = await getCachedTheme();
-	const fontMap = {
-		champagne: champagne.variable,
-		konnect: konnect.variable,
-	};
+  const store = await getCachedTheme();
+  const fontMap = {
+    champagne: champagne.variable,
+    konnect: konnect.variable,
+  };
 
-	const fontClasses = [fontMap.champagne, fontMap.konnect].join(" ");
+  const fontClasses = [fontMap.champagne, fontMap.konnect].join(" ");
 
-	const colors = store.theme || {
-		primary: "#1E40AF",
-		secondary: "#9333EA",
-		background: "#F9FAFB",
-		text: "#111827",
-	};
-	// const fontClasses =
-	// 	fontMap[store?.fontFamily?.toLowerCase()] || fontMap.inter;
+  const colors = store.theme || {
+    primary: "#1E40AF",
+    secondary: "#9333EA",
+    background: "#F9FAFB",
+    text: "#111827",
+  };
+  // const fontClasses =
+  // 	fontMap[store?.fontFamily?.toLowerCase()] || fontMap.inter;
 
-	return (
-		<html lang="en">
-			<head>
-				<link
-					rel="preconnect"
-					href="https://cdn.babiesnbaba.com"
-					crossOrigin="anonymous"
-				/>
-				<link rel="dns-prefetch" href="https://cdn.babiesnbaba.com" />
-				{/* <link
+  return (
+    <html lang="en">
+      <head>
+        <link
+          rel="preconnect"
+          href="https://cdn.babiesnbaba.com"
+          crossOrigin="anonymous"
+        />
+        <link rel="dns-prefetch" href="https://cdn.babiesnbaba.com" />
+        {/* <link
 					rel="preload"
 					as="image"
 					href="/_next/image?url=https%3A%2F%2Fcdn.babiesnbaba.com%2Fweb-3-1778582352761.webp&w=1920&q=75"
 					fetchPriority="high"
 				/> */}
-				<link
-					rel="preload"
-					as="image"
-					href={"https://cdn.babiesnbaba.com/summer-arrival-1779191900854.webp"}
-					fetchPriority="high"
-				/>
-				{/* 	<link
+        <link
+          rel="preload"
+          as="image"
+          href={"https://cdn.babiesnbaba.com/summer-arrival-1779191900854.webp"}
+          fetchPriority="high"
+        />
+        {/* 	<link
 					rel="preload"
 					as="image"
 					href={"https://cdn.babiesnbaba.com/summer-arrival-1779191900854.webp"}
@@ -235,8 +253,8 @@ export default async function RootLayout({ children }) {
 				</Script>
 
 				{/* Meta Pixel */}
-				<Script id="meta-pixel" strategy="lazyOnload">
-					{`
+        <Script id="meta-pixel" strategy="lazyOnload">
+          {`
             !function(f,b,e,v,n,t,s)
             {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
             n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -248,24 +266,25 @@ export default async function RootLayout({ children }) {
             fbq('init', '1371248501158222');
             fbq('track', 'PageView');
           `}
-				</Script>
-			</head>
-			<body
-				className={`${fontClasses} antialiased`}
-				style={{
-					// need to define theme colors here and in app/globals.css in @theme <-- for new colors
+        </Script>
+      </head>
+      <body
+        className={`${fontClasses} antialiased`}
+        style={{
+          // need to define theme colors here and in app/globals.css in @theme <-- for new colors
 
-					["--color-header"]: colors.header,
-					["--color-headerText"]: colors.headerText,
-					["--color-primary"]: colors.primary,
-					["--color-footer"]: colors.footer,
-					["--color-cardsBg"]: colors.cardsBg,
-					["--color-secondary"]: colors.secondary,
-					["--color-background"]: colors.background,
-					["--color-text"]: colors.text,
-				}}>
-				{/* Meta Pixel noscript */}
-				{/* <noscript>
+          ["--color-header"]: colors.header,
+          ["--color-headerText"]: colors.headerText,
+          ["--color-primary"]: colors.primary,
+          ["--color-footer"]: colors.footer,
+          ["--color-cardsBg"]: colors.cardsBg,
+          ["--color-secondary"]: colors.secondary,
+          ["--color-background"]: colors.background,
+          ["--color-text"]: colors.text,
+        }}
+      >
+        {/* Meta Pixel noscript */}
+        {/* <noscript>
 					<Image
 						height="1"
 						width="1"
@@ -274,18 +293,19 @@ export default async function RootLayout({ children }) {
 						src="https://www.facebook.com/tr?id=1371248501158222&ev=PageView&noscript=1"
 					/>
 				</noscript> */}
-				<noscript>
-					<iframe
-						src="https://www.googletagmanager.com/ns.html?id=GTM-K72ZT6HR"
-						height="0"
-						width="0"
-						style={{ display: "none", visibility: "hidden" }}></iframe>
-				</noscript>
-				<RouteTrackerProvider />
-				<ToastProvider />
-				<FancyboxProvider />
-				{children}
-			</body>
-		</html>
-	);
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-K72ZT6HR"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          ></iframe>
+        </noscript>
+        <RouteTrackerProvider />
+        <ToastProvider />
+        <FancyboxProvider />
+        {children}
+      </body>
+    </html>
+  );
 }
