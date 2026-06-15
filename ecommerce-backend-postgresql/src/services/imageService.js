@@ -585,6 +585,85 @@ async function streamToBuffer(stream) {
 	});
 }
 
+const CDN_BASE = 'https://cdn.babiesnbaba.com';
+const WIDTH_THRESHOLD = 800;
+const CONCURRENCY = 10; // parallel checks at a time
+
+async function listAllObjects() {
+	const {
+		S3Client,
+		ListObjectsV2Command,
+		GetObjectCommand,
+		PutObjectCommand,
+		HeadObjectCommand,
+	} = require('@aws-sdk/client-s3');
+	const keys = [];
+	let continuationToken;
+
+	do {
+		const res = await s3.send(
+			new ListObjectsV2Command({
+				Bucket: BUCKET,
+				ContinuationToken: continuationToken,
+			})
+		);
+		for (const obj of res.Contents ?? []) {
+			if (/\.(jpe?g|png|webp|gif|avif)$/i.test(obj.Key)) {
+				keys.push(obj.Key);
+			}
+		}
+		continuationToken = res.NextContinuationToken;
+	} while (continuationToken);
+
+	return keys;
+}
+
+async function checkImage(key) {
+	const url = `${CDN_BASE}/${key}`;
+	try {
+		const res = await fetch(url);
+		if (!res.ok) return null;
+		const buffer = Buffer.from(await res.arrayBuffer());
+		const { width, height } = await sharp(buffer).metadata();
+		return { key, url, width, height };
+	} catch {
+		return null;
+	}
+}
+
+async function runInBatches(keys, batchSize) {
+	const results = [];
+	for (let i = 0; i < keys.length; i += batchSize) {
+		const batch = keys.slice(i, i + batchSize);
+		const settled = await Promise.all(batch.map(checkImage));
+		results.push(...settled.filter(Boolean));
+		process.stdout.write(
+			`\rChecked ${Math.min(i + batchSize, keys.length)} / ${keys.length}`
+		);
+	}
+	return results;
+}
+
+const executeFunction = async () => {
+	// --- main ---
+	console.log('Listing objects...');
+	const keys = await listAllObjects();
+	console.log(`Found ${keys.length} image files. Checking dimensions...`);
+
+	const all = await runInBatches(keys, CONCURRENCY);
+	const wide = all.filter((img) => img.width > WIDTH_THRESHOLD);
+
+	console.log(
+		`\n\nFound ${wide.length} images wider than ${WIDTH_THRESHOLD}px`
+	);
+
+	fs.writeFileSync('wide-images.json', JSON.stringify(wide, null, 2));
+	console.log('Saved to wide-images.json');
+};
+
+// RUN
+// executeFunction();
+
 module.exports = {
 	mediaUpload,
 	migrate,

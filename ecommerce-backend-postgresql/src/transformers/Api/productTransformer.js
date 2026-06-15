@@ -5,6 +5,37 @@ function extractLangField(obj, lang) {
 	return obj[lang] || Object.values(obj)[0] || null;
 }
 
+function computeAvgRating(product) {
+	const reviews = product.reviews;
+	if (Array.isArray(reviews) && reviews.length > 0) {
+		const sum = reviews.reduce((acc, r) => acc + Number(r.rating || 0), 0);
+		return Number((sum / reviews.length).toFixed(1));
+	}
+	return product.avg_rating || 0;
+}
+
+// Deterministic fallback rating (3.5 - 4.5) for products with no reviews yet.
+// Seeded by product id so the same product always shows the same rating
+// across the listing card and the product detail page.
+function getFallbackRating(productId) {
+	const MIN = 2.5;
+	const MAX = 4.5;
+	const STEP = 0.5;
+	const steps = Math.round((MAX - MIN) / STEP); // number of discrete steps
+	// Simple deterministic hash from product id
+	const hash = Number(productId) || 0;
+	const index = hash % (steps + 1);
+	return Number((MIN + index * STEP).toFixed(1));
+}
+
+function getDisplayRating(product) {
+	const totalReviews = product.reviews?.length ?? product.total_reviews ?? 0;
+	if (totalReviews > 0) {
+		return computeAvgRating(product);
+	}
+	return getFallbackRating(product.id);
+}
+
 function transformCategory(category, lang) {
 	const translation = extractTranslation(category.translations, lang);
 	return {
@@ -91,8 +122,9 @@ function transformProduct(product, lang, multipleProducts = false) {
 		meta_description: product.meta_description,
 		base_price: product.base_price,
 		base_discount_percentage: product.base_discount_percentage,
-		avg_rating: product.avg_rating,
-		total_reviews: product.total_reviews,
+		avg_rating: computeAvgRating(product),
+		total_reviews: product.reviews?.length ?? product.total_reviews,
+		display_rating: getDisplayRating(product),
 		is_featured: product.is_featured,
 		thumbnail: product.thumbnailImage ? product.thumbnailImage.url : null,
 		images: [

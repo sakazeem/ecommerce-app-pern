@@ -304,7 +304,7 @@ async function confirmOrder(req) {
 					// to: 'devsts26@gmail.com',
 					to:
 						config.env === 'development'
-							? 'annasahmed1609@gmail.com'
+							? 'devsts26@gmail.com'
 							: 'babiesnbaba@gmail.com',
 					subject: `New Order #${orderId}`,
 					html: orderConfirmationAdminTemplate({
@@ -492,7 +492,50 @@ module.exports = {
 	trackOrderByTrackingId,
 	myOrders,
 	getOrderByTrackingId,
+	getOrderForReview,
 };
+
+async function getOrderForReview(req) {
+	const { trackingId } = req.params;
+	const order = await db.order.findOne({
+		where: { tracking_id: trackingId },
+		include: [
+			{
+				model: db.order_item,
+				required: false,
+				include: [
+					{
+						model: db.product,
+						include: [
+							{
+								model: db.media,
+								required: false,
+								as: 'images',
+								attributes: ['url', 'title'],
+							},
+							{
+								model: db.media,
+								required: false,
+								as: 'thumbnailImage',
+								attributes: ['url', 'title'],
+							},
+						],
+					},
+				],
+			},
+		],
+	});
+	if (!order) {
+		throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
+	}
+	if (order.status !== 'delivered') {
+		throw new ApiError(
+			httpStatus.FORBIDDEN,
+			'Reviews can only be submitted for delivered orders'
+		);
+	}
+	return order;
+}
 
 // confirmOrderPayload
 const confirmOrderPayload = {
