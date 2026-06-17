@@ -1,6 +1,6 @@
 import Layout from "@/app/components/Shared/layout/Layout";
-import { instanceWithoutCredentials } from "@/app/services/httpServices";
 import ProductDetailsPage from "./ProductDetailsPage";
+import ProductServices from "@/app/services/ProductServices";
 
 const SITE_URL = "https://babiesnbaba.com";
 const CDN_BASE = "https://cdn.babiesnbaba.com";
@@ -54,13 +54,11 @@ export async function generateMetadata({ params }) {
   const { slug } = await params;
 
   try {
-    const response = await instanceWithoutCredentials.get(`/product/${slug}`);
-    const data = response.data ?? response; // handle both axios shapes
+    const response = await ProductServices.getProductBySlug("KidsTheme", slug);
+    const data = response?.data ?? response; // handle both axios shapes
 
     const title =
-      data?.title?.trim() ||
-      data?.name?.trim() ||
-      "Baby Products | BabiesNBaba";
+      data?.title?.trim() || data?.name?.trim() || "Products | BabiesNBaba";
 
     // `excerpt` may contain HTML; strip it for clean meta description
     const rawDescription = data?.excerpt || data?.description || "";
@@ -80,7 +78,7 @@ export async function generateMetadata({ params }) {
       },
 
       openGraph: {
-        type: "product",
+        type: "website",
         url: productUrl,
         siteName: "BabiesNBaba",
         locale: "en_US",
