@@ -127,29 +127,55 @@ const defaultMetaTags = {
     "Discover a wide range of baby products at BabiesNBaba. From cute clothes to toys and essentials, shop quality items for your little one with ease.",
 };
 
-// Absolute, public URL to a real raster image (PNG/JPG) for link previews.
-// WhatsApp/Facebook/etc. cannot use locally-imported SVG modules or relative paths.
-const DEFAULT_OG_IMAGE = "https://cdn.babiesnbaba.com/og-default.jpg";
+const SITE_URL = "https://babiesnbaba.com";
+
+const DEFAULT_OG_IMAGE =
+  "https://cdn.babiesnbaba.com/ogimage-1781639460371.png";
 
 export async function generateMetadata() {
-  const store = await getCachedTheme();
+  const store = await getTheme();
 
   const meta = store?.metaTags || {};
 
-  const ogImage = meta.ogImage || DEFAULT_OG_IMAGE;
-  const twitterImage = meta.twitterImage || ogImage;
+  const ogImage =
+    meta?.ogImage && meta.ogImage.startsWith("http")
+      ? meta.ogImage
+      : DEFAULT_OG_IMAGE;
+
+  const twitterImage =
+    meta?.twitterImage && meta.twitterImage.startsWith("http")
+      ? meta.twitterImage
+      : ogImage;
 
   return {
-    metadataBase: new URL("https://babiesnbaba.com"),
+    metadataBase: new URL(SITE_URL),
+
     title: meta.title || defaultMetaTags.title,
+
     description: meta.description || defaultMetaTags.description,
-    keywords: meta.keywords || "shop, ecommerce, default",
+
+    keywords:
+      meta.keywords ||
+      "baby store, baby clothes, baby products, toys, newborn essentials",
+
+    alternates: {
+      canonical: SITE_URL,
+    },
+
     openGraph: {
       title: meta.ogTitle || meta.title || defaultMetaTags.title,
+
       description:
         meta.ogDescription || meta.description || defaultMetaTags.description,
-      url: "https://babiesnbaba.com",
+
+      url: SITE_URL,
+
       siteName: "BabiesNBaba",
+
+      locale: "en_US",
+
+      type: "website",
+
       images: [
         {
           url: ogImage,
@@ -158,23 +184,33 @@ export async function generateMetadata() {
           alt: meta.title || defaultMetaTags.title,
         },
       ],
-      type: "website",
     },
+
     twitter: {
       card: "summary_large_image",
+
       title: meta.twitterTitle || meta.title || defaultMetaTags.title,
+
       description:
         meta.twitterDescription ||
         meta.description ||
         defaultMetaTags.description,
+
       images: [twitterImage],
     },
+
     icons: {
-      icon: meta.favicon || "/favicon.ico", // fallback
+      icon: meta.favicon || "/favicon.ico",
+      shortcut: meta.favicon || "/favicon.ico",
+      apple: meta.favicon || "/favicon.ico",
+    },
+
+    robots: {
+      index: true,
+      follow: true,
     },
   };
 }
-
 export default async function RootLayout({ children }) {
   const store = await getCachedTheme();
   const fontMap = {
