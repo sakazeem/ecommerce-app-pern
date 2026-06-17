@@ -18,18 +18,18 @@ const DEFAULT_OG_IMAGE = `${CDN_BASE}/ogimage-1781639460371.png`;
  * env-var is not set so the build never breaks.
  */
 function resolveImageUrl(thumbnail) {
-  if (!thumbnail) return DEFAULT_OG_IMAGE;
+	if (!thumbnail) return DEFAULT_OG_IMAGE;
 
-  // Already a full URL — use as-is
-  if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://")) {
-    return thumbnail;
-  }
+	// Already a full URL — use as-is
+	if (thumbnail.startsWith("http://") || thumbnail.startsWith("https://")) {
+		return thumbnail;
+	}
 
-  // Relative path — prepend CDN base
-  const base =
-    process.env.NEXT_PUBLIC_IMAGE_BASE_URL?.replace(/\/$/, "") ?? CDN_BASE;
-  const path = thumbnail.startsWith("/") ? thumbnail : `/${thumbnail}`;
-  return `${base}${path}`;
+	// Relative path — prepend CDN base
+	const base =
+		process.env.NEXT_PUBLIC_IMAGE_BASE_URL?.replace(/\/$/, "") ?? CDN_BASE;
+	const path = thumbnail.startsWith("/") ? thumbnail : `/${thumbnail}`;
+	return `${base}${path}`;
 }
 
 /**
@@ -38,107 +38,112 @@ function resolveImageUrl(thumbnail) {
  * do not render HTML in og:description).
  */
 function toPlainText(html) {
-  if (!html) return "";
-  return html
-    .replace(/<[^>]*>/g, " ") // remove tags
-    .replace(/&nbsp;/g, " ") // decode common entities
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/\s+/g, " ") // collapse whitespace
-    .trim();
+	if (!html) return "";
+	return html
+		.replace(/<[^>]*>/g, " ") // remove tags
+		.replace(/&nbsp;/g, " ") // decode common entities
+		.replace(/&amp;/g, "&")
+		.replace(/&lt;/g, "<")
+		.replace(/&gt;/g, ">")
+		.replace(/&quot;/g, '"')
+		.replace(/\s+/g, " ") // collapse whitespace
+		.trim();
 }
 
 export async function generateMetadata({ params }) {
-  const { slug } = await params;
+	const { slug } = await params;
 
-  try {
-    const response = await ProductServices.getProductBySlug("KidsTheme", slug);
-    const data = response?.data ?? response; // handle both axios shapes
+	try {
+		const response = await ProductServices.getProductBySlugServerSide(
+			"KidsTheme",
+			slug,
+		);
+		console.log(response.title, "chkking title");
 
-    const title =
-      data?.title?.trim() || data?.name?.trim() || "Products | BabiesNBaba";
+		const data = response; // handle both axios shapes
 
-    // `excerpt` may contain HTML; strip it for clean meta description
-    const rawDescription = data?.excerpt || data?.description || "";
-    const description =
-      toPlainText(rawDescription) ||
-      "Shop quality baby products at BabiesNBaba.";
+		const title =
+			data?.title?.trim() || data?.name?.trim() || "Products | BabiesNBaba";
 
-    const imageUrl = resolveImageUrl(data?.thumbnail);
-    const productUrl = `${SITE_URL}/product/${slug}`;
+		// `excerpt` may contain HTML; strip it for clean meta description
+		const rawDescription = data?.excerpt || data?.description || "";
+		const description =
+			toPlainText(rawDescription) ||
+			"Shop quality baby products at BabiesNBaba.";
 
-    return {
-      title,
-      description,
+		const imageUrl = resolveImageUrl(data?.thumbnail);
+		const productUrl = `${SITE_URL}/product/${slug}`;
 
-      alternates: {
-        canonical: productUrl,
-      },
+		return {
+			title,
+			description,
 
-      openGraph: {
-        type: "website",
-        url: productUrl,
-        siteName: "BabiesNBaba",
-        locale: "en_US",
-        title,
-        description,
-        images: [
-          {
-            url: imageUrl,
-            width: 1200,
-            height: 1200,
-            alt: title,
-          },
-        ],
-      },
+			alternates: {
+				canonical: productUrl,
+			},
 
-      twitter: {
-        card: "summary_large_image",
-        title,
-        description,
-        images: [imageUrl],
-      },
-    };
-  } catch (error) {
-    console.error(
-      "[generateMetadata] Error fetching product:",
-      slug,
-      error?.message ?? error,
-    );
+			openGraph: {
+				type: "website",
+				url: productUrl,
+				siteName: "BabiesNBaba",
+				locale: "en_US",
+				title,
+				description,
+				images: [
+					{
+						url: imageUrl,
+						// width: 1200,
+						// height: 1200,
+						alt: title,
+					},
+				],
+			},
 
-    // Return sensible fallback — never return null or an empty object,
-    // as that wipes all inherited root metadata (including og:image).
-    return {
-      title: "Products | BabiesNBaba",
-      description:
-        "Discover a wide range of products at BabiesNBaba — clothes, toys, gift boxes and more.",
-      openGraph: {
-        type: "website",
-        url: `${SITE_URL}/product/${slug}`,
-        siteName: "BabiesNBaba",
-        images: [
-          {
-            url: DEFAULT_OG_IMAGE,
-            width: 1200,
-            height: 630,
-            alt: "BabiesNBaba",
-          },
-        ],
-      },
-      twitter: {
-        card: "summary_large_image",
-        images: [DEFAULT_OG_IMAGE],
-      },
-    };
-  }
+			twitter: {
+				card: "summary_large_image",
+				title,
+				description,
+				images: [imageUrl],
+			},
+		};
+	} catch (error) {
+		console.error(
+			"[generateMetadata] Error fetching product:",
+			slug,
+			error?.message ?? error,
+		);
+
+		// Return sensible fallback — never return null or an empty object,
+		// as that wipes all inherited root metadata (including og:image).
+		return {
+			title: "Products | BabiesNBaba",
+			description:
+				"Discover a wide range of products at BabiesNBaba — clothes, toys, gift boxes and more.",
+			openGraph: {
+				type: "website",
+				url: `${SITE_URL}/product/${slug}`,
+				siteName: "BabiesNBaba",
+				images: [
+					{
+						url: DEFAULT_OG_IMAGE,
+						width: 1200,
+						height: 630,
+						alt: "BabiesNBaba",
+					},
+				],
+			},
+			twitter: {
+				card: "summary_large_image",
+				images: [DEFAULT_OG_IMAGE],
+			},
+		};
+	}
 }
 
 const Products = () => (
-  <Layout>
-    <ProductDetailsPage />
-  </Layout>
+	<Layout>
+		<ProductDetailsPage />
+	</Layout>
 );
 
 export default Products;
