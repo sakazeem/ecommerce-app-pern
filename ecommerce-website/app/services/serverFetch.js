@@ -16,6 +16,12 @@ export async function serverGet(url, options = {}) {
 		...options,
 	});
 
-	if (!res.ok) throw new Error(`Fetch failed: ${url}`);
+	if (!res.ok) {
+		console.error(
+			`Fetch failed: ${BASE_URL}${url}, Status: ${res.status}, StatusText: ${res.statusText}`,
+		);
+
+		throw new Error(`Fetch failed: ${BASE_URL}${url}, Status: ${res.status}`);
+	}
 	return res.json();
 }
