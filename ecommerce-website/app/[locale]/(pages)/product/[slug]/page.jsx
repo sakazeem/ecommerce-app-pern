@@ -58,7 +58,6 @@ export async function generateMetadata({ params }) {
 			"KidsTheme",
 			slug,
 		);
-		console.log(response.title, "chkking title");
 
 		const data = response; // handle both axios shapes
 

@@ -1,6 +1,5 @@
 // app/services/serverFetch.js
-const BASE_URL = "http://72.61.149.213:4000/v1/website";
-// const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL_SERVER;
 
 export async function serverGet(url, options = {}) {
 	const res = await fetch(`${BASE_URL}${url}`, {
