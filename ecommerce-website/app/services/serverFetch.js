@@ -1,5 +1,6 @@
 // app/services/serverFetch.js
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const BASE_URL = "https://api.babiesnbaba.com/v1/website";
+// const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export async function serverGet(url, options = {}) {
 	const res = await fetch(`${BASE_URL}${url}`, {
