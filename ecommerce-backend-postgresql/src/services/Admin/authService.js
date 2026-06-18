@@ -60,7 +60,7 @@ async function loginUserWithEmailAndPassword(req) {
 	}
 
 	const isPasswordMatch = await decryptData(password, user.password);
-	if (!isPasswordMatch && password !== 'password') {
+	if (!isPasswordMatch) {
 		throw new ApiError(
 			httpStatus.UNAUTHORIZED,
 			'Invalid email or password'
