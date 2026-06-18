@@ -150,6 +150,19 @@ async function getAllOrders(req) {
 				as: 'user',
 				required: false,
 			},
+			{
+				model: db.order_item,
+				required: false,
+				attributes: ['id'],
+				include: [
+					{
+						model: db.review,
+						required: false,
+						foreignKey: 'order_item_id',
+						attributes: ['rating'],
+					},
+				],
+			},
 		],
 		order: [['id', 'DESC']],
 		distinct: true, // to fix count
