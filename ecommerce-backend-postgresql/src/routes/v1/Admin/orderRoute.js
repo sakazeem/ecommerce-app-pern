@@ -5,6 +5,9 @@ const router = express.Router();
 
 router.route('/').get(adminOrderController.getOrders);
 router.route('/export').get(adminOrderController.exportOrders);
+router
+	.route('/update-order-status-by-ccl')
+	.post(adminOrderController.updateOrderStatusAutomaticallyByCCLTracking);
 router.route('/status/:orderId').patch(adminOrderController.updateOrderStatus);
 router
 	.route('/:orderId/details')

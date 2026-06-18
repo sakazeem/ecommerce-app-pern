@@ -27,6 +27,12 @@ const updateOrderDetails = catchAsync(async (req, res) => {
 	const result = await adminOrderService.updateOrderDetails(req);
 	res.send(result);
 });
+const updateOrderStatusAutomaticallyByCCLTracking = catchAsync(
+	async (req, res) => {
+		adminOrderService.updateOrderStatusAutomaticallyByCCLTracking(req);
+		res.send('updating order statuses');
+	}
+);
 
 module.exports = {
 	getOrderById,
@@ -35,4 +41,5 @@ module.exports = {
 	updateOrderId,
 	updateOrderDetails,
 	exportOrders,
+	updateOrderStatusAutomaticallyByCCLTracking,
 };

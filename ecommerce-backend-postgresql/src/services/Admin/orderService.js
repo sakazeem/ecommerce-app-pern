@@ -842,6 +842,51 @@ async function updateOrderDetails(req) {
 	}
 }
 
+async function updateOrderStatusAutomaticallyByCCLTracking(req) {
+	const orders = await db.order.findAll({
+		where: {
+			status: 'in_progress',
+		},
+		limit: 5,
+		order: [['id', 'DESC']],
+	});
+
+	for (const order of orders) {
+		if (order && order.courier_details) {
+			const courier_details = JSON.parse(order.courier_details);
+			if (courier_details.bookingId && courier_details.trackingId) {
+				try {
+					const booking = await axios.post(
+						'https://oyeah.pk/trackingapi',
+						{
+							clients: config.cclCourier.clients, //Client ID to be Provided by Admin - MANDATORY
+							token: config.cclCourier.apiKey,
+							// id: '770162614', //Order ID - MANDATORY
+							// shipped_ref: 'KI7529011510', //Tracking ID - MANDATORY
+							id: courier_details.bookingId, //Order ID - MANDATORY
+							shipped_ref: courier_details.trackingId, //Tracking ID - MANDATORY
+						}
+					);
+					// order.trackingStatus = booking.data;
+					// order.couriertrackingId = courier_details.trackingId;
+					if (Array.isArray(booking.data)) {
+						const trackingStatus = booking.data.find((v) =>
+							v.status?.includes('Delivered')
+						);
+
+						if (trackingStatus && order.status !== 'delivered') {
+							order.status = 'delivered';
+							await order.save();
+						}
+					}
+				} catch (e) {
+					console.log('CCL Booking API Error:', e.message);
+				}
+			}
+		}
+	}
+}
+
 module.exports = {
 	getOrderById,
 	getAllOrders,
@@ -849,4 +894,5 @@ module.exports = {
 	updateOrderStatus,
 	updateOrderId,
 	updateOrderDetails,
+	updateOrderStatusAutomaticallyByCCLTracking,
 };
