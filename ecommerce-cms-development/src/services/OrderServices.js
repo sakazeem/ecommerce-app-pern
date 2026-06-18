@@ -46,6 +46,10 @@ const OrderServices = {
   deleteManyOrder: async (body) => {
     return requests.patch("/order/delete/many", body);
   },
+  updateReview: async (reviewId, body) => {
+    return requests.patch(`/review/${reviewId}`, body);
+  },
+
   exportOrders: async (query) => {
     return instance.get(`/order/export${query ? `?${query}` : ""}`, {
       responseType: "blob",

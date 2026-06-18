@@ -47,6 +47,18 @@ async function getOrderById(req) {
 							},
 						],
 					},
+					{
+						model: db.review,
+						required: false,
+						foreignKey: 'order_item_id',
+						attributes: [
+							'id',
+							'rating',
+							'comment',
+							'status',
+							'title',
+						],
+					},
 				],
 			},
 			{ model: db.app_user, as: 'user', required: false },
@@ -855,8 +867,37 @@ async function updateOrderDetails(req) {
 	}
 }
 
+async function updateReview(req) {
+	const { reviewId } = req.params;
+	const { rating, comment, status } = req.body;
+
+	const review = await db.review.findByPk(reviewId);
+	if (!review) throw new ApiError(httpStatus.NOT_FOUND, 'Review not found');
+
+	await review.update({ rating, comment, status });
+
+	const stats = await db.review.findOne({
+		attributes: [
+			[db.sequelize.fn('AVG', db.sequelize.col('rating')), 'avg_rating'],
+			[db.sequelize.fn('COUNT', db.sequelize.col('id')), 'total_reviews'],
+		],
+		where: { product_id: review.product_id },
+		raw: true,
+	});
+	await db.product.update(
+		{
+			avg_rating: Number(stats.avg_rating || 0).toFixed(1),
+			total_reviews: stats.total_reviews,
+		},
+		{ where: { id: review.product_id } }
+	);
+
+	return { success: true };
+}
+
 module.exports = {
 	getOrderById,
+	updateReview,
 	getAllOrders,
 	exportOrders,
 	updateOrderStatus,

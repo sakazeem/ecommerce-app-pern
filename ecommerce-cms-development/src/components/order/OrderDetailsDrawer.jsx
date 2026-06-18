@@ -362,6 +362,153 @@ const ProductAddPanel = ({ onAdd }) => {
 };
 
 // ── Main Drawer ───────────────────────────────────────────────────────────────
+const ItemReview = ({
+  review,
+  editingReview,
+  reviewForms,
+  setReviewForms,
+  setEditingReview,
+  savingReview,
+  saveReview,
+  inputCls,
+  btnPrimary,
+  btnSecondary,
+}) => {
+  if (!review) return null;
+  const isEditing = editingReview === review.id;
+  const form = reviewForms[review.id] || {
+    rating: review.rating,
+    comment: review.comment,
+    status: review.status,
+  };
+  const statusCls =
+    review.status === "APPROVED"
+      ? "bg-green-100 text-green-700"
+      : review.status === "REJECTED"
+        ? "bg-red-100 text-red-700"
+        : "bg-yellow-100 text-yellow-700";
+  return (
+    <div className="mt-3 pt-3 p-4 border-t border-gray-100 dark:border-customGray-600">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          Customer Review
+        </span>
+        {!isEditing ? (
+          <button
+            onClick={() => {
+              setReviewForms((p) => ({
+                ...p,
+                [review.id]: {
+                  rating: review.rating,
+                  comment: review.comment,
+                  status: review.status,
+                },
+              }));
+              setEditingReview(review.id);
+            }}
+            className="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
+          >
+            Edit
+          </button>
+        ) : (
+          <div className="flex gap-2">
+            <button
+              onClick={() => saveReview(review.id)}
+              disabled={savingReview}
+              className={btnPrimary + " !py-1 !px-3 !text-xs"}
+            >
+              {savingReview ? <Spinner small /> : <CheckIcon />} Save
+            </button>
+            <button
+              onClick={() => setEditingReview(null)}
+              disabled={savingReview}
+              className={btnSecondary + " !py-1 !px-3 !text-xs"}
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </div>
+      {isEditing ? (
+        <div className="space-y-2">
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() =>
+                  setReviewForms((p) => ({
+                    ...p,
+                    [review.id]: { ...p[review.id], rating: s },
+                  }))
+                }
+                className={`text-xl ${
+                  s <= (form.rating || 0) ? "text-yellow-400" : "text-gray-300"
+                }`}
+              >
+                ★
+              </button>
+            ))}
+          </div>
+          <textarea
+            rows={2}
+            value={form.comment || ""}
+            onChange={(e) =>
+              setReviewForms((p) => ({
+                ...p,
+                [review.id]: { ...p[review.id], comment: e.target.value },
+              }))
+            }
+            className={inputCls}
+            placeholder="Review comment"
+          />
+          <select
+            value={form.status || "PENDING"}
+            onChange={(e) =>
+              setReviewForms((p) => ({
+                ...p,
+                [review.id]: { ...p[review.id], status: e.target.value },
+              }))
+            }
+            className={inputCls}
+          >
+            <option value="PENDING">Pending</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
+          </select>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-2">
+            <span className="flex">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <span
+                  key={s}
+                  className={
+                    s <= review.rating ? "text-yellow-400" : "text-gray-300"
+                  }
+                >
+                  ★
+                </span>
+              ))}
+            </span>
+            <span
+              className={`text-xs font-medium px-1.5 py-0.5 rounded ${statusCls}`}
+            >
+              {review.status}
+            </span>
+          </div>
+          {review.comment && (
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              {review.comment}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const OrderDetailsDrawer = ({ id }) => {
   const [orderDetails, setOrderDetails] = useState({});
   const [loading, setLoading] = useState(true);
@@ -385,6 +532,9 @@ const OrderDetailsDrawer = ({ id }) => {
   const [itemsForm, setItemsForm] = useState([]);
   const [addQueue, setAddQueue] = useState([]);
   const [shippingFee, setShippingFee] = useState("");
+  const [reviewForms, setReviewForms] = useState({}); // { [reviewId]: { rating, comment, status } }
+  const [editingReview, setEditingReview] = useState(null); // reviewId being edited
+  const [savingReview, setSavingReview] = useState(false);
 
   const initForms = (res) => {
     const userName = res.user?.name || "";
@@ -411,6 +561,20 @@ const OrderDetailsDrawer = ({ id }) => {
     );
     setAddQueue([]);
     setShippingFee(res.shipping || "");
+  };
+
+  const saveReview = async (reviewId) => {
+    try {
+      setSavingReview(true);
+      await OrderServices.updateReview(reviewId, reviewForms[reviewId]);
+      notifySuccess("Review updated");
+      setEditingReview(null);
+      await load();
+    } catch (err) {
+      notifyError(err?.response?.data?.message || err.message);
+    } finally {
+      setSavingReview(false);
+    }
   };
 
   const load = async () => {
@@ -797,149 +961,165 @@ const OrderDetailsDrawer = ({ id }) => {
                   ) ?? [];
 
                 return (
-                  <div
-                    key={item.id}
-                    className={`p-4 transition-colors ${isRemoved ? "opacity-40 bg-red-50 dark:bg-red-900/10" : "hover:bg-gray-50 dark:hover:bg-customGray-750"}`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start gap-2 flex-wrap">
-                          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                            {item.product_title}
-                          </p>
-                          {/* SKU badge */}
-                          {item.sku && (
-                            <span className="px-1.5 py-0.5 rounded text-xs bg-gray-100 dark:bg-customGray-700 text-gray-500 dark:text-gray-400 font-mono">
-                              {item.sku}
-                            </span>
-                          )}
-                        </div>
-                        {/* Variant attribute tags */}
-                        {attrTags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1 mb-2">
-                            {attrTags.map((tag, i) => (
-                              <span
-                                key={i}
-                                className="px-2 py-0.5 rounded-full text-xs bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800"
-                              >
-                                {tag}
+                  <div>
+                    <div
+                      key={item.id}
+                      className={`p-4 transition-colors ${isRemoved ? "opacity-40 bg-red-50 dark:bg-red-900/10" : "hover:bg-gray-50 dark:hover:bg-customGray-750"}`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start gap-2 flex-wrap">
+                            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                              {item.product_title}
+                            </p>
+                            {/* SKU badge */}
+                            {item.sku && (
+                              <span className="px-1.5 py-0.5 rounded text-xs bg-gray-100 dark:bg-customGray-700 text-gray-500 dark:text-gray-400 font-mono">
+                                {item.sku}
                               </span>
-                            ))}
+                            )}
                           </div>
-                        )}
-                        <div className="flex items-center gap-3 mt-1.5 text-sm text-gray-500">
-                          {editItems && !isRemoved ? (
-                            <div className="flex items-center border border-gray-300 dark:border-customGray-500 rounded overflow-hidden">
-                              <button
-                                onClick={() =>
-                                  setItemsForm((p) =>
-                                    p.map((x) =>
-                                      x.id === item.id
-                                        ? {
-                                            ...x,
-                                            quantity: Math.max(
-                                              1,
-                                              x.quantity - 1,
-                                            ),
-                                          }
-                                        : x,
-                                    ),
-                                  )
-                                }
-                                className="px-2 py-1 hover:bg-gray-100 dark:hover:bg-customGray-600 font-bold text-base leading-none"
-                              >
-                                −
-                              </button>
-                              <input
-                                type="number"
-                                min="1"
-                                value={qty}
-                                onChange={(e) => {
-                                  const v = parseInt(e.target.value);
-                                  if (v >= 1)
+                          {/* Variant attribute tags */}
+                          {attrTags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1 mb-2">
+                              {attrTags.map((tag, i) => (
+                                <span
+                                  key={i}
+                                  className="px-2 py-0.5 rounded-full text-xs bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          <div className="flex items-center gap-3 mt-1.5 text-sm text-gray-500">
+                            {editItems && !isRemoved ? (
+                              <div className="flex items-center border border-gray-300 dark:border-customGray-500 rounded overflow-hidden">
+                                <button
+                                  onClick={() =>
                                     setItemsForm((p) =>
                                       p.map((x) =>
                                         x.id === item.id
-                                          ? { ...x, quantity: v }
+                                          ? {
+                                              ...x,
+                                              quantity: Math.max(
+                                                1,
+                                                x.quantity - 1,
+                                              ),
+                                            }
                                           : x,
                                       ),
-                                    );
-                                }}
-                                className="w-12 text-center text-sm py-1 bg-white dark:bg-customGray-700 border-x border-gray-300 dark:border-customGray-500 focus:outline-none"
-                              />
-                              <button
-                                onClick={() =>
-                                  setItemsForm((p) =>
-                                    p.map((x) =>
-                                      x.id === item.id
-                                        ? { ...x, quantity: x.quantity + 1 }
-                                        : x,
-                                    ),
-                                  )
-                                }
-                                className="px-2 py-1 hover:bg-gray-100 dark:hover:bg-customGray-600 font-bold text-base leading-none"
-                              >
-                                +
-                              </button>
-                            </div>
-                          ) : (
-                            <span>
-                              Qty: <strong>{item.quantity}</strong>
+                                    )
+                                  }
+                                  className="px-2 py-1 hover:bg-gray-100 dark:hover:bg-customGray-600 font-bold text-base leading-none"
+                                >
+                                  −
+                                </button>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={qty}
+                                  onChange={(e) => {
+                                    const v = parseInt(e.target.value);
+                                    if (v >= 1)
+                                      setItemsForm((p) =>
+                                        p.map((x) =>
+                                          x.id === item.id
+                                            ? { ...x, quantity: v }
+                                            : x,
+                                        ),
+                                      );
+                                  }}
+                                  className="w-12 text-center text-sm py-1 bg-white dark:bg-customGray-700 border-x border-gray-300 dark:border-customGray-500 focus:outline-none"
+                                />
+                                <button
+                                  onClick={() =>
+                                    setItemsForm((p) =>
+                                      p.map((x) =>
+                                        x.id === item.id
+                                          ? { ...x, quantity: x.quantity + 1 }
+                                          : x,
+                                      ),
+                                    )
+                                  }
+                                  className="px-2 py-1 hover:bg-gray-100 dark:hover:bg-customGray-600 font-bold text-base leading-none"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            ) : (
+                              <span>
+                                Qty: <strong>{item.quantity}</strong>
+                              </span>
+                            )}
+                            <span className="text-gray-400">
+                              Rs. {unitPrice.toFixed(2)} each
                             </span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                          <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
+                            Rs.{" "}
+                            {(
+                              unitPrice *
+                              (editItems && !isRemoved ? qty : item.quantity)
+                            ).toFixed(2)}
+                          </p>
+                          {editItems && (
+                            <button
+                              onClick={() =>
+                                setItemsForm((p) =>
+                                  p.map((x) =>
+                                    x.id === item.id
+                                      ? { ...x, _remove: !x._remove }
+                                      : x,
+                                  ),
+                                )
+                              }
+                              title={isRemoved ? "Undo remove" : "Remove item"}
+                              className={`p-1.5 rounded-lg transition-colors ${
+                                isRemoved
+                                  ? "bg-gray-200 dark:bg-customGray-600 text-gray-500 hover:bg-gray-300"
+                                  : "bg-red-50 dark:bg-red-900/30 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50"
+                              }`}
+                            >
+                              {isRemoved ? (
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                                  />
+                                </svg>
+                              ) : (
+                                <TrashIcon />
+                              )}
+                            </button>
                           )}
-                          <span className="text-gray-400">
-                            Rs. {unitPrice.toFixed(2)} each
-                          </span>
                         </div>
                       </div>
-
-                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                        <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
-                          Rs.{" "}
-                          {(
-                            unitPrice *
-                            (editItems && !isRemoved ? qty : item.quantity)
-                          ).toFixed(2)}
-                        </p>
-                        {editItems && (
-                          <button
-                            onClick={() =>
-                              setItemsForm((p) =>
-                                p.map((x) =>
-                                  x.id === item.id
-                                    ? { ...x, _remove: !x._remove }
-                                    : x,
-                                ),
-                              )
-                            }
-                            title={isRemoved ? "Undo remove" : "Remove item"}
-                            className={`p-1.5 rounded-lg transition-colors ${
-                              isRemoved
-                                ? "bg-gray-200 dark:bg-customGray-600 text-gray-500 hover:bg-gray-300"
-                                : "bg-red-50 dark:bg-red-900/30 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50"
-                            }`}
-                          >
-                            {isRemoved ? (
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
-                                />
-                              </svg>
-                            ) : (
-                              <TrashIcon />
-                            )}
-                          </button>
-                        )}
-                      </div>
                     </div>
+
+                    {/* Review section */}
+                    {/* <ItemReview
+                      review={(item.reviews || [])[0]}
+                      editingReview={editingReview}
+                      reviewForms={reviewForms}
+                      setReviewForms={setReviewForms}
+                      setEditingReview={setEditingReview}
+                      savingReview={savingReview}
+                      saveReview={saveReview}
+                      inputCls={inputCls}
+                      btnPrimary={btnPrimary}
+                      btnSecondary={btnSecondary}
+                    /> */}
                   </div>
                 );
               })}
