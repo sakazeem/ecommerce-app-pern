@@ -847,7 +847,7 @@ async function updateOrderStatusAutomaticallyByCCLTracking(req) {
 		where: {
 			status: 'in_progress',
 		},
-		limit: 5,
+		// limit: 5,
 		order: [['id', 'DESC']],
 	});
 
