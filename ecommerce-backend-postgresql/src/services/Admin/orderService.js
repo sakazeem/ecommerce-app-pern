@@ -965,8 +965,8 @@ async function sendReviewsEmailtoDeliveredOrder(req){
 			status: 'delivered',
 			review_email_sent:false
 		},
-		limit: 5,
-		order: [['id', 'DESC']],
+		limit: 2,
+		order: [['id', 'ASC']],
 	});
 
 	for (const order of orders) {
