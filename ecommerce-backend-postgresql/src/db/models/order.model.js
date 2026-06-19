@@ -104,6 +104,11 @@ module.exports = (sequelize, DataTypes) => {
 			},
 
 			payment_receipt_url: { type: DataTypes.STRING, allowNull: true },
+			review_email_sent: {
+				type: DataTypes.BOOLEAN,
+				allowNull: false,
+				defaultValue: false,
+			},
 		},
 		{
 			/**

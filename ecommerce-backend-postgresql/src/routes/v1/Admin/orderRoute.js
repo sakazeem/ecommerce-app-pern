@@ -8,6 +8,9 @@ router.route('/export').get(adminOrderController.exportOrders);
 router
 	.route('/update-order-status-by-ccl')
 	.post(adminOrderController.updateOrderStatusAutomaticallyByCCLTracking);
+router
+	.route('/send-reviews-emails')
+	.post(adminOrderController.sendReviewsEmailtoDeliveredOrder);
 router.route('/status/:orderId').patch(adminOrderController.updateOrderStatus);
 router
 	.route('/:orderId/details')

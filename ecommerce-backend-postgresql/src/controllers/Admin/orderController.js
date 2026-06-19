@@ -33,6 +33,10 @@ const updateOrderStatusAutomaticallyByCCLTracking = catchAsync(
 		res.send('updating order statuses');
 	}
 );
+const sendReviewsEmailtoDeliveredOrder = catchAsync(async (req, res) => {
+	adminOrderService.sendReviewsEmailtoDeliveredOrder(req);
+	res.send('sending reviews emails');
+});
 
 module.exports = {
 	getOrderById,
@@ -42,4 +46,5 @@ module.exports = {
 	updateOrderDetails,
 	exportOrders,
 	updateOrderStatusAutomaticallyByCCLTracking,
+	sendReviewsEmailtoDeliveredOrder,
 };

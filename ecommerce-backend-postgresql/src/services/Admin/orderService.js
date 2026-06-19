@@ -490,6 +490,7 @@ async function sendInprocessEmailToUser(order, courierTrackingId) {
 	return true;
 }
 
+// order must include app_user
 async function sendDeliveredReviewEmail(order) {
 	const email = order.app_user_id
 		? order.app_user?.email
@@ -515,7 +516,11 @@ async function sendDeliveredReviewEmail(order) {
 		}),
 		attachments: [],
 	})
-		.then(() => console.log('email sent!'))
+		.then(() => {
+			console.log('email sent!');
+			order.review_email_sent = true;
+			await order.save()
+		})
 		.catch((e) => console.log('email error:', e));
 }
 
@@ -878,6 +883,19 @@ async function updateOrderStatusAutomaticallyByCCLTracking(req) {
 
 	for (const order of orders) {
 		if (order && order.courier_details) {
+			if (!order) {
+				throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
+			}
+
+			if (order.app_user_id) {
+				order.app_user = await db.app_user.findByPk(order.app_user_id);
+			}
+
+			const orderItems = await db.order_item.findAll({
+				where: { order_id: orderId },
+			});
+
+			order.order_item = orderItems;
 			const courier_details = JSON.parse(order.courier_details);
 			if (courier_details.bookingId && courier_details.trackingId) {
 				try {
@@ -902,6 +920,7 @@ async function updateOrderStatusAutomaticallyByCCLTracking(req) {
 						if (trackingStatus && order.status !== 'delivered') {
 							order.status = 'delivered';
 							await order.save();
+							await sendDeliveredReviewEmail(order);
 						}
 					}
 				} catch (e) {
@@ -940,6 +959,36 @@ async function updateReview(req) {
 	return { success: true };
 }
 
+async function sendReviewsEmailtoDeliveredOrder(req){
+	const orders = await db.order.findAll({
+		where: {
+			status: 'delivered',
+			review_email_sent:false
+		},
+		limit: 5,
+		order: [['id', 'DESC']],
+	});
+
+	for (const order of orders) {
+		if (order && order.courier_details) {
+			if (!order) {
+				throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
+			}
+
+			if (order.app_user_id) {
+				order.app_user = await db.app_user.findByPk(order.app_user_id);
+			}
+
+			const orderItems = await db.order_item.findAll({
+				where: { order_id: orderId },
+			});
+
+			order.order_item = orderItems;
+			await sendDeliveredReviewEmail(order);
+		}
+	}
+}
+
 module.exports = {
 	getOrderById,
 	updateReview,
@@ -949,4 +998,5 @@ module.exports = {
 	updateOrderId,
 	updateOrderDetails,
 	updateOrderStatusAutomaticallyByCCLTracking,
+	sendReviewsEmailtoDeliveredOrder
 };
