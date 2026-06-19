@@ -982,7 +982,7 @@ async function sendReviewsEmailtoDeliveredOrder(req) {
 		}
 
 		const orderItems = await db.order_item.findAll({
-			where: { order_id: orderId },
+			where: { order_id: order.id },
 		});
 
 		order.order_item = orderItems;
