@@ -977,24 +977,18 @@ async function sendReviewsEmailtoDeliveredOrder(req) {
 	});
 
 	for (const order of orders) {
-		if (order && order.courier_details) {
-			if (!order) {
-				throw new ApiError(httpStatus.NOT_FOUND, 'Order not found');
-			}
-
-			if (order.app_user_id) {
-				order.app_user = await db.app_user.findByPk(order.app_user_id);
-			}
-
-			const orderItems = await db.order_item.findAll({
-				where: { order_id: orderId },
-			});
-
-			order.order_item = orderItems;
-			await sendDeliveredReviewEmail(order);
+		if (order.app_user_id) {
+			order.app_user = await db.app_user.findByPk(order.app_user_id);
 		}
+
+		const orderItems = await db.order_item.findAll({
+			where: { order_id: orderId },
+		});
+
+		order.order_item = orderItems;
+		await sendDeliveredReviewEmail(order);
 	}
-	return order;
+	return orders;
 }
 
 module.exports = {
