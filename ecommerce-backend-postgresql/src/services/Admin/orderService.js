@@ -516,10 +516,10 @@ async function sendDeliveredReviewEmail(order) {
 		}),
 		attachments: [],
 	})
-		.then(() => {
+		.then(async () => {
 			console.log('email sent!');
 			order.review_email_sent = true;
-			await order.save()
+			await order.save();
 		})
 		.catch((e) => console.log('email error:', e));
 }
@@ -959,11 +959,11 @@ async function updateReview(req) {
 	return { success: true };
 }
 
-async function sendReviewsEmailtoDeliveredOrder(req){
+async function sendReviewsEmailtoDeliveredOrder(req) {
 	const orders = await db.order.findAll({
 		where: {
 			status: 'delivered',
-			review_email_sent:false
+			review_email_sent: false,
 		},
 		limit: 2,
 		order: [['id', 'ASC']],
@@ -998,5 +998,5 @@ module.exports = {
 	updateOrderId,
 	updateOrderDetails,
 	updateOrderStatusAutomaticallyByCCLTracking,
-	sendReviewsEmailtoDeliveredOrder
+	sendReviewsEmailtoDeliveredOrder,
 };
