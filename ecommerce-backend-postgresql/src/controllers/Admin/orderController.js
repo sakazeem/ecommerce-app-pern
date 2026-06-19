@@ -34,8 +34,10 @@ const updateOrderStatusAutomaticallyByCCLTracking = catchAsync(
 	}
 );
 const sendReviewsEmailtoDeliveredOrder = catchAsync(async (req, res) => {
-	adminOrderService.sendReviewsEmailtoDeliveredOrder(req);
-	res.send('sending reviews emails');
+	const orders = await adminOrderService.sendReviewsEmailtoDeliveredOrder(
+		req
+	);
+	res.send(order);
 });
 
 module.exports = {

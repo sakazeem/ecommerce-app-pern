@@ -994,6 +994,7 @@ async function sendReviewsEmailtoDeliveredOrder(req) {
 			await sendDeliveredReviewEmail(order);
 		}
 	}
+	return order;
 }
 
 module.exports = {
