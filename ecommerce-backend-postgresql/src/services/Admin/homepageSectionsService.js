@@ -15,7 +15,7 @@ async function updateSection(req) {
 	const { sectionId } = req.params;
 	const section = await db.homepage_sections.findByPk(sectionId);
 	if (!section) throw new Error('Section not found');
-
+	if (data.title === '') data.title = null;
 	return section.update(data);
 }
 
