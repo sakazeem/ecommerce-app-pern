@@ -25,7 +25,7 @@ function getFallbackRating(productId) {
 	// Simple deterministic hash from product id
 	const hash = Number(productId) || 0;
 	const index = hash % (steps + 1);
-	return Number((MIN + index * STEP).toFixed(1));
+	return 0;
 }
 
 function getDisplayRating(product) {
