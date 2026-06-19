@@ -521,7 +521,14 @@ async function sendDeliveredReviewEmail(order) {
 			order.review_email_sent = true;
 			await order.save();
 		})
-		.catch((e) => console.log('email error:', e));
+		.catch((e) => {
+			throw new ApiError(
+				httpStatus.INTERNAL_SERVER_ERROR,
+				`Email sending error=> ${e.message}`
+			);
+
+			console.log('email error:', e);
+		});
 }
 
 async function exportOrders(req, res) {
@@ -965,7 +972,7 @@ async function sendReviewsEmailtoDeliveredOrder(req) {
 			status: 'delivered',
 			review_email_sent: false,
 		},
-		limit: 2,
+		limit: 1,
 		order: [['id', 'ASC']],
 	});
 
