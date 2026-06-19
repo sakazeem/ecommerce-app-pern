@@ -37,7 +37,7 @@ const sendReviewsEmailtoDeliveredOrder = catchAsync(async (req, res) => {
 	const orders = await adminOrderService.sendReviewsEmailtoDeliveredOrder(
 		req
 	);
-	res.send(order);
+	res.send(orders);
 });
 
 module.exports = {
