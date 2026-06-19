@@ -74,6 +74,37 @@ const OrderTable = ({
               </span>
             </TableCell>
             <TableCell className="text-sm">
+              {(() => {
+                const reviews = (order.order_items || [])
+                  .flatMap((item) =>
+                    item.reviews || item.review
+                      ? [item.reviews || item.review].flat()
+                      : [],
+                  )
+                  .filter(Boolean);
+                if (!reviews.length)
+                  return <span className="text-gray-400 text-xs">—</span>;
+                const avg =
+                  reviews.reduce((sum, r) => sum + (r.rating || 0), 0) /
+                  reviews.length;
+                const rounded = Math.round(avg);
+                return (
+                  <span className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <span
+                        key={s}
+                        className={
+                          s <= rounded ? "text-yellow-400" : "text-gray-300"
+                        }
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </span>
+                );
+              })()}
+            </TableCell>
+            <TableCell className="text-sm">
               {formatDate(order.updated_at)}
             </TableCell>
             <TableCell>

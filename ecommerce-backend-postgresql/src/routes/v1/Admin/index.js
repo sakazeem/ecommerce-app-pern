@@ -34,6 +34,7 @@ adminRouter.use('/attribute', attributeRoute);
 adminRouter.use('/sizeChart', sizeChartRoute);
 adminRouter.use('/script', scriptRoute);
 adminRouter.use('/order', require('./orderRoute'));
+adminRouter.use('/review', require('./reviewRoute'));
 adminRouter.use('/returned', require('./returnedRoute'));
 adminRouter.use('/subscriber', require('./subscriberRoute'));
 adminRouter.use('/appuser', require('./appUserRoute'));
