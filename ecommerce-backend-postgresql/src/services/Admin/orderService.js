@@ -972,7 +972,7 @@ async function sendReviewsEmailtoDeliveredOrder(req) {
 			status: 'delivered',
 			review_email_sent: false,
 		},
-		limit: 1,
+		// limit: 1,
 		order: [['id', 'ASC']],
 	});
 
