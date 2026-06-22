@@ -80,11 +80,11 @@ export default function ProductDetailsPage() {
       (1 - (product.discount || product.base_discount_percentage) / 100)
     ).toFixed(2);
 
-    trackEvent("PageView", {
-      content_ids: [product.id],
+    trackEvent("ViewContent", {
+      content_ids: [product.slug],
+      content_type: "product",
       content_name: product.title,
-      sku: product.sku,
-      value: discountedPrice,
+      value: Number(discountedPrice),
       currency: "PKR",
     });
 

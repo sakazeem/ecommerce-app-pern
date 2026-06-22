@@ -263,12 +263,22 @@ export const useCartStore = create(
           set({ cart: updatedCart });
         }
 
+        const atcQty = Math.min(quantity, maxStock);
         trackEvent("AddToCart", {
-          content_ids: [product.id],
+          content_ids: [product.slug],
+          content_type: "product",
           content_name: product.title,
-          sku: product.sku,
-          quantity: Math.min(quantity, maxStock),
-          value: product.selectedVariant?.price || product.base_price,
+          contents: [
+            {
+              id: product.slug,
+              quantity: atcQty,
+              item_price: Number(
+                product.selectedVariant?.price || product.base_price,
+              ),
+            },
+          ],
+          quantity: atcQty,
+          value: Number(product.selectedVariant?.price || product.base_price),
           currency: "PKR",
         });
       },
