@@ -103,6 +103,8 @@ module.exports = (sequelize, DataTypes) => {
 				onUpdate: 'CASCADE',
 			},
 
+			special_instructions: { type: DataTypes.TEXT, allowNull: true },
+
 			payment_receipt_url: { type: DataTypes.STRING, allowNull: true },
 			review_email_sent: {
 				type: DataTypes.BOOLEAN,
