@@ -35,7 +35,14 @@ async function fetchReceiptBufferFromR2(key) {
 }
 
 async function confirmOrder(req) {
-	const { customer, billingAddress, items, summary, userId } = req.body;
+	const {
+		customer,
+		billingAddress,
+		items,
+		summary,
+		userId,
+		specialInstructions,
+	} = req.body;
 
 	const receiptFile = req.file || null;
 
@@ -63,6 +70,8 @@ async function confirmOrder(req) {
 			: billingAddress?.postalCode || customer.postalCode,
 
 		payment_method: customer.paymentMethod,
+
+		special_instructions: specialInstructions || null,
 
 		order_amount: summary.subtotal,
 		shipping: summary.shipping,
@@ -292,6 +301,7 @@ async function confirmOrder(req) {
 							subtotal: summary.subtotal,
 							shipping: summary.shipping,
 							total: summary.total,
+							specialInstructions: specialInstructions || null,
 						}),
 						attachments: [],
 					});
@@ -315,6 +325,7 @@ async function confirmOrder(req) {
 						total: summary.total?.toFixed(1),
 						shipping: summary.shipping,
 						paymentMethod: customer.paymentMethod,
+						specialInstructions: specialInstructions || null,
 					}),
 					attachments: receiptAttachment,
 				});

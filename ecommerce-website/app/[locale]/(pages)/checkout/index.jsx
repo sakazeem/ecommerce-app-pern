@@ -172,6 +172,7 @@ export default function CheckoutPage() {
     postalCode: "",
     phone: user?.phone || "",
   });
+  const [specialInstructions, setSpecialInstructions] = useState("");
 
   useEffect(() => {
     const preferredShipping =
@@ -334,6 +335,7 @@ export default function CheckoutPage() {
         selectedBillingAddressId: selectedBillingAddress?.id || null,
       },
       billingAddress: formData.billingSameAsShipping ? null : billingAddress,
+      specialInstructions: specialInstructions.trim() || null,
       items: cart.map((item) => {
         const unitPrice =
           (item.selectedVariant?.price || 0) *
@@ -433,6 +435,7 @@ export default function CheckoutPage() {
 
           toast.success("Order placed successfully!");
 
+          setSpecialInstructions("");
           setFormData({
             email: "",
             name: "",
@@ -631,6 +634,22 @@ export default function CheckoutPage() {
                       }));
                     }
                   }}
+                />
+              </section>
+              <section>
+                <h2 className="text-lg font-semibold mb-3">
+                  Special Instructions{" "}
+                  <span className="text-sm font-normal text-gray-400">
+                    (optional)
+                  </span>
+                </h2>
+                <textarea
+                  name="specialInstructions"
+                  placeholder="Any special requests or notes for your order..."
+                  className="w-full border rounded-md p-3 resize-none text-sm"
+                  rows={3}
+                  value={specialInstructions}
+                  onChange={(e) => setSpecialInstructions(e.target.value)}
                 />
               </section>
 

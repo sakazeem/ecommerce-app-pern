@@ -5,6 +5,7 @@ const orderConfirmationCustomerTemplate = ({
 	subtotal,
 	shipping,
 	total,
+	specialInstructions = null,
 }) => {
 	const itemsHtml = items
 		.map(
@@ -94,6 +95,17 @@ const orderConfirmationCustomerTemplate = ({
 							for details on returns, exchanges, and eligibility.
 						</td>
 					</tr>
+					${
+						specialInstructions
+							? `
+					<tr>
+						<td style="padding-top:15px;">
+							<p style="margin:0 0 6px; font-size:13px; font-weight:bold; color:#333;">Special Instructions</p>
+							<p style="margin:0; font-size:13px; color:#555; background:#f9f9f9; border-left:3px solid #5DABEA; padding:8px 12px; border-radius:4px;">${specialInstructions}</p>
+						</td>
+					</tr>`
+							: ''
+					}
 					<!-- CTA Button -->
 					<tr>
 						<td align="center" style="padding:30px 0;">
