@@ -6,7 +6,6 @@ import { StoreProvider } from "@/app/providers/StoreProvider";
 // Import some common Google Fonts (extend this list as needed)
 
 import { NextIntlClientProvider } from "next-intl";
-import { AuthProvider } from "../providers/AuthProvider";
 import { ToastContainerProvider } from "../providers/ToastContainer";
 
 let cachedTheme = null;
@@ -85,9 +84,7 @@ export default async function RootLayout({ children }) {
 			}}>
 			<ToastContainerProvider />
 			<NextIntlClientProvider>
-				<AuthProvider>
-					<StoreProvider value={store}>{children}</StoreProvider>
-				</AuthProvider>
+				<StoreProvider value={store}>{children}</StoreProvider>
 			</NextIntlClientProvider>
 		</div>
 	);
