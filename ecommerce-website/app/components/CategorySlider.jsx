@@ -20,19 +20,23 @@ import BaseLink from "./BaseComponents/BaseLink";
 
 export default function CategorySlider({ data = [], isStoreData }) {
   const store = useStore();
-  const slidesData = data.length > 0 ? [...data, ...data] : store.content.categories;
+  const raw = data.length > 0 ? data : (store.content.categories ?? []);
 
-  if (!slidesData?.length) return null;
+  if (!raw.length) return null;
+
+  // Triplicate so there are always enough slides to fill viewport + appear infinite.
+  // Swiper's built-in loop + EffectCoverflow breaks with small datasets — this is
+  // the reliable alternative: disable loop, let autoplay run through 3x the slides.
+  const slidesData = [...raw, ...raw, ...raw];
 
   return (
     <Swiper
-      loop={true}
-      loopAdditionalSlides={slidesData.length}
+      loop={false}
+      initialSlide={raw.length} // start at the middle copy so prev/next both work
       speed={600}
       effect={"coverflow"}
       grabCursor={true}
       centeredSlides={true}
-      slidesPerView={3}
       breakpoints={{
         0: { slidesPerView: 2 },
         640: { slidesPerView: 3 },
@@ -42,6 +46,7 @@ export default function CategorySlider({ data = [], isStoreData }) {
       autoplay={{
         delay: 2500,
         disableOnInteraction: false,
+        stopOnLastSlide: false,
       }}
       coverflowEffect={{
         rotate: 0,
@@ -58,7 +63,7 @@ export default function CategorySlider({ data = [], isStoreData }) {
       className="flat-coverflow-slider mt-4"
     >
       {slidesData.map((category, idx) => (
-        <SwiperSlide key={category.slug ?? category.id ?? idx}>
+        <SwiperSlide key={`${category.slug ?? category.id}-${idx}`}>
           <div className="bg-white shadow-xl rounded-xl pb-3">
             <BaseLink href={`/products?category=${category.slug}`}>
               <BaseImage
