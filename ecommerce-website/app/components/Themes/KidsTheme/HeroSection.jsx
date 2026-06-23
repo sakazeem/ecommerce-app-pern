@@ -5,123 +5,183 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 const HeroSection = ({
-	slides = [],
-	autoPlay = true,
-	autoPlayDelay = 4000,
-	speed = 500,
-	showNavigation = true,
-	showPagination = true,
+  slides = [],
+  autoPlay = true,
+  autoPlayDelay = 4000,
+  speed = 500,
+  showNavigation = true,
+  showPagination = true,
 }) => {
-	const router = useRouter();
+  const router = useRouter();
 
-	const [index, setIndex] = useState(1);
-	const [isPaused, setIsPaused] = useState(false);
-	const [isAnimating, setIsAnimating] = useState(false);
+  const [index, setIndex] = useState(1);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
-	const trackRef = useRef(null);
-	const intervalRef = useRef(null);
+  const trackRef = useRef(null);
+  const intervalRef = useRef(null);
 
-	const slidesCount = slides.length;
-	if (!slidesCount) return null;
+  // ---------------------------
+  // SWIPE / DRAG SUPPORT
+  // ---------------------------
+  const dragStartX = useRef(null);
+  const isDragging = useRef(false);
+  const SWIPE_THRESHOLD = 50; // px
 
-	const extendedSlides = [
-		slides[slidesCount - 1], // last clone
-		...slides,
-		slides[0], // first clone
-	];
+  const onDragStart = (clientX) => {
+    dragStartX.current = clientX;
+    isDragging.current = false;
+    setIsPaused(true);
+  };
 
-	// ✅ REMOVED mounted/setTimeout delay — no longer needed
+  const onDragMove = (clientX) => {
+    if (dragStartX.current === null) return;
+    if (Math.abs(clientX - dragStartX.current) > 5) {
+      isDragging.current = true;
+    }
+  };
 
-	// ---------------------------
-	// AUTOPLAY
-	// ---------------------------
-	useEffect(() => {
-		if (!autoPlay || isPaused || isAnimating) return; // ✅ removed mounted check
+  const onDragEnd = (clientX) => {
+    if (dragStartX.current === null) return;
+    const delta = clientX - dragStartX.current;
+    if (Math.abs(delta) >= SWIPE_THRESHOLD) {
+      if (delta < 0) next();
+      else prev();
+    }
+    dragStartX.current = null;
+    setIsPaused(false);
+  };
 
-		intervalRef.current = setInterval(() => {
-			next();
-		}, autoPlayDelay);
+  // Touch handlers
+  const handleTouchStart = (e) => onDragStart(e.touches[0].clientX);
+  const handleTouchMove = (e) => onDragMove(e.touches[0].clientX);
+  const handleTouchEnd = (e) => onDragEnd(e.changedTouches[0].clientX);
 
-		return () => clearInterval(intervalRef.current);
-	}, [isPaused, index, isAnimating]);
+  // Mouse handlers (desktop drag)
+  const handleMouseDown = (e) => onDragStart(e.clientX);
+  const handleMouseMove = (e) => {
+    if (dragStartX.current !== null) onDragMove(e.clientX);
+  };
+  const handleMouseUp = (e) => onDragEnd(e.clientX);
+  const handleMouseLeaveContainer = (e) => {
+    if (dragStartX.current !== null) onDragEnd(e.clientX);
+    setIsPaused(false);
+  };
 
-	// ---------------------------
-	// SLIDE LOGIC
-	// ---------------------------
-	const next = () => {
-		if (isAnimating) return;
-		setIndex((prev) => prev + 1);
-	};
+  const slidesCount = slides.length;
+  if (!slidesCount) return null;
 
-	const prev = () => {
-		if (isAnimating) return;
-		setIndex((prev) => prev - 1);
-	};
+  const extendedSlides = [
+    slides[slidesCount - 1], // last clone
+    ...slides,
+    slides[0], // first clone
+  ];
 
-	// ---------------------------
-	// HANDLE LOOP RESET
-	// ---------------------------
-	useEffect(() => {
-		if (!trackRef.current) return;
-		setIsAnimating(true);
+  // ✅ REMOVED mounted/setTimeout delay — no longer needed
 
-		trackRef.current.style.transition = `transform ${speed}ms ease-out`;
+  // ---------------------------
+  // AUTOPLAY
+  // ---------------------------
+  useEffect(() => {
+    if (!autoPlay || isPaused || isAnimating) return; // ✅ removed mounted check
 
-		const timeout = setTimeout(() => {
-			if (index === slidesCount + 1) {
-				trackRef.current.style.transition = "none";
-				setIndex(1);
-			}
-			if (index === 0) {
-				trackRef.current.style.transition = "none";
-				setIndex(slidesCount);
-			}
-			setIsAnimating(false);
-		}, speed);
+    intervalRef.current = setInterval(() => {
+      next();
+    }, autoPlayDelay);
 
-		return () => clearTimeout(timeout);
-	}, [index]);
+    return () => clearInterval(intervalRef.current);
+  }, [isPaused, index, isAnimating]);
 
-	// ---------------------------
-	// CLICK HANDLER
-	// ---------------------------
-	const handleClick = (slide) => {
-		if (slide?.categorySlug) {
-			router.push(`/products?category=${slide.categorySlug}`);
-		}
-	};
+  // ---------------------------
+  // SLIDE LOGIC
+  // ---------------------------
+  const next = () => {
+    if (isAnimating) return;
+    setIndex((prev) => prev + 1);
+  };
 
-	// ---------------------------
-	// RENDER
-	// ---------------------------
-	return (
-		<div
-			className="relative w-full overflow-hidden"
-			onMouseEnter={() => setIsPaused(true)}
-			onMouseLeave={() => setIsPaused(false)}>
-			{/* TRACK */}
-			<div
-				ref={trackRef}
-				className="flex w-full"
-				style={{
-					transform: `translateX(-${index * 100}%)`,
-				}}>
-				{extendedSlides.map((slide, i) => (
-					<div
-						key={i}
-						className="min-w-full cursor-pointer"
-						onClick={() => handleClick(slide)}>
-						<img
-							src={slide.src}
-							width={1920}
-							height={550}
-							// Only the first real slide is LCP
-							loading={i === 1 ? "eager" : "lazy"}
-							fetchPriority={i === 1 ? "high" : "auto"}
-							className="w-full h-auto"
-							alt={slide.alt || `Banner ${i}`}
-						/>
-						{/* <img
+  const prev = () => {
+    if (isAnimating) return;
+    setIndex((prev) => prev - 1);
+  };
+
+  // ---------------------------
+  // HANDLE LOOP RESET
+  // ---------------------------
+  useEffect(() => {
+    if (!trackRef.current) return;
+    setIsAnimating(true);
+
+    trackRef.current.style.transition = `transform ${speed}ms ease-out`;
+
+    const timeout = setTimeout(() => {
+      if (index === slidesCount + 1) {
+        trackRef.current.style.transition = "none";
+        setIndex(1);
+      }
+      if (index === 0) {
+        trackRef.current.style.transition = "none";
+        setIndex(slidesCount);
+      }
+      setIsAnimating(false);
+    }, speed);
+
+    return () => clearTimeout(timeout);
+  }, [index]);
+
+  // ---------------------------
+  // CLICK HANDLER
+  // ---------------------------
+  const handleClick = (slide) => {
+    // Don't navigate if the user was dragging
+    if (isDragging.current) return;
+    if (slide?.categorySlug) {
+      router.push(`/products?category=${slide.categorySlug}`);
+    }
+  };
+
+  // ---------------------------
+  // RENDER
+  // ---------------------------
+  return (
+    <div
+      className="relative w-full overflow-hidden"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={handleMouseLeaveContainer}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* TRACK */}
+      <div
+        ref={trackRef}
+        className="flex w-full select-none"
+        style={{
+          transform: `translateX(-${index * 100}%)`,
+          cursor: dragStartX.current !== null ? "grabbing" : "grab",
+        }}
+      >
+        {extendedSlides.map((slide, i) => (
+          <div
+            key={i}
+            className="min-w-full cursor-pointer"
+            onClick={() => handleClick(slide)}
+          >
+            <img
+              src={slide.src}
+              width={1920}
+              height={550}
+              // Only the first real slide is LCP
+              loading={i === 1 ? "eager" : "lazy"}
+              fetchPriority={i === 1 ? "high" : "auto"}
+              className="w-full h-auto"
+              alt={slide.alt || `Banner ${i}`}
+              draggable={false}
+            />
+            {/* <img
 							src={slide.src}
 							// width={1920}
 							// height={550}
@@ -137,52 +197,54 @@ const HeroSection = ({
 							// ✅ Boost fetch priority on the actual LCP image
 							fetchPriority={i === 1 ? "high" : "low"}
 						/> */}
-					</div>
-				))}
-			</div>
+          </div>
+        ))}
+      </div>
 
-			{/* NAVIGATION */}
-			{showNavigation && (
-				<>
-					<button
-						onClick={prev}
-						className="absolute left-6 max-md:left-2 top-1/2 -translate-y-1/2 z-10 cursor-pointer text-light bg-secondary/85 hover:brightness-95 shadow-md rounded-full p-1 max-md:p-0.5 select-none">
-						<ChevronRight className="rotate-180 size-6 max-md:size-5" />
-					</button>
+      {/* NAVIGATION */}
+      {showNavigation && (
+        <>
+          <button
+            onClick={prev}
+            className="absolute left-6 max-md:left-2 top-1/2 -translate-y-1/2 z-10 cursor-pointer text-light bg-secondary/85 hover:brightness-95 shadow-md rounded-full p-1 max-md:p-0.5 select-none"
+          >
+            <ChevronRight className="rotate-180 size-6 max-md:size-5" />
+          </button>
 
-					<button
-						onClick={next}
-						className="absolute right-6 max-md:right-2 top-1/2 -translate-y-1/2 z-10 cursor-pointer text-light bg-secondary/85 hover:brightness-95 shadow-md rounded-full p-1 max-md:p-0.5 select-none">
-						<ChevronRight className="size-6 max-md:size-5" />
-					</button>
-				</>
-			)}
+          <button
+            onClick={next}
+            className="absolute right-6 max-md:right-2 top-1/2 -translate-y-1/2 z-10 cursor-pointer text-light bg-secondary/85 hover:brightness-95 shadow-md rounded-full p-1 max-md:p-0.5 select-none"
+          >
+            <ChevronRight className="size-6 max-md:size-5" />
+          </button>
+        </>
+      )}
 
-			{/* DOTS */}
-			{showPagination && (
-				<div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
-					{slides.map((_, i) => {
-						const activeIndex =
-							index === 0
-								? slidesCount - 1
-								: index === slidesCount + 1
-									? 0
-									: index - 1;
+      {/* DOTS */}
+      {showPagination && (
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+          {slides.map((_, i) => {
+            const activeIndex =
+              index === 0
+                ? slidesCount - 1
+                : index === slidesCount + 1
+                  ? 0
+                  : index - 1;
 
-						return (
-							<button
-								key={i}
-								onClick={() => setIndex(i + 1)}
-								className={`w-2 h-2 rounded-full transition-all ${
-									activeIndex === i ? "bg-white w-4" : "bg-white/50"
-								}`}
-							/>
-						);
-					})}
-				</div>
-			)}
-		</div>
-	);
+            return (
+              <button
+                key={i}
+                onClick={() => setIndex(i + 1)}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  activeIndex === i ? "bg-white w-4" : "bg-white/50"
+                }`}
+              />
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default HeroSection;
