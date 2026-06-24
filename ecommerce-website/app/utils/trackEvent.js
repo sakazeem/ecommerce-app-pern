@@ -7,6 +7,7 @@ export const trackEvent = (event, payload = {}, options = {}) => {
     "PageView", // done
     "ViewContent", // done
     "AddToCart",
+    "CustomAddToCart",
     "Search",
     "InitiateCheckout",
     "AddPaymentInfo",
@@ -28,13 +29,14 @@ export const trackEvent = (event, payload = {}, options = {}) => {
     PageView: "page_view",
     ViewContent: "view_item",
     AddToCart: "add_to_cart",
+    CustomAddToCart: "custom_add_to_cart",
     Search: "search",
     InitiateCheckout: "begin_checkout",
     AddPaymentInfo: "add_payment_info",
     Purchase: "purchase",
   };
 
-  if (window.gtag) {
-    window.gtag("event", gaMapping[event] || event, payload);
-  }
+  // if (window.gtag) {
+  //   window.gtag("event", gaMapping[event] || event, payload);
+  // }
 };
