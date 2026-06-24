@@ -6,7 +6,7 @@ export const trackEvent = (event, payload = {}, options = {}) => {
   const fbEventsMapping = [
     "PageView", // done
     "ViewContent", // done
-    "AddToCart",
+    // "AddToCart",
     "CustomAddToCart",
     "Search",
     "InitiateCheckout",

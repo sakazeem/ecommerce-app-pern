@@ -264,23 +264,23 @@ export const useCartStore = create(
 				}
 
 				const atcQty = Math.min(quantity, maxStock);
-				trackEvent("AddToCart", {
-					content_ids: [product.slug],
-					content_type: "product",
-					content_name: product.title,
-					contents: [
-						{
-							id: product.slug,
-							quantity: atcQty,
-							item_price: Number(
-								product.selectedVariant?.price || product.base_price,
-							),
-						},
-					],
-					quantity: atcQty,
-					value: Number(product.selectedVariant?.price || product.base_price),
-					currency: "PKR",
-				});
+				// trackEvent("AddToCart", {
+				// 	content_ids: [product.slug],
+				// 	content_type: "product",
+				// 	content_name: product.title,
+				// 	contents: [
+				// 		{
+				// 			id: product.slug,
+				// 			quantity: atcQty,
+				// 			item_price: Number(
+				// 				product.selectedVariant?.price || product.base_price,
+				// 			),
+				// 		},
+				// 	],
+				// 	quantity: atcQty,
+				// 	value: Number(product.selectedVariant?.price || product.base_price),
+				// 	currency: "PKR",
+				// });
 				trackEvent("CustomAddToCart", {
 					content_ids: [product.slug],
 					content_type: "product",
